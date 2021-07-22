@@ -2,9 +2,18 @@
 import { css, Theme } from "@emotion/react";
 import styled from "@emotion/styled";
 import { AnimatePresence, AnimateSharedLayout, motion } from "framer-motion";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  createElement,
+} from "react";
 import useResizeObserver from "use-resize-observer/polyfilled";
 // import { useLongPress } from "use-long-press";
+
 // icons:
 import { BiCaretDownCircle } from "react-icons/bi";
 
@@ -12,10 +21,54 @@ import { BiCaretDownCircle } from "react-icons/bi";
 import Debug from "./Debug";
 import useTable, { Column, TableProps } from "../hooks/useTable";
 // import useRenderCount from "../hooks/useRenderCount";
-
 import SearchBar from "./TableSearchBar";
+import MonstieInfoGraphic from "./MonstieInfoGraphic";
 // import TableSidebar from "./TableSidebar";
 // import RefModal from "./RefModal";
+import SvgWrapper from "./SvgWrapper";
+
+// assets:
+import { ReactComponent as DragonSvg } from "../assets/dragon.svg";
+import { ReactComponent as FireSvg } from "../assets/fire.svg";
+import { ReactComponent as IceSvg } from "../assets/ice.svg";
+import { ReactComponent as NonElementSvg } from "../assets/non_elemental.svg";
+import { ReactComponent as ThunderSvg } from "../assets/thunder.svg";
+import { ReactComponent as WaterSvg } from "../assets/water.svg";
+
+const elementSize = 20;
+
+// const SvgWrapperContainer = styled.span<{ size: number }>`
+//   svg {
+//     ${({ size }) =>
+//       size !== -1 &&
+//       css`
+//         width: ${size}px;
+//         height: ${size}px;
+//       `};
+//   }
+// `;
+
+// type SvgWrapperProps = {
+//   svgReactComponent: React.FunctionComponent<
+//     React.SVGProps<SVGSVGElement> & {
+//       title?: string | undefined;
+//     }
+//   >;
+//   size?: number;
+//   title?: string;
+// };
+
+// const SvgWrapper = ({
+//   svgReactComponent: icon,
+//   size = -1,
+//   title,
+// }: SvgWrapperProps) => {
+//   return (
+//     <SvgWrapperContainer size={size} title={title}>
+//       {createElement(icon)}
+//     </SvgWrapperContainer>
+//   );
+// };
 
 const Container = styled.div`
   /* border: 1px solid yellow; */
@@ -39,10 +92,10 @@ const TableContainer = styled.table`
 
 const Thead = styled.thead`
   position: sticky;
-  top: 0;
+  top: 3rem;
   z-index: 100;
 
-  /* border-bottom: 1px solid ${({ theme }) => theme.colors.onSurface.main}; */
+  border-bottom: 1px solid ${({ theme }) => theme.colors.onSurface.main};
 
   background-color: ${({ theme }) => theme.colors.onBackground.main};
   opacity: 0.94;
@@ -52,7 +105,11 @@ const Thead = styled.thead`
   flex-direction: column;
   align-items: center;
 `;
-
+// ${({ tableHeight }: { tableHeight: number }) => css`
+//   height: ${tableHeight}px;
+//   min-height: ${tableHeight}px;
+//   max-height: ${tableHeight}px;
+// `}
 const Tbody = styled.tbody`
   position: relative;
   display: flex;
@@ -60,54 +117,116 @@ const Tbody = styled.tbody`
   align-items: center;
 
   /* background-color: ${({ theme }) => theme.colors.onBackground.main}; */
+`;
 
-  ${({ tableHeight }: { tableHeight: number }) => css`
-    height: ${tableHeight}px;
-    min-height: ${tableHeight}px;
-    max-height: ${tableHeight}px;
-  `}
+//  tr {
+//     /* position: relative; */
+//     border-bottom: 1px solid ${({ theme }) => theme.colors.onSurface.main};
 
-  tr {
-    /* position: relative; */
-    border-top: 1px solid ${({ theme }) => theme.colors.onSurface.main};
+//     padding: 0 1rem;
+//     height: 3rem;
 
-    padding: 0 1rem;
-    height: 3rem;
+//     display: flex;
+
+//     td {
+//       position: relative;
+//       overflow: hidden;
+//       white-space: nowrap;
+//       text-overflow: ellipsis;
+
+//       height: 100%;
+//       /* padding: 0 1rem; */
+
+//       cursor: default;
+
+//       color: ${({ theme }) => theme.colors.background.main};
+//       font-size: 0.9rem;
+
+//       display: flex;
+//       align-items: center;
+
+//       &:hover {
+//         text-decoration: underline;
+//       }
+//     }
+//   }
+
+//   tr:hover {
+//     background-color: ${({ theme }) => theme.colors.primary.main};
+//     border-radius: 5px;
+//     td {
+//       color: ${({ theme }) => theme.colors.onPrimary.main};
+
+//       font-weight: 600;
+//     }
+//   }
+
+const TR = styled.tr`
+  position: relative;
+  /* border-bottom: 1px solid ${({ theme }) => theme.colors.onSurface.main}; */
+
+  padding: 0 1rem;
+  height: 3rem;
+
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+
+  display: flex;
+
+  td {
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+
+    height: 100%;
+    /* padding: 0 1rem; */
+
+    cursor: default;
+
+    /* color: ${({ theme }) => theme.colors.background.main}; */
+    font-size: 0.9rem;
 
     display: flex;
+    align-items: center;
 
-    td {
-      position: relative;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-
-      height: 100%;
-      /* padding: 0 1rem; */
-
-      cursor: default;
-
-      color: ${({ theme }) => theme.colors.background.main};
-      font-size: 0.9rem;
-
-      display: flex;
-      align-items: center;
-
-      &:hover {
-        text-decoration: underline;
-      }
+    &:hover {
+      text-decoration: underline;
     }
   }
 
-  tr:hover {
-    background-color: ${({ theme }) => theme.colors.primary.main};
+  &::after {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin-left: auto;
+    margin-right: auto;
+    content: "";
+    height: 1px;
+
+    width: calc(100% - 8px);
+    background-color: ${({ theme }) => theme.colors.onSurface.main};
+  }
+
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.onSurface.main};
     border-radius: 5px;
     td {
-      color: ${({ theme }) => theme.colors.onPrimary.main};
+      /* color: ${({ theme }) => theme.colors.onPrimary.main}; */
 
-      font-weight: 600;
+      /* font-weight: 600; */
+    }
+
+    &::after {
+      opacity: 0;
     }
   }
+`;
+
+const TRChange = styled(TR)<{ expand: boolean }>`
+  background-color: ${({ expand, theme }) =>
+    expand ? theme?.colors.onSurface.main : "transparent"};
 `;
 
 const HeaderRow = styled.tr`
@@ -119,11 +238,14 @@ const HeaderRow = styled.tr`
   display: flex;
 `;
 
-const HeaderColumn = styled(motion.th)`
+const HeaderColumn = styled(motion.th)<{
+  columnWidth: number;
+  borderLeft: boolean;
+}>`
   position: relative;
   /* overflow: hidden; */
 
-  width: ${({ columnWidth }: { columnWidth: number }) => columnWidth}px;
+  width: ${({ columnWidth }) => columnWidth}px;
   height: 100%;
   padding: 0 1rem;
 
@@ -133,6 +255,12 @@ const HeaderColumn = styled(motion.th)`
   white-space: nowrap;
   /* -webkit-user-select: none; */
   /* -webkit-touch-callout: none; */
+
+  ${({ borderLeft, theme }) =>
+    borderLeft &&
+    css`
+      border-left: 1px solid ${theme.colors.onSurface.main};
+    `}
 
   font-size: 12px;
   font-weight: 600;
@@ -154,10 +282,37 @@ const BlankRow = styled.tr`
   `}
 `;
 
-const DataColumn = styled(motion.td)`
+type DataColumnProps = {
+  columnWidth: number;
+  highlight: string;
+  borderLeft: boolean;
+};
+
+const DataColumn = styled(motion.td)<DataColumnProps>`
   overflow: hidden;
   user-select: none;
-  width: ${({ columnWidth }: { columnWidth: number }) => columnWidth}px;
+  width: ${({ columnWidth }) => columnWidth}px;
+
+  ${({ borderLeft, theme }) =>
+    borderLeft &&
+    css`
+      border-left: 1px solid ${theme.colors.onSurface.main};
+    `}
+
+  ${({ highlight, theme }) =>
+    highlight === "strength"
+      ? css`
+          color: ${theme.colors.correct.main};
+          font-weight: 600;
+        `
+      : highlight === "weakness"
+      ? css`
+          color: ${theme.colors.error.main};
+          font-weight: 600;
+        `
+      : css`
+          color: ${theme.colors.background.main};
+        `}
 `;
 
 const indicatorIconSize = 16;
@@ -275,6 +430,7 @@ const ColumnHeader = memo(
       () => toggleShiftSort(key),
       [key, toggleShiftSort]
     );
+
     const toggleSortRightClick = useCallback(
       (e) => {
         e.preventDefault();
@@ -288,12 +444,129 @@ const ColumnHeader = memo(
       [key, toggleMultiSort]
     );
 
+    const getElementHeader = (headerLabel: string) => {
+      const label = headerLabel.toLowerCase();
+      switch (label) {
+        case "non elemental attack":
+          return (
+            <SvgWrapper
+              svgComponent={NonElementSvg}
+              size={elementSize}
+              title={headerLabel}
+            />
+          );
+        case "fire attack":
+          return (
+            <SvgWrapper
+              svgComponent={FireSvg}
+              size={elementSize}
+              title={headerLabel}
+            />
+          );
+
+        case "water attack":
+          return (
+            <SvgWrapper
+              svgComponent={WaterSvg}
+              size={elementSize}
+              title={headerLabel}
+            />
+          );
+
+        case "thunder attack":
+          return (
+            <SvgWrapper
+              svgComponent={ThunderSvg}
+              size={elementSize}
+              title={headerLabel}
+            />
+          );
+
+        case "ice attack":
+          return (
+            <SvgWrapper
+              svgComponent={IceSvg}
+              size={elementSize}
+              title={headerLabel}
+            />
+          );
+
+        case "dragon attack":
+          return (
+            <SvgWrapper
+              svgComponent={DragonSvg}
+              size={elementSize}
+              title={headerLabel}
+            />
+          );
+
+        case "non elemental defense":
+          return (
+            <SvgWrapper
+              svgComponent={NonElementSvg}
+              size={elementSize}
+              title={headerLabel}
+            />
+          );
+
+        case "fire defense":
+          return (
+            <SvgWrapper
+              svgComponent={FireSvg}
+              size={elementSize}
+              title={headerLabel}
+            />
+          );
+
+        case "water defense":
+          return (
+            <SvgWrapper
+              svgComponent={WaterSvg}
+              size={elementSize}
+              title={headerLabel}
+            />
+          );
+
+        case "thunder defense":
+          return (
+            <SvgWrapper
+              svgComponent={ThunderSvg}
+              size={elementSize}
+              title={headerLabel}
+            />
+          );
+
+        case "ice defense":
+          return (
+            <SvgWrapper
+              svgComponent={IceSvg}
+              size={elementSize}
+              title={headerLabel}
+            />
+          );
+
+        case "dragon defense":
+          return (
+            <SvgWrapper
+              svgComponent={DragonSvg}
+              size={elementSize}
+              title={headerLabel}
+            />
+          );
+
+        default:
+          break;
+      }
+
+      return headerLabel;
+    };
+
     return (
       <HeaderColumn
         ref={containerRef}
         columnWidth={width}
         onClick={toggleSort}
-        onContextMenu={toggleSortRightClick}
+        // onContextMenu={toggleSortRightClick}
         // {...bind}
         initial={{
           width,
@@ -306,17 +579,18 @@ const ColumnHeader = memo(
           paddingRight: 14,
         }}
         exit={{ width: 0, paddingLeft: 0, paddingRight: 0 }}
+        borderLeft={label.toLowerCase().includes("element")}
       >
-        {label ? label : key}
+        {label ? getElementHeader(label) : key}
         {menu && (
           <ContextMenu
             onClick={(e: any) => {
               e.stopPropagation();
             }}
-            onContextMenu={(e: any) => {
-              e.stopPropagation();
-              e.preventDefault();
-            }}
+            // onContextMenu={(e: any) => {
+            //   e.stopPropagation();
+            //   e.preventDefault();
+            // }}
             onMouseLeave={(e) => {
               e.stopPropagation();
               toggleMenu("");
@@ -354,6 +628,11 @@ interface DataPieceProps {
 const DataPiece = memo(({ columnData, data }: DataPieceProps) => {
   const { key, desc, label, sorted, width, format } = columnData;
   const value = data[key];
+
+  const strength = key === `atk_${data.strength}`;
+  const weakness = key === `def_${data.weakness}`;
+
+  const highlight = strength ? "strength" : weakness ? "weakness" : "none";
   return (
     <DataColumn
       title={value}
@@ -369,20 +648,86 @@ const DataPiece = memo(({ columnData, data }: DataPieceProps) => {
         paddingRight: 14,
       }}
       exit={{ width: 0, paddingLeft: 0, paddingRight: 0 }}
+      highlight={highlight}
+      borderLeft={columnData.label.toLowerCase().includes("element")}
     >
       {value}
     </DataColumn>
   );
 });
+
+const ExpandableTR = styled(motion.tr)`
+  ${({ width }: { width: number }) => css`
+    width: ${width}px;
+    min-width: ${width}px;
+    max-width: ${width}px;
+  `}
+  background-color: transparent;
+
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+
+  box-shadow: inset 0px 0px 0px 1px
+    ${({ theme }) => theme.colors.onSurface.main};
+
+  td {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+  }
+
+  &:hover {
+    background-color: transparent;
+  }
+`;
+
 interface RowItemProps {
   data: any;
   columnAttrs: Column[];
   index: number;
 }
+
 const RowItem = memo(({ data, columnAttrs, index }: RowItemProps) => {
+  const containerRef = useRef<HTMLTableRowElement | null>(null);
+
+  const [width, setWidth] = useState(0);
+  const [expand, setExpand] = useState(false);
+  // const { width = 0 } = useResizeObserver({ ref: containerRef });
+
+  // const animationProps = {
+  //   variants: {
+  //     open: {
+  //       height: 200,
+  //     },
+  //     close: { height: 0 },
+  //   },
+  //   initial: "close",
+  //   animate: expand ? "open" : "close",
+  // };
+
+  const animationProps = {
+    variants: {
+      open: {
+        height: 300,
+      },
+      close: { height: 0 },
+    },
+    initial: "close",
+    animate: "open",
+    exit: "close",
+  };
+
+  useEffect(() => {
+    const w = containerRef.current?.getBoundingClientRect().width || 0;
+    setWidth(w);
+  }, []);
+
+  const toggleExpand = () => setExpand((v) => !v);
   return (
-    <tr>
-      <AnimatePresence>
+    <>
+      <TRChange expand={expand} onClick={toggleExpand} ref={containerRef}>
+        {/* <AnimatePresence> */}
         {columnAttrs.map((columnData: Column, j: number) => (
           <DataPiece
             key={`body-column-${data.name}-${columnData.key}`}
@@ -390,8 +735,20 @@ const RowItem = memo(({ data, columnAttrs, index }: RowItemProps) => {
             data={data}
           />
         ))}
+        {/* </AnimatePresence> */}
+      </TRChange>
+      <AnimatePresence>
+        {expand && (
+          <ExpandableTR width={width} {...animationProps}>
+            <td>
+              <MonstieInfoGraphic data={data} />
+            </td>
+          </ExpandableTR>
+        )}
       </AnimatePresence>
-    </tr>
+
+      {/* <ExpandableTR width={width} {...animationProps}></ExpandableTR> */}
+    </>
   );
 });
 
@@ -419,46 +776,46 @@ const Table = memo(({ data, column }: TableProps) => {
   const [extraContentHeight, setExtraContentHeight] = useState(0);
 
   // 14 comes from theme.dimensions.unit or 1rem
-  const itemHeight = 14 * 3; // 3rem
+  // const itemHeight = 14 * 3; // 3rem
 
-  const listHeight = itemHeight * tableData.length;
+  // const listHeight = itemHeight * tableData.length;
 
-  const startIndex = Math.max(
-    0, // ensures that we get an index of atleast 0
-    Math.floor((scrollPosition - extraContentHeight) / itemHeight)
-  );
+  // const startIndex = Math.max(
+  //   0, // ensures that we get an index of atleast 0
+  //   Math.floor((scrollPosition - extraContentHeight) / itemHeight)
+  // );
 
-  const endIndex = Math.max(
-    0, //  ensures that we get atleast an index of 0 in the case that:
-    // scrollTop + height < extraContentHeight
-    Math.min(
-      tableData.length - 1, // don't render past the end of the list
-      Math.floor((scrollPosition + height - extraContentHeight) / itemHeight)
-    )
-  );
+  // const endIndex = Math.max(
+  //   0, //  ensures that we get atleast an index of 0 in the case that:
+  //   // scrollTop + height < extraContentHeight
+  //   Math.min(
+  //     tableData.length - 1, // don't render past the end of the list
+  //     Math.floor((scrollPosition + height - extraContentHeight) / itemHeight)
+  //   )
+  // );
 
   const toggleMenu = (key: string) => {
     setHeaderMenu(key);
   };
 
-  useEffect(() => {
-    scrollRef.current = document.getElementById("page-container");
-    const setScrollTopRef = () =>
-      setScrollPosition(scrollRef.current?.scrollTop as number);
+  // useEffect(() => {
+  //   scrollRef.current = document.getElementById("page-container");
+  //   const setScrollTopRef = () =>
+  //     setScrollPosition(scrollRef.current?.scrollTop as number);
 
-    scrollRef.current?.addEventListener("scroll", setScrollTopRef);
+  //   scrollRef.current?.addEventListener("scroll", setScrollTopRef);
 
-    return () => {
-      scrollRef.current?.removeEventListener("scroll", setScrollTopRef);
-    };
-  }, []);
+  //   return () => {
+  //     scrollRef.current?.removeEventListener("scroll", setScrollTopRef);
+  //   };
+  // }, []);
 
-  useEffect(() => {
-    if (scrollRef.current) {
-      const fullHeight = scrollRef.current.scrollHeight;
-      setExtraContentHeight(fullHeight - listHeight);
-    }
-  }, [height, width, listHeight]);
+  // useEffect(() => {
+  //   if (scrollRef.current) {
+  //     const fullHeight = scrollRef.current.scrollHeight;
+  //     setExtraContentHeight(fullHeight - listHeight);
+  //   }
+  // }, [height, width, listHeight]);
 
   useEffect(() => {
     filterData(searchText);
@@ -480,19 +837,19 @@ const Table = memo(({ data, column }: TableProps) => {
         }}
       /> */}
       {/* <Debug data={{ columnAttrs, sorts, hiddenColumns }} drag /> */}
-      <button onClick={() => changeColumnOrder("name", 0)}>
+      {/* <button onClick={() => changeColumnOrder("name", 0)}>
         name to first
       </button>
       <button onClick={() => toggleShiftSort("team")}>sort team</button>
       <button onClick={() => toggleColumn("name")}>toggle name</button>
-      <button onClick={() => toggleColumn("edpi")}>toggle edpi</button>
+      <button onClick={() => toggleColumn("edpi")}>toggle edpi</button> */}
 
       {/* <TableSidebar column={columnAttrs} /> */}
 
       <SearchBar
         value={searchText}
         onChange={(e: any) => setSearchText(e.target.value)}
-        placeholderText="Look for your favorite player, team, mouse, and more!"
+        placeholderText="Search for your favorite monstie, abilities, and more!"
         results={`${tableData.length} result${
           tableData.length === 1 ? "" : "s"
         }`}
@@ -515,20 +872,23 @@ const Table = memo(({ data, column }: TableProps) => {
               </AnimatePresence>
             </HeaderRow>
           </Thead>
-          <Tbody tableHeight={listHeight}>
-            <BlankRow blankHeight={startIndex * itemHeight} />
+          <Tbody
+
+          // tableHeight={listHeight}
+          >
+            {/* <BlankRow blankHeight={startIndex * itemHeight} /> */}
 
             {tableData.map((row: any, i: number) => {
-              if (i >= startIndex && i <= endIndex)
-                return (
-                  <RowItem
-                    key={`data-row-${row.name}`}
-                    columnAttrs={columnAttrs}
-                    data={tableData[i]}
-                    index={i}
-                  />
-                );
-              else return null;
+              // if (i >= startIndex && i <= endIndex)
+              return (
+                <RowItem
+                  key={`data-row-${row.name}-${row.strength}`}
+                  columnAttrs={columnAttrs}
+                  data={tableData[i]}
+                  index={i}
+                />
+              );
+              // else return null;
             })}
           </Tbody>
           {/* <Tbody tableHeight={listHeight}>

@@ -22,7 +22,7 @@ const LvlSelectorButton = styled.button`
 
 const MonstiesPage = () => {
   const [lvl, setLvl] = useState(1);
-  const [data, setData] = useState(DATA.stats);
+  const [data, setData] = useState(DATA.monsties);
   const column = useMemo(
     () => [
       {
@@ -33,29 +33,30 @@ const MonstiesPage = () => {
       { key: "type", label: "Type", width: 90 },
       { key: "ability1", label: "Ability 1", width: 100 },
       { key: "ability2", label: "Ability 2", width: 100 },
-      { key: "hp", label: "HP", width: 50 },
       { key: "speed", label: "Sp", width: 50 },
-      { key: "recovery", label: "Rec", width: 50 },
 
-      { key: "atk_non_elemental", label: "a_n", width: 50 },
-      { key: "atk_fire", label: "a_f", width: 50 },
-      { key: "atk_water", label: "a_w", width: 50 },
-      { key: "atk_thunder", label: "a_t", width: 50 },
-      { key: "atk_ice", label: "a_i", width: 50 },
-      { key: "atk_dragon", label: "a_d", width: 50 },
+      { key: "hp", label: "HP", width: 50 },
+      { key: "recovery", label: "Rec", width: 60 },
 
-      { key: "def_non_elemental", label: "d_n", width: 50 },
-      { key: "def_fire", label: "d_f", width: 50 },
-      { key: "def_water", label: "d_w", width: 50 },
-      { key: "def_thunder", label: "d_t", width: 50 },
-      { key: "def_ice", label: "d_i", width: 50 },
-      { key: "def_dragon", label: "d_d", width: 50 },
+      { key: "atk_non_elemental", label: "Non Elemental Attack", width: 50 },
+      { key: "atk_fire", label: "Fire Attack", width: 50 },
+      { key: "atk_water", label: "Water Attack", width: 50 },
+      { key: "atk_thunder", label: "Thunder Attack", width: 50 },
+      { key: "atk_ice", label: "Ice Attack", width: 50 },
+      { key: "atk_dragon", label: "Dragon Attack", width: 50 },
+
+      { key: "def_non_elemental", label: "Non Elemental Defense", width: 50 },
+      { key: "def_fire", label: "Fire Defense", width: 50 },
+      { key: "def_water", label: "Water Defense", width: 50 },
+      { key: "def_thunder", label: "Thunder Defense", width: 50 },
+      { key: "def_ice", label: "Ice Defense", width: 50 },
+      { key: "def_dragon", label: "Dragon Defense", width: 50 },
     ],
     []
   );
 
   useEffect(() => {
-    const stats = DATA.stats;
+    const stats = DATA.monsties;
     const newStats = stats.map((monstie, i) => {
       // const lvlStats = [];
 
@@ -87,7 +88,7 @@ const MonstiesPage = () => {
   }, [lvl]);
 
   return (
-    <div>
+    <>
       <LvlSelectorButton
         onClick={() => {
           setLvl(1);
@@ -145,7 +146,7 @@ const MonstiesPage = () => {
         99
       </LvlSelectorButton>
       <Table data={data} column={column} />
-    </div>
+    </>
   );
 };
 

@@ -145,15 +145,14 @@ const App = () => {
       </Helmet>
       <BrowserRouter>
         <NavigationBar />
-        <SidebarPortalLocation
+        {/* <SidebarPortalLocation
           id="sidebar-portal"
           variants={isMobile ? verticalVariant : horizontalVariant}
           initial={sidebarState ? "open" : "closed"}
           animate={sidebarState ? "open" : "closed"}
           sidebarState={sidebarState}
         >
-          {/* {isMobile && <Spacing />} */}
-        </SidebarPortalLocation>
+        </SidebarPortalLocation> */}
         <PageContainer className="page-container" id="page-container">
           <Switch>
             <Route path="/monsties" component={MonstiesPage} />

@@ -234,11 +234,7 @@ const useTable = (
       let has = false;
 
       stuffs.forEach((v: any) => {
-        if (typeof v === "number") {
-          v = v.toString();
-        }
-
-        if (v.toLowerCase().includes(keyword)) {
+        if (v.toString().toLowerCase().includes(keyword)) {
           has = true;
           return true;
         }

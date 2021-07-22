@@ -24,7 +24,7 @@ const SBContainer = styled(motion.div)<SBProps>`
   min-height: 3rem;
   max-height: 3rem;
   position: sticky;
-  top: 5rem;
+  top: 0;
   left: 0;
 
   overflow: hidden;
