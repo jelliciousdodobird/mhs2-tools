@@ -3,6 +3,7 @@ import { css, Theme } from "@emotion/react";
 import styled from "@emotion/styled";
 import DATA from "../utils/output.json";
 import { createElement, Fragment, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 
 const hexSize = 200;
 
@@ -28,7 +29,7 @@ const HexContainer = styled.div`
   clip-path: ${({ polygon }: { polygon: string }) => polygon};
 `;
 
-const HexValue = styled.div`
+const HexValue = styled(motion.div)`
   position: absolute;
   top: 0;
   left: 0;
@@ -160,6 +161,21 @@ export type HexagonStatsProps = {
   max?: number;
 };
 
+const animationProps = {
+  variants: {
+    open: {
+      scale: 1,
+      transition: { delay: 0.1 },
+    },
+    close: {
+      scale: 0,
+    },
+  },
+  initial: "close",
+  animate: "open",
+  exit: "close",
+};
+
 const HexagonStats = ({ hexStats, title, max = 10 }: HexagonStatsProps) => {
   const [value, setValue] = useState(-1);
   const statVertices = createStatVertices(hexStats, max);
@@ -170,7 +186,10 @@ const HexagonStats = ({ hexStats, title, max = 10 }: HexagonStatsProps) => {
     <Container>
       <HexContainer polygon={containerPolygonString}></HexContainer>
       <Title>{value === -1 ? title : value}</Title>
-      <HexValue polygon={cssPolygonString} />
+      <AnimatePresence>
+        <HexValue polygon={cssPolygonString} {...animationProps} />
+      </AnimatePresence>
+
       {statVertices.map((vertex: any) => (
         <Fragment key={vertex.x + vertex.y}>
           <Dot

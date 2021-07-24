@@ -591,7 +591,7 @@ const ColumnHeader = memo(
             //   e.stopPropagation();
             //   e.preventDefault();
             // }}
-            onMouseLeave={(e) => {
+            onMouseLeave={(e: any) => {
               e.stopPropagation();
               toggleMenu("");
             }}
@@ -713,6 +713,7 @@ const RowItem = memo(({ data, columnAttrs, index }: RowItemProps) => {
       },
       close: { height: 0 },
     },
+
     initial: "close",
     animate: "open",
     exit: "close",
