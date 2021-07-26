@@ -1,245 +1,207 @@
 // styling:
-import { css, jsx, Theme, useTheme } from "@emotion/react";
+import { css, jsx } from "@emotion/react";
 import styled from "@emotion/styled";
-import { AnimateSharedLayout, motion } from "framer-motion";
-import { useDrop } from "react-dnd";
 
-import { useEffect, useState } from "react";
-import Gene, {
-  AttackType,
-  ElementType,
-  SkillType,
-  Skill,
-  MonstieGene,
-} from "./Gene";
+// library:
+import { AnimateSharedLayout, motion } from "framer-motion";
+import { createRef, Ref, RefObject, useEffect, useRef, useState } from "react";
+
+// types:
+import { MonstieGene } from "./Gene";
+import { DropProps } from "../hooks/useDrop";
+
+// custom components:
 import GeneSlot from "./GeneSlot";
 import DraggableGene from "./DraggableGene";
+import Debug from "./Debug";
 
-const slotSize = 110;
+// utils:
+import {
+  EMPTY_BOARD,
+  addEmptyGeneInfo as clean,
+  place,
+  swap,
+  shuffleArray,
+  isEmptyGene,
+} from "../utils/utils";
+import { DROP_TYPES } from "../utils/DropTypes";
 
-const Board = styled.div`
+const SLOT_SIZE = 110;
+
+const Container = styled.div`
   position: relative;
-  width: ${slotSize * 3}px;
-  height: ${slotSize * 3}px;
+  width: ${SLOT_SIZE * 3}px;
+  height: ${SLOT_SIZE * 3}px;
+`;
 
-  background-color: ${({ theme }) => theme.colors.surface.main};
-  gap: 0.5rem;
+const gridStyles = () => css`
+  width: 100%;
+  height: 100%;
 
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.5rem;
+`;
+
+const SlotGrid = styled(motion.div)`
+  position: relative;
+  background-color: ${({ theme }) => theme.colors.surface.main};
+
+  ${gridStyles}
+`;
+
+const GeneGrid = styled(motion.div)`
+  position: absolute;
+  top: 0;
+  left: 0;
+  ${gridStyles}
 `;
 
 const EmptySlot = styled.div``;
 
-const TEST_DATA: MonstieGene[] = [
-  {
-    geneName: "Whip Gene (S)",
-    geneNumber: 1,
-    attackType: "technical",
-    elementType: "non-elemental",
-    requiredLvl: 4,
-    geneSize: 1,
-    skill: {
-      skillName: "Tail Spin",
-      skillType: "active",
-      desc: "Deals light non-elemental damage to all enemies.",
-    },
-    possessedBy: { native: ["Pukei-Pukei"], random: [] },
-  },
-  {
-    geneName: "Whip Gene (L)",
-    geneNumber: 3,
-    attackType: "power",
-    elementType: "fire",
-    requiredLvl: 15,
-    geneSize: 3,
-    skill: {
-      skillName: "Tail Spin Bomb",
-      skillType: "active",
-      desc: "Deals medium fire damage to all enemies. High chance to inflict Blastblight.",
-    },
-    possessedBy: { native: ["Uragaan"], random: [] },
-  },
-  {
-    geneName: "Full Swing Gene (M)",
-    geneNumber: 6,
-    attackType: "power",
-    elementType: "fire",
-    requiredLvl: 1,
-    geneSize: 2,
-    skill: {
-      skillName: "Scorching Blade",
-      skillType: "active",
-      desc: "Deals medium fire damage to all enemies. Low chance to inflict Burn for 3 turns.",
-    },
-    possessedBy: { native: ["Glavenus"], random: [] },
-  },
-  {
-    geneName: "Full Swing Gene (L)",
-    geneNumber: 7,
-    attackType: "power",
-    elementType: "non-elemental",
-    requiredLvl: 10,
-    geneSize: 3,
-    skill: {
-      skillName: "Ruinous Tackle",
-      skillType: "active",
-      desc: "Deals heavy non-elemental damage to one enemy.",
-    },
-    possessedBy: { native: ["Nergigante"], random: [] },
-  },
-  {
-    geneName: "Full Swing Gene (XL)",
-    geneNumber: 8,
-    attackType: "speed",
-    elementType: "non-elemental",
-    requiredLvl: 40,
-    geneSize: 4,
-    skill: {
-      skillName: "Hellish Heavyweight",
-      skillType: "active",
-      desc: "Deals heavy non-elemental damage to all enemies.",
-    },
-    possessedBy: { native: ["Bloodbath Diablos"], random: [] },
-  },
-  {
-    geneName: "Piercing Claws Gene (S)",
-    geneNumber: 9,
-    attackType: "technical",
-    elementType: "non-elemental",
-    requiredLvl: 1,
-    geneSize: 1,
-    skill: {
-      skillName: "Beak Drill",
-      skillType: "active",
-      desc: "Deals light non-elemental damage to one enemy.",
-    },
-    possessedBy: { native: ["Yian Kut-Ku", "Blue Yian Kut-Ku"], random: [] },
-  },
-  {
-    geneName: "Piercing Claws Gene (XL)",
-    geneNumber: 12,
-    attackType: "speed",
-    elementType: "non-elemental",
-    requiredLvl: 1,
-    geneSize: 4,
-    skill: {
-      skillName: "Venom Sweep",
-      skillType: "active",
-      desc: "Deals heavy non-elemental damage to all enemies. Medium chance to inflict Poison for 3 turns.",
-    },
-    possessedBy: { native: ["Pink Rathian"], random: [] },
-  },
-  {
-    geneName: "Tackle Gene (S)",
-    geneNumber: 13,
-    attackType: "technical",
-    elementType: "non-elemental",
-    requiredLvl: 10,
-    geneSize: 1,
-    skill: {
-      skillName: "Unstoppable",
-      skillType: "active",
-      desc: "Deals light non-elemental damage to all enemies.",
-    },
-    possessedBy: { native: ["Yian Kut-Ku"], random: [] },
-  },
-  {
-    geneName: "Tackle Gene (M)",
-    geneNumber: 14,
-    attackType: "power",
-    elementType: "ice",
-    requiredLvl: 30,
-    geneSize: 2,
-    skill: {
-      skillName: "Snowplow",
-      skillType: "active",
-      desc: "Deals medium ice damage to all enemies.",
-    },
-    possessedBy: { native: ["Gammoth"], random: [] },
-  },
-];
+/////////////////////////////////////////////////////////////////////////////////
 
-type BingoBoardProps = {};
-
-const emptyGene: MonstieGene = {
-  geneName: "",
-  geneNumber: -1,
-  attackType: "" as AttackType,
-  elementType: "" as ElementType,
-  requiredLvl: -1,
-  geneSize: -1,
-  skill: {
-    skillName: "",
-    skillType: "" as SkillType,
-    desc: "",
-  } as Skill,
-  possessedBy: { native: [], random: [] },
+type BingoBoardProps = {
+  data?: MonstieGene[];
+  drop: DropProps;
+  setDrop: React.Dispatch<React.SetStateAction<DropProps>>;
+  setDropSuccess: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const EMPTY_BOARD = [...Array(9).keys()].map(() => emptyGene);
+const BingoBoard = ({
+  drop,
+  setDrop,
+  setDropSuccess,
+  data,
+}: BingoBoardProps) => {
+  // STATE:
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragGene, setDragGene] = useState<MonstieGene | null>(null);
+  const [board, setBoard] = useState<MonstieGene[]>(clean(EMPTY_BOARD));
+  const [slotRefs, setSlotRefs] = useState<RefObject<HTMLDivElement>[]>([]);
 
-const BingoBoard = ({}: BingoBoardProps) => {
-  const [board, setBoard] = useState<MonstieGene[]>(EMPTY_BOARD);
+  // DERIVED STATE:
+  const boardLength = board.length;
 
-  const placeGene = (i: number, gene: MonstieGene) =>
-    setBoard((board) => {
-      const index = board.findIndex(
-        (boardGene) => boardGene.geneName === gene.geneName
-      );
-      if (index !== -1) {
-        console.log("duplicate gene", gene.geneName, "found at index", index);
-        return board;
-      }
+  // FUNCTIONS:
+  const getIntersectionIndex = (dropPosition: { x: number; y: number }) => {
+    let targetIndex = -1;
 
-      const copy = [...board];
+    const { x, y } = dropPosition;
+    slotRefs.forEach((el, i) => {
+      const { top, bottom, left, right } =
+        el?.current?.getBoundingClientRect() as DOMRect;
 
-      copy[i] = gene;
-
-      return copy;
+      if (x < right && x > left && y < bottom && y > top) targetIndex = i;
     });
 
-  const swapGenes = (initialIndex: number, targetGene: MonstieGene) => {
-    // console.log("initial", initialIndex, "targetIndex", targetIndex);
-    setBoard((board) => {
-      const targetIndex = board.findIndex(
-        (gene) => gene.geneName === targetGene.geneName
-      );
-      const copy = [...board];
-      const initial = copy[initialIndex];
-      const target = copy[targetIndex];
-
-      copy[initialIndex] = target;
-      copy[targetIndex] = initial;
-      return copy;
-    });
+    return targetIndex;
   };
 
+  const placeGene = (targetIndex: number, gene: MonstieGene) =>
+    setBoard((genes) => {
+      // housekeeping:
+      const i = genes.findIndex(({ geneName }) => geneName === gene.geneName);
+      const copy = [...genes];
+      let success = true;
+
+      // the droppedGene is already on the board:
+      if (i !== -1) success = false;
+      // place the gene at the target location:
+      else place(targetIndex, gene, copy);
+
+      setDropSuccess(success);
+      return copy;
+    });
+
+  const swapGenes = (targetIndex: number, gene: MonstieGene) =>
+    setBoard((genes) => {
+      // housekeeping:
+      const i = genes.findIndex(({ geneName }) => geneName === gene.geneName);
+      const copy = [...genes];
+
+      // dragged from another board component so a swap isnt possible:
+      if (i === -1) place(targetIndex, gene, copy);
+      // swap the two elements in question:
+      else swap(i, targetIndex, copy);
+
+      setDropSuccess(true);
+      return copy;
+    });
+
+  const shuffle = () => setBoard((list) => clean(shuffleArray([...list])));
+
+  useEffect(() => {
+    setSlotRefs((refs) =>
+      [...Array(boardLength).keys()].map((_, i) => refs[i] || createRef())
+    );
+  }, [boardLength]);
+
+  useEffect(() => {
+    const { type, position, data } = drop;
+    const targetIndex = getIntersectionIndex(position);
+
+    if (targetIndex !== -1) {
+      switch (type) {
+        case DROP_TYPES.GENE_SWAP:
+          swapGenes(targetIndex, data);
+          break;
+        case DROP_TYPES.GENE_PLACE:
+          placeGene(targetIndex, data);
+          break;
+        default:
+          setDropSuccess(false);
+          break;
+      }
+    }
+  }, [drop]);
+
   return (
-    <Board onClick={() => console.log(board)}>
-      <AnimateSharedLayout>
-        {board.map((gene, i) => (
-          <GeneSlot
-            key={gene.geneName ? gene.geneName : i}
-            index={i}
-            updateBoard={placeGene}
-            swapGenes={swapGenes}
-          >
-            {/* <SlotHole> */}
-            {gene.geneName ? (
-              <DraggableGene gene={gene} draggableType="gene-move" />
-            ) : (
-              <EmptySlot />
+    <>
+      {/* <Debug data={board.map((gene) => gene.geneName)} drag /> */}
+      <button type="button" onClick={shuffle}>
+        shuffle
+      </button>
+
+      <Container>
+        <SlotGrid>
+          {board.map((_, i) => (
+            <GeneSlot ref={slotRefs[i]} key={i} index={i} />
+          ))}
+        </SlotGrid>
+
+        <GeneGrid>
+          <AnimateSharedLayout>
+            {board.map((gene, i) =>
+              !isEmptyGene(gene) ? (
+                <DraggableGene
+                  key={gene.geneName}
+                  gene={gene}
+                  onDragStart={() => {
+                    setIsDragging(true);
+                    setDragGene(gene);
+                  }}
+                  onDragEnd={(_, drag) => {
+                    setIsDragging(false);
+                    setDragGene(gene);
+                    setDrop({
+                      type: DROP_TYPES.GENE_SWAP,
+                      position: drag.point,
+                      data: gene,
+                    });
+                  }}
+                  bringToFront={dragGene?.geneName === gene.geneName}
+                />
+              ) : (
+                <EmptySlot key={gene.geneName} />
+              )
             )}
-            {/* </SlotHole> */}
-          </GeneSlot>
-        ))}
-      </AnimateSharedLayout>
-    </Board>
+          </AnimateSharedLayout>
+        </GeneGrid>
+      </Container>
+    </>
   );
 };
-{
-  /* {gene.geneName ? <Gene gene={gene} /> : <EmptySlot />} */
-}
+
 export default BingoBoard;

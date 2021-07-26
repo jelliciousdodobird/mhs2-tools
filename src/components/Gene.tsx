@@ -123,12 +123,15 @@ const GeneName = styled.p`
 
   cursor: all-scroll;
 
-  width: 100%;
+  /* width: 100%; */
+  max-width: 100%;
   /* height: 1.6rem; */
 
   white-space: nowrap;
   font-size: 0.8rem;
   font-weight: 600;
+
+  text-align: center;
 
   overflow: hidden;
 
@@ -136,6 +139,7 @@ const GeneName = styled.p`
 `;
 
 const SkillContainer = styled.div`
+  z-index: 999;
   position: absolute;
   left: 50%;
   bottom: 0;
@@ -227,9 +231,10 @@ export type MonstieGene = {
 type GeneProps = {
   gene: MonstieGene;
   size?: number;
+  disableSkillPreview?: boolean;
 };
 
-const Gene = ({ gene, size }: GeneProps) => {
+const Gene = ({ gene, size, disableSkillPreview = false }: GeneProps) => {
   const [showSkill, setShowSkill] = useState(false);
 
   return (
@@ -237,12 +242,16 @@ const Gene = ({ gene, size }: GeneProps) => {
       size={size}
       maxZIndex={showSkill}
       onMouseLeave={() => setShowSkill(false)}
-      onClick={() => setShowSkill((v) => !v)}
+      onClick={() => {
+        if (!disableSkillPreview) setShowSkill((v) => !v);
+      }}
     >
       <GeneBorder bg={GENE_SIZE_COLOR[gene.geneSize]} />
       <GeneOctagon bg={ELEMENT_COLOR[gene.elementType]}></GeneOctagon>
       <PowerType>{ATTACK_TYPE_COLOR[gene.attackType]}</PowerType>
-      {gene.geneName && <GeneName>{gene.geneName}</GeneName>}
+      {gene.geneName && (
+        <GeneName>{gene.geneName.replace("Gene ", "")}</GeneName>
+      )}
       {showSkill && (
         <SkillContainer>
           <SkillDetails>

@@ -1,49 +1,178 @@
 // styling:
 import { css, jsx, Theme, useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
-import { motion } from "framer-motion";
+import { motion, PanInfo, useDragControls } from "framer-motion";
 
-import { useEffect } from "react";
-import { useDrag } from "react-dnd";
-import { getEmptyImage } from "react-dnd-html5-backend";
+import { useEffect, useRef, useState } from "react";
+
+import { useLongPress } from "use-long-press";
 
 import Gene, { MonstieGene } from "./Gene";
 
-const Container = styled(motion.div)`
+const DraggableContainer = styled(motion.div)<{
+  bringToFront: boolean;
+}>`
+  z-index: ${({ bringToFront }) => (bringToFront ? 99 : 1)};
+  position: relative;
   cursor: move;
+  touch-action: none; // very important line or else long press to drag will not work on mobile
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `;
 
 type DraggableGeneProps = {
   gene: MonstieGene;
-  draggableType: "gene" | "gene-move";
+  onDragStart: (
+    event: MouseEvent | TouchEvent | PointerEvent,
+    info: PanInfo
+  ) => void;
+  onDragEnd: (
+    event: MouseEvent | TouchEvent | PointerEvent,
+    info: PanInfo
+  ) => void;
+  bringToFront?: boolean;
+  opacity?: number;
+  longPressToDrag?: boolean;
+  longPressThreshold?: number;
 };
 
-const DraggableGene = ({ gene, draggableType }: DraggableGeneProps) => {
-  const [{ isDragging, didDrop }, dragRef, preview] = useDrag(() => ({
-    type: draggableType,
-    item: gene,
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging(),
-      didDrop: monitor.didDrop(),
-    }),
-  }));
+const DraggableGene = ({
+  gene,
+  onDragStart,
+  onDragEnd,
+  bringToFront = false,
+  opacity = 1,
+  longPressToDrag = false,
+  longPressThreshold = 350,
+}: DraggableGeneProps) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const dragControls = useDragControls();
 
-  const hideGene = draggableType === "gene-move" && isDragging;
+  const [held, setHeld] = useState(false);
+
+  const shake = held && longPressToDrag;
+
+  const sm = 5; // shake magnitude
+  const rs = 0.9; // resize scale
+
+  const animationProps = {
+    variants: {
+      shake: {
+        // backgroundColor: "blue",
+        rotate: [0, sm, -sm, sm, -sm, 0],
+        scale: [rs, rs, rs, rs, rs, rs],
+        transition: {
+          // repeatType: "mirror",
+
+          repeat: Infinity,
+          repeatType: "mirror" as "mirror",
+        },
+      },
+      noshake: { rotate: 0, scale: 1 },
+    },
+    initial: "noshake",
+    animate: shake ? "shake" : "noshake",
+  };
+
+  // const timeRef = useRef<NodeJS.Timeout>(setTimeout(() => {}, 0));
+
+  // const [start, setStart] = useState(0);
+  // const [end, setEnd] = useState(0);
+
+  // useEffect(() => {
+  //   const elapse = end - start;
+  //   console.log("elapsed", elapse);
+  //   if (elapse + 1 > longPressThreshold) setHeld(true);
+  // }, [end, start]);
+
+  const setDraggable = () => setHeld(true);
+
+  const bind = useLongPress(longPressToDrag ? setDraggable : null, {
+    threshold: longPressThreshold,
+    cancelOnMovement: true,
+  });
+
+  const handleDragStart = (
+    event: MouseEvent | TouchEvent | PointerEvent,
+    info: PanInfo
+  ) => {
+    onDragStart(event, info);
+  };
+
+  const handleDragEnd = (
+    event: MouseEvent | TouchEvent | PointerEvent,
+    info: PanInfo
+  ) => {
+    onDragEnd(event, info);
+
+    setHeld(false);
+    // if (longPressToDrag) setHeld(false);
+  };
 
   useEffect(() => {
-    // must be set or else the both the CustomDragLayer and the default drag preview will be shown
-    preview(getEmptyImage(), { captureDraggingState: true });
-  }, []);
+    if (held) containerRef.current?.click();
+  }, [held]);
+
+  // useEffect(() => {
+  //   return () => {
+  //     clearTimeout(timeRef.current);
+  //   };
+  // }, []);
 
   return (
-    <Container
+    <DraggableContainer
+      ref={containerRef}
+      onClick={(e) => {
+        // console.log("clicked");
+        if (held) {
+          // console.log("------------moved with drag controls");
+          dragControls.start(e, { snapToCursor: true });
+        }
+      }}
+      onContextMenu={(e) => e.preventDefault()}
+      {...bind}
+      // onTouchStart={(e) => {
+      //   console.log("---------touchStart");
+      //   setStart(Date.now());
+
+      //   timeRef.current = setTimeout(() => {
+      //     setEnd(Date.now());
+      //   }, HELD_THRESHOLD);
+      // }}
+      // onTouchEnd={(e) => {
+      //   console.log("----------touchEnd");
+      //   clearTimeout(timeRef.current);
+      // }}
+      // onMouseDown={() => {
+      //   console.log("down");
+      //   setStart(Date.now());
+
+      //   timeRef.current = setTimeout(() => {
+      //     setEnd(Date.now());
+      //   }, HELD_THRESHOLD);
+      // }}
+      // onMouseUp={() => {
+      //   console.log("up");
+      //   clearTimeout(timeRef.current);
+      // }}
+      {...animationProps}
+      key={gene.geneName}
       layoutId={gene.geneName}
-      ref={dragRef}
-      style={{ opacity: hideGene ? 0 : 1, zIndex: 1 }}
-      initial={false}
+      drag={held || !longPressToDrag}
+      // held={held}
+      dragMomentum={false}
+      dragElastic={1}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      bringToFront={bringToFront}
+      dragControls={dragControls}
+      style={{ opacity }}
+      // onLayoutAnimationComplete={() => console.log("yo", gene.geneName)}
     >
-      <Gene gene={gene} />
-    </Container>
+      <Gene gene={gene} disableSkillPreview={true} />
+    </DraggableContainer>
   );
 };
 

@@ -1,7 +1,7 @@
 // styling:
 import { css, jsx, Theme, useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
-import { ReactElement } from "react";
+import { ReactElement, forwardRef } from "react";
 import { useDrop } from "react-dnd";
 import { MonstieGene } from "./Gene";
 
@@ -49,46 +49,18 @@ const SlotHole = styled.div<{ isOver: boolean }>`
 
 type GeneSlotProps = {
   index: number;
-  updateBoard: (index: number, gene: MonstieGene) => void;
+  // updateBoard: (index: number, gene: MonstieGene) => void;
   // swapGenes: (initialIndex: number, targetIndex: number) => void;
-  swapGenes: (initialIndex: number, gene: MonstieGene) => void;
-  children?: ReactElement;
+  // swapGenes: (initialIndex: number, gene: MonstieGene) => void;
+  // children?: ReactElement;
 };
 
-const GeneSlot = ({
-  updateBoard,
-  swapGenes,
-  index,
-  children,
-}: GeneSlotProps) => {
-  const [{ isOver, didDrop }, dropTargetRef] = useDrop({
-    accept: ["gene", "gene-move"],
-    collect: (monitor) => ({
-      isOver: monitor.isOver(),
-      didDrop: monitor.didDrop(),
-    }),
-    // drop: (props: { from: number; gene: MonstieGene }, monitor) => {
-    drop: (props: MonstieGene, monitor) => {
-      const itemType = monitor.getItemType();
-      // console.log("-----");
-
-      if (itemType === "gene") {
-        // console.log("gene");
-        updateBoard(index, props);
-        // console.log(props.from);
-      } else if (itemType === "gene-move") {
-        // console.log("gene-move");
-        // console.log(props.from);
-        swapGenes(index, props);
-      }
-    },
-  });
+const GeneSlot = forwardRef<HTMLDivElement, GeneSlotProps>(({ index }, ref) => {
   return (
-    <Container ref={dropTargetRef}>
-      <SlotHole isOver={isOver} />
-      {children}
+    <Container ref={ref}>
+      <SlotHole isOver={false} />
     </Container>
   );
-};
+});
 
 export default GeneSlot;

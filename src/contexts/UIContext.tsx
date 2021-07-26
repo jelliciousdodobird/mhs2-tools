@@ -4,6 +4,7 @@ import React, {
   Dispatch,
   SetStateAction,
   useContext,
+  useRef,
   useState,
 } from "react";
 import { useMediaQuery } from "react-responsive";
@@ -12,6 +13,22 @@ type State = {
   isMobile: boolean;
   sidebarState: boolean;
   setSidebarState: Dispatch<SetStateAction<boolean>>;
+
+  // dropPosition: React.MutableRefObject<{
+  //   x: number;
+  //   y: number;
+  // }>;
+  // setDropPosition: (val: { x: number; y: number }) => void;
+  dropPosition: {
+    x: number;
+    y: number;
+  };
+  setDropPosition: React.Dispatch<
+    React.SetStateAction<{
+      x: number;
+      y: number;
+    }>
+  >;
   toggleSidebar: () => void;
 };
 
@@ -27,11 +44,27 @@ const UIStateProvider = ({ children }: UIProviderProps) => {
     query: `(max-width: ${theme.breakpoints.m}px)`,
   });
   const [sidebarState, setSidebarState] = useState<boolean>(true);
+  const [dropPosition, setDropPosition] = useState<{ x: number; y: number }>({
+    x: 0,
+    y: 0,
+  });
   const toggleSidebar = () => setSidebarState((val) => !val);
+
+  // const dropPosition = useRef({ x: 0, y: 0 });
+  // const setDropPosition = (val: { x: number; y: number }) => {
+  //   dropPosition.current = val;
+  // };
 
   return (
     <UIStateContext.Provider
-      value={{ isMobile, sidebarState, setSidebarState, toggleSidebar }}
+      value={{
+        isMobile,
+        sidebarState,
+        setSidebarState,
+        toggleSidebar,
+        dropPosition,
+        setDropPosition,
+      }}
     >
       {children}
     </UIStateContext.Provider>
