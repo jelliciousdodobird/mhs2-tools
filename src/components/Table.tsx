@@ -25,81 +25,124 @@ import SearchBar from "./TableSearchBar";
 import MonstieInfoGraphic from "./MonstieInfoGraphic";
 // import TableSidebar from "./TableSidebar";
 // import RefModal from "./RefModal";
-import SvgWrapper from "./SvgWrapper";
-
-// assets:
-import { ReactComponent as DragonSvg } from "../assets/dragon.svg";
-import { ReactComponent as FireSvg } from "../assets/fire.svg";
-import { ReactComponent as IceSvg } from "../assets/ice.svg";
-import { ReactComponent as NonElementSvg } from "../assets/non_elemental.svg";
-import { ReactComponent as ThunderSvg } from "../assets/thunder.svg";
-import { ReactComponent as WaterSvg } from "../assets/water.svg";
+import { BiSearch } from "react-icons/bi";
+import Asset from "./AssetComponents";
 
 const elementSize = 20;
-
-// const SvgWrapperContainer = styled.span<{ size: number }>`
-//   svg {
-//     ${({ size }) =>
-//       size !== -1 &&
-//       css`
-//         width: ${size}px;
-//         height: ${size}px;
-//       `};
-//   }
-// `;
-
-// type SvgWrapperProps = {
-//   svgReactComponent: React.FunctionComponent<
-//     React.SVGProps<SVGSVGElement> & {
-//       title?: string | undefined;
-//     }
-//   >;
-//   size?: number;
-//   title?: string;
-// };
-
-// const SvgWrapper = ({
-//   svgReactComponent: icon,
-//   size = -1,
-//   title,
-// }: SvgWrapperProps) => {
-//   return (
-//     <SvgWrapperContainer size={size} title={title}>
-//       {createElement(icon)}
-//     </SvgWrapperContainer>
-//   );
-// };
 
 const Container = styled.div`
   /* border: 1px solid yellow; */
   position: relative;
+
+  width: 100%;
+
+  border-radius: 20px;
+  background-color: ${({ theme }) => theme.colors.surface.main};
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const pattern1 = () => css`
+  /* background-color: #f7a800; */
+  background-size: calc(100% / 7) calc(100% / 7);
+  background-image: linear-gradient(135deg, transparent 55%, blue 55%),
+    radial-gradient(
+      transparent 5px,
+      #ffffff 6px,
+      #ffffff 9px,
+      transparent 10px,
+      transparent 14px,
+      #ffffff 15px,
+      #ffffff 18px,
+      transparent 19px,
+      transparent 23px,
+      #ffffff 24px,
+      #ffffff 27px,
+      transparent 28px
+    );
+`;
+
+const pattern2 = () => css`
+  /* background-color: #00b5f7; */
+  /* background-size: calc(100% / 7) calc(100% / 7); */
+  background-size: 50px 50px;
+  background-image: radial-gradient(
+    transparent 27px,
+    #ffffff 28px,
+    #ffffff 31px,
+    transparent 32px
+  );
+
+  background-position: 25% 25%;
+`;
+
+const pattern3 = () => css`
+  /* background-color: #f70b45; */
+  /* background-size: calc(100% / 7) calc(100% / 7); */
+  background-size: 25px 25px;
+  background-image: radial-gradient(
+      transparent 20px,
+      red 21px,
+      red 23px,
+      transparent 24px
+    ),
+    radial-gradient(transparent 20px, red 21px, red 23px, transparent 24px);
+  /* background-position: 0 0, 25px 25px; */
 `;
 
 const TableContainer = styled.table`
+  padding: 1rem;
   /* border: 2px solid orange; */
 
-  min-width: 100%;
-  position: absolute;
-  top: 0;
+  width: 1px;
+
+  border-radius: 10px;
+  /* overflow: hidden; */
+
+  /* min-width: 100%; */
+  /* width: 100%; */
+  /* position: absolute; */
+  position: relative;
+  /* top: 0; */
 
   /* text-align: left; */
 
-  display: flex;
-  flex-direction: column;
+  /* display: flex; */
+  /* flex-direction: column; */
 
-  background-color: ${({ theme }) => theme.colors.onBackground.main};
+  /* background-color: ${({ theme }) => theme.colors.surface.main}; */
 `;
 
 const Thead = styled.thead`
   position: sticky;
-  top: 3rem;
+  top: 0;
   z-index: 100;
+  border-radius: 50px;
 
-  border-bottom: 1px solid ${({ theme }) => theme.colors.onSurface.main};
+  /* height:rem; */
+  /* width: 100%; */
 
-  background-color: ${({ theme }) => theme.colors.onBackground.main};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.background.main};
+  border-top: 1px solid ${({ theme }) => theme.colors.background.main};
+
+  /* background-color: darkgray; */
   opacity: 0.94;
   backdrop-filter: blur(2px);
+
+  background-color: ${({ theme }) => theme.colors.surface.dark};
+  /* background-size: 10px 10px;
+  background-image: ${({ theme }) =>
+    `radial-gradient(
+      ${theme.colors.background.main} 10%,
+      transparent 11%
+       
+    
+    )`}; */
+
+  /* background-position: 25% 25%; */
+  /* background-position: 0 0; */
 
   display: flex;
   flex-direction: column;
@@ -118,48 +161,6 @@ const Tbody = styled.tbody`
 
   /* background-color: ${({ theme }) => theme.colors.onBackground.main}; */
 `;
-
-//  tr {
-//     /* position: relative; */
-//     border-bottom: 1px solid ${({ theme }) => theme.colors.onSurface.main};
-
-//     padding: 0 1rem;
-//     height: 3rem;
-
-//     display: flex;
-
-//     td {
-//       position: relative;
-//       overflow: hidden;
-//       white-space: nowrap;
-//       text-overflow: ellipsis;
-
-//       height: 100%;
-//       /* padding: 0 1rem; */
-
-//       cursor: default;
-
-//       color: ${({ theme }) => theme.colors.background.main};
-//       font-size: 0.9rem;
-
-//       display: flex;
-//       align-items: center;
-
-//       &:hover {
-//         text-decoration: underline;
-//       }
-//     }
-//   }
-
-//   tr:hover {
-//     background-color: ${({ theme }) => theme.colors.primary.main};
-//     border-radius: 5px;
-//     td {
-//       color: ${({ theme }) => theme.colors.onPrimary.main};
-
-//       font-weight: 600;
-//     }
-//   }
 
 const TR = styled.tr`
   position: relative;
@@ -206,11 +207,11 @@ const TR = styled.tr`
     height: 1px;
 
     width: calc(100% - 8px);
-    background-color: ${({ theme }) => theme.colors.onSurface.main};
+    background-color: ${({ theme }) => theme.colors.background.main};
   }
 
   &:hover {
-    background-color: ${({ theme }) => theme.colors.onSurface.main};
+    background-color: ${({ theme }) => theme.colors.background.main};
     border-radius: 5px;
     td {
       /* color: ${({ theme }) => theme.colors.onPrimary.main}; */
@@ -226,16 +227,42 @@ const TR = styled.tr`
 
 const TRChange = styled(TR)<{ expand: boolean }>`
   background-color: ${({ expand, theme }) =>
-    expand ? theme?.colors.onSurface.main : "transparent"};
+    expand ? theme?.colors.background.main : "transparent"};
 `;
 
 const HeaderRow = styled.tr`
   padding: 0 1rem;
-  height: 5rem;
+  height: 4rem;
 
   background-color: transparent;
 
   display: flex;
+`;
+
+const ExpandableTR = styled(motion.tr)`
+  ${({ width }: { width: number }) => css`
+    width: ${width}px;
+    min-width: ${width}px;
+    max-width: ${width}px;
+  `}
+  background-color: transparent;
+
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+
+  box-shadow: inset 0px 0px 0px 1px
+    ${({ theme }) => theme.colors.background.main};
+
+  td {
+    /* width: 100%; */
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+  }
+
+  &:hover {
+    background-color: transparent;
+  }
 `;
 
 const HeaderColumn = styled(motion.th)<{
@@ -259,12 +286,12 @@ const HeaderColumn = styled(motion.th)<{
   ${({ borderLeft, theme }) =>
     borderLeft &&
     css`
-      border-left: 1px solid ${theme.colors.onSurface.main};
+      border-left: 1px solid ${theme.colors.background.main};
     `}
 
   font-size: 12px;
   font-weight: 600;
-  color: ${({ theme }) => theme.colors.surface.main};
+  color: ${({ theme }) => theme.colors.onSurface.main};
 
   display: flex;
   align-items: center;
@@ -296,7 +323,7 @@ const DataColumn = styled(motion.td)<DataColumnProps>`
   ${({ borderLeft, theme }) =>
     borderLeft &&
     css`
-      border-left: 1px solid ${theme.colors.onSurface.main};
+      border-left: 1px solid ${theme.colors.background.main};
     `}
 
   ${({ highlight, theme }) =>
@@ -311,7 +338,7 @@ const DataColumn = styled(motion.td)<DataColumnProps>`
           font-weight: 600;
         `
       : css`
-          color: ${theme.colors.background.main};
+          color: ${theme.colors.onSurface.main};
         `}
 `;
 
@@ -343,20 +370,6 @@ const SortIndicator = styled(motion.span)<SortIndicatorProps>`
           ? theme.colors.correct.main
           : theme.colors.error.light};
     }
-  }
-`;
-
-const HeaderBtn = styled.button`
-  position: absolute;
-  top: 0;
-  left: 0;
-  background-color: red;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-
-  &:hover {
-    background-color: blue;
   }
 `;
 
@@ -444,123 +457,6 @@ const ColumnHeader = memo(
       [key, toggleMultiSort]
     );
 
-    const getElementHeader = (headerLabel: string) => {
-      const label = headerLabel.toLowerCase();
-      switch (label) {
-        case "non elemental attack":
-          return (
-            <SvgWrapper
-              svgComponent={NonElementSvg}
-              size={elementSize}
-              title={headerLabel}
-            />
-          );
-        case "fire attack":
-          return (
-            <SvgWrapper
-              svgComponent={FireSvg}
-              size={elementSize}
-              title={headerLabel}
-            />
-          );
-
-        case "water attack":
-          return (
-            <SvgWrapper
-              svgComponent={WaterSvg}
-              size={elementSize}
-              title={headerLabel}
-            />
-          );
-
-        case "thunder attack":
-          return (
-            <SvgWrapper
-              svgComponent={ThunderSvg}
-              size={elementSize}
-              title={headerLabel}
-            />
-          );
-
-        case "ice attack":
-          return (
-            <SvgWrapper
-              svgComponent={IceSvg}
-              size={elementSize}
-              title={headerLabel}
-            />
-          );
-
-        case "dragon attack":
-          return (
-            <SvgWrapper
-              svgComponent={DragonSvg}
-              size={elementSize}
-              title={headerLabel}
-            />
-          );
-
-        case "non elemental defense":
-          return (
-            <SvgWrapper
-              svgComponent={NonElementSvg}
-              size={elementSize}
-              title={headerLabel}
-            />
-          );
-
-        case "fire defense":
-          return (
-            <SvgWrapper
-              svgComponent={FireSvg}
-              size={elementSize}
-              title={headerLabel}
-            />
-          );
-
-        case "water defense":
-          return (
-            <SvgWrapper
-              svgComponent={WaterSvg}
-              size={elementSize}
-              title={headerLabel}
-            />
-          );
-
-        case "thunder defense":
-          return (
-            <SvgWrapper
-              svgComponent={ThunderSvg}
-              size={elementSize}
-              title={headerLabel}
-            />
-          );
-
-        case "ice defense":
-          return (
-            <SvgWrapper
-              svgComponent={IceSvg}
-              size={elementSize}
-              title={headerLabel}
-            />
-          );
-
-        case "dragon defense":
-          return (
-            <SvgWrapper
-              svgComponent={DragonSvg}
-              size={elementSize}
-              title={headerLabel}
-            />
-          );
-
-        default:
-          break;
-      }
-
-      return headerLabel;
-    };
-
     return (
       <HeaderColumn
         ref={containerRef}
@@ -581,7 +477,7 @@ const ColumnHeader = memo(
         exit={{ width: 0, paddingLeft: 0, paddingRight: 0 }}
         borderLeft={label.toLowerCase().includes("element")}
       >
-        {label ? getElementHeader(label) : key}
+        {label ? <Asset asset={label} title={label} size={elementSize} /> : key}
         {menu && (
           <ContextMenu
             onClick={(e: any) => {
@@ -656,30 +552,57 @@ const DataPiece = memo(({ columnData, data }: DataPieceProps) => {
   );
 });
 
-const ExpandableTR = styled(motion.tr)`
-  ${({ width }: { width: number }) => css`
-    width: ${width}px;
-    min-width: ${width}px;
-    max-width: ${width}px;
-  `}
-  background-color: transparent;
+const TempSearchButton = styled.button`
+  position: absolute;
 
-  border-bottom-left-radius: 5px;
-  border-bottom-right-radius: 5px;
+  z-index: 999;
 
-  box-shadow: inset 0px 0px 0px 1px
-    ${({ theme }) => theme.colors.onSurface.main};
+  bottom: 0rem;
+  right: 0rem;
 
-  td {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    display: flex;
+  margin: 3rem;
+
+  border-radius: 50%;
+  width: 4rem;
+  height: 4rem;
+
+  /* margin: 1rem; */
+
+  background-color: ${({ theme }) => theme.colors.primary.main};
+
+  box-shadow: 0px 0px 20px 0px ${({ theme }) => theme.colors.primary.main};
+  box-shadow: 0px 0px 20px -10px black;
+  /* background: ${({ theme }) =>
+    `linear-gradient(45deg, ${theme.colors.primary.main}, ${theme.colors.primary.light})`}; */
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  svg {
+    width: 1.5rem;
+    height: 1.5rem;
+
+    path {
+      fill: ${({ theme }) => theme.colors.onPrimary.main};
+    }
   }
+`;
 
-  &:hover {
-    background-color: transparent;
-  }
+const Caption = styled.caption`
+  height: 2rem;
+  padding: 0 1rem;
+
+  font-weight: 600;
+  font-size: 1.5rem;
+  color: ${({ theme }) => theme.colors.onSurface.main};
+
+  display: flex;
+  /* justify-content: center; */
+  align-items: center;
+
+  margin-bottom: 1rem;
+  /* background-color: red; */
 `;
 
 interface RowItemProps {
@@ -770,53 +693,16 @@ const Table = memo(({ data, column }: TableProps) => {
 
   const [searchText, setSearchText] = useState("");
   const [headerMenu, setHeaderMenu] = useState("");
+  const [showSearch, setShowSearch] = useState(true);
 
   const [scrollPosition, setScrollPosition] = useState(0);
   const scrollRef = useRef(document.getElementById("root"));
   const { width = 0, height = 0 } = useResizeObserver({ ref: scrollRef });
   const [extraContentHeight, setExtraContentHeight] = useState(0);
 
-  // 14 comes from theme.dimensions.unit or 1rem
-  // const itemHeight = 14 * 3; // 3rem
-
-  // const listHeight = itemHeight * tableData.length;
-
-  // const startIndex = Math.max(
-  //   0, // ensures that we get an index of atleast 0
-  //   Math.floor((scrollPosition - extraContentHeight) / itemHeight)
-  // );
-
-  // const endIndex = Math.max(
-  //   0, //  ensures that we get atleast an index of 0 in the case that:
-  //   // scrollTop + height < extraContentHeight
-  //   Math.min(
-  //     tableData.length - 1, // don't render past the end of the list
-  //     Math.floor((scrollPosition + height - extraContentHeight) / itemHeight)
-  //   )
-  // );
-
   const toggleMenu = (key: string) => {
     setHeaderMenu(key);
   };
-
-  // useEffect(() => {
-  //   scrollRef.current = document.getElementById("page-container");
-  //   const setScrollTopRef = () =>
-  //     setScrollPosition(scrollRef.current?.scrollTop as number);
-
-  //   scrollRef.current?.addEventListener("scroll", setScrollTopRef);
-
-  //   return () => {
-  //     scrollRef.current?.removeEventListener("scroll", setScrollTopRef);
-  //   };
-  // }, []);
-
-  // useEffect(() => {
-  //   if (scrollRef.current) {
-  //     const fullHeight = scrollRef.current.scrollHeight;
-  //     setExtraContentHeight(fullHeight - listHeight);
-  //   }
-  // }, [height, width, listHeight]);
 
   useEffect(() => {
     filterData(searchText);
@@ -824,39 +710,22 @@ const Table = memo(({ data, column }: TableProps) => {
 
   return (
     <>
-      {/* <Debug
-        drag
-        data={{
-          scrollPosition: Math.round(scrollPosition),
-          startIndex,
-          endIndex,
-          itemsShown: endIndex - startIndex + 1,
-          windowHeight: height,
-          windowWidth: width,
-          listHeight: listHeight,
-          extraContentHeight,
-        }}
-      /> */}
-      {/* <Debug data={{ columnAttrs, sorts, hiddenColumns }} drag /> */}
-      {/* <button onClick={() => changeColumnOrder("name", 0)}>
-        name to first
-      </button>
-      <button onClick={() => toggleShiftSort("team")}>sort team</button>
-      <button onClick={() => toggleColumn("name")}>toggle name</button>
-      <button onClick={() => toggleColumn("edpi")}>toggle edpi</button> */}
-
-      {/* <TableSidebar column={columnAttrs} /> */}
-
-      <SearchBar
-        value={searchText}
-        onChange={(e: any) => setSearchText(e.target.value)}
-        placeholderText="Search for your favorite monstie, abilities, and more!"
-        results={`${tableData.length} result${
-          tableData.length === 1 ? "" : "s"
-        }`}
-      />
+      <TempSearchButton type="button" onClick={() => setShowSearch((v) => !v)}>
+        <BiSearch />
+      </TempSearchButton>
+      {showSearch && (
+        <SearchBar
+          value={searchText}
+          onChange={(e: any) => setSearchText(e.target.value)}
+          placeholderText="Search for your favorite monstie, abilities, and more!"
+          results={`${tableData.length} result${
+            tableData.length === 1 ? "" : "s"
+          }`}
+        />
+      )}
       <Container className="Table-Container">
         <TableContainer>
+          {/* <Caption>Monstie Table</Caption> */}
           <Thead>
             <HeaderRow>
               <AnimatePresence>
@@ -873,12 +742,7 @@ const Table = memo(({ data, column }: TableProps) => {
               </AnimatePresence>
             </HeaderRow>
           </Thead>
-          <Tbody
-
-          // tableHeight={listHeight}
-          >
-            {/* <BlankRow blankHeight={startIndex * itemHeight} /> */}
-
+          <Tbody>
             {tableData.map((row: any, i: number) => {
               // if (i >= startIndex && i <= endIndex)
               return (
@@ -892,18 +756,6 @@ const Table = memo(({ data, column }: TableProps) => {
               // else return null;
             })}
           </Tbody>
-          {/* <Tbody tableHeight={listHeight}>
-            {tableData.map((row: any, i: number) => {
-              return (
-                <RowItem
-                  key={`data-row-${row.name}`}
-                  columnAttrs={columnAttrs}
-                  data={tableData[i]}
-                  index={i}
-                />
-              );
-            })}
-          </Tbody> */}
         </TableContainer>
       </Container>
     </>

@@ -6,13 +6,21 @@ import { useState } from "react";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 
+const Wrapper = styled.div`
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+`;
+
 const Container = styled(motion.p)`
   z-index: 10000;
   position: absolute;
-  bottom: 0.25rem;
+  top: 3.5rem;
   left: 50%;
 
   border-radius: 5px;
+  font-weight: 600;
   /* right: 0; */
 
   /* transform: translateX(-50%); */
@@ -34,10 +42,12 @@ const FlashTooltip = ({ text, delay = 2500 }: FlashTooltipProps) => {
   const animationProps = {
     variants: {
       appear: { y: 0, x: "-50%" },
-      outOfView: { y: 200, x: "-50%" },
+      outOfView: { y: 500, x: "-50%" },
+      exit: { backgroundColor: "blue" },
     },
     initial: "appear",
     animate: show ? "appear" : "outOfView",
+    exit: "exit",
   };
 
   useEffect(() => {
@@ -55,9 +65,11 @@ const FlashTooltip = ({ text, delay = 2500 }: FlashTooltipProps) => {
     }
   }, [text, show]);
 
-  // if (!show) return null;
-
-  return <Container {...animationProps}>{text}</Container>;
+  return (
+    <Wrapper>
+      <Container {...animationProps}>{text}</Container>
+    </Wrapper>
+  );
 };
 
 export default FlashTooltip;

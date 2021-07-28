@@ -42,7 +42,7 @@ const Container = styled.div<{ height: number; dragging: boolean }>`
   bottom: 0;
   left: 0;
 
-  background-color: ${({ theme }) => theme.colors.onBackground.main};
+  background-color: ${({ theme }) => theme.colors.background.dark};
 
   /* background-color: red; */
 
@@ -204,7 +204,7 @@ const sanitizeGenes = (dirtyGenes: any) => {
     const cleanedGene: MonstieGene = {
       geneName: gene.gene_name,
       geneNumber: gene.gene_number,
-      attackType: gene.attack_type as AttackType,
+      attackType: gene.attack_type ? (gene.attack_type as AttackType) : "",
       elementType: gene.element_type as ElementType,
       requiredLvl: gene.required_lvl,
       geneSize: gene.gene_size,
@@ -247,6 +247,8 @@ const GeneSearch = ({
 
   const [draggingGene, setDraggingGene] = useState<MonstieGene | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const { isMobile } = useUIState();
 
   // browseMode refers to whether the user is browsing the results by swiping or clicking through the pages
   // browseMode should be set to false when they start dragging a gene else where
@@ -342,6 +344,7 @@ const GeneSearch = ({
   ) => (
     <Container key={gene.geneName} ref={ref}>
       <DraggableGene
+        size={90}
         gene={gene}
         onDragStart={() => {
           setDraggingGene(gene);
@@ -393,7 +396,7 @@ const GeneSearch = ({
       <AnimatePresence initial={false} custom={page.direction}>
         <Results
           key={page.number}
-          drag="x"
+          drag={isMobile ? "x" : false}
           dragElastic={1}
           dragConstraints={{ left: 0, right: 0 }}
           custom={page.direction}

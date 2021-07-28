@@ -33,7 +33,8 @@ import Debug from "./Debug";
 // custom hooks:
 import { useThemeState } from "../contexts/ThemeContext";
 import { useUIState } from "../contexts/UIContext";
-
+// background: ${({ theme }) =>
+//   `linear-gradient(45deg, ${theme.colors.primary.main}, ${theme.colors.primary.light})`};
 const NavbarContainer = styled(motion.nav)`
   position: relative;
   z-index: 200;
@@ -41,6 +42,9 @@ const NavbarContainer = styled(motion.nav)`
   display: flex;
   justify-content: center;
   align-items: center;
+
+  border-right: 1px solid ${({ theme }) => theme.colors.background.main};
+  background-color: ${({ theme }) => theme.colors.surface.main};
 
   @media (max-width: ${({ theme }) => theme.breakpoints.m}px) {
     flex-direction: column-reverse;
@@ -129,7 +133,7 @@ const navItemBaseStyles = ({ theme }: { theme: Theme }) => css`
 
         path,
         line {
-          fill: ${theme.colors.onBackground.main};
+          fill: ${theme.colors.onSurface.main};
         }
       }
     }
@@ -158,7 +162,8 @@ const NavItemContainer = styled(motion.li)`
     p {
       width: 100%;
       font-size: 12px;
-      color: ${({ theme }) => theme.colors.onBackground.main};
+      color: ${({ theme }) => theme.colors.onSurface.main};
+      font-weight: 600;
 
       margin-top: 8px;
 
@@ -377,7 +382,9 @@ const NavigationBar = () => {
   const closeMainNav = () => setMainNav(false);
 
   return (
-    <NavbarContainer {...navBarColorAnimationProps}>
+    <NavbarContainer
+    // {...navBarColorAnimationProps}
+    >
       <AnimatePresence>
         {showMainNav && (
           <MainNav {...mainNavAnimationProps}>

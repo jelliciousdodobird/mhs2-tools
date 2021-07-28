@@ -23,20 +23,20 @@ const SBContainer = styled(motion.div)<SBProps>`
   height: 3rem;
   min-height: 3rem;
   max-height: 3rem;
-  position: sticky;
-  top: 0;
-  left: 0;
+  /* position: sticky; */
+  /* top: 0; */
+  /* left: 0; */
 
   overflow: hidden;
 
-  opacity: 0.94;
-  backdrop-filter: blur(2px);
+  /* opacity: 0.94; */
+  /* backdrop-filter: blur(2px); */
 
-  background-color: ${({ theme }) => theme.colors.onSurface.main};
+  background-color: ${({ theme }) => theme.colors.surface.main};
 
   border: 1px solid
     ${({ showAlert, theme }) =>
-      showAlert ? theme.colors.primary.main : theme.colors.onSurface.main};
+      showAlert ? theme.colors.primary.main : theme.colors.surface.main};
 
   /* box-shadow: 0px 0px 0px 1px ${({ theme }) =>
     theme.colors.onSurface.main}; */
@@ -60,7 +60,7 @@ const SBContainer = styled(motion.div)<SBProps>`
       width: 100%;
       height: 100%;
       path {
-        fill: ${({ theme }) => theme.colors.background.main};
+        fill: ${({ theme }) => theme.colors.onSurface.main};
       }
     }
   }
@@ -93,10 +93,10 @@ const Input = styled.input`
   background-color: transparent;
   caret-color: ${({ theme }) => theme.colors.primary.main};
 
-  color: ${({ theme }) => theme.colors.background.main};
+  color: ${({ theme }) => theme.colors.onSurface.main};
 
   &::placeholder {
-    color: ${({ theme }) => theme.colors.background.main};
+    color: ${({ theme }) => theme.colors.onSurface.main};
   }
 
   &[type="search"]::-ms-clear {
@@ -120,7 +120,7 @@ const Input = styled.input`
 
 const CFContainer = styled.div`
   background-color: transparent;
-  color: ${({ theme }) => theme.colors.surface.main};
+  color: ${({ theme }) => theme.colors.onSurface.main};
   white-space: nowrap;
 
   display: flex;
@@ -298,12 +298,16 @@ const SearchBar = ({
   }, []);
 
   return (
-    <SBContainer onClick={focusInput} showAlert={showAlert} {...ctrlFAnimProps}>
+    <SBContainer
+      onClick={focusInput}
+      showAlert={showAlert}
+      // {...ctrlFAnimProps}
+    >
       <motion.span>
         <BiSearch />
       </motion.span>
 
-      {showAlert && <CtrlFAlert />}
+      {/* {showAlert && <CtrlFAlert />} */}
 
       <Input
         ref={inputRef}

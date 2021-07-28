@@ -36,6 +36,7 @@ type DraggableGeneProps = {
   opacity?: number;
   longPressToDrag?: boolean;
   longPressThreshold?: number;
+  size?: number;
 };
 
 const DraggableGene = ({
@@ -45,7 +46,8 @@ const DraggableGene = ({
   bringToFront = false,
   opacity = 1,
   longPressToDrag = false,
-  longPressThreshold = 350,
+  longPressThreshold = 200,
+  size,
 }: DraggableGeneProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const dragControls = useDragControls();
@@ -171,7 +173,7 @@ const DraggableGene = ({
       style={{ opacity }}
       // onLayoutAnimationComplete={() => console.log("yo", gene.geneName)}
     >
-      <Gene gene={gene} disableSkillPreview={true} />
+      <Gene gene={gene} disableSkillPreview={true} size={size} />
     </DraggableContainer>
   );
 };

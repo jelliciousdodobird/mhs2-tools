@@ -62,5 +62,65 @@ export const shuffleArray = (arr: any[]) => {
   return arr;
 };
 
+export const randomBoard = <T>(possibleGenes: T[]) => {
+  const randomIndice = [...Array(9).keys()].map(() =>
+    randomNumber(0, possibleGenes.length)
+  );
+
+  return randomIndice.map((randomIndex) => possibleGenes[randomIndex]);
+};
+
 export const clamp = (number: number, min: number, max: number) =>
   Math.max(min, Math.min(number, max));
+
+export const matrix = <T>(arr: T[], n = 3) => {
+  return [...Array(n).keys()].map((_, i) => {
+    return [...Array(n).keys()].map((_, j) => {
+      return arr[j + i * n];
+    });
+  });
+};
+
+export const lineIndice: { [key: string]: number[] } = {
+  row1: [0, 1, 2],
+  row2: [3, 4, 5],
+  row3: [6, 7, 8],
+  column1: [0, 3, 6],
+  column2: [1, 4, 7],
+  column3: [2, 5, 8],
+  diagnol1: [0, 4, 8],
+  diagnol2: [2, 4, 6],
+};
+
+// export const isBingo = <T>(arr: T[], bingoIndices: number[]) => {
+//   const line = bingoIndices
+//     .map((index) => arr[index])
+//     .filter((v) => (v as unknown) !== "rainbow");
+
+//   return line.every((index) => index === line[0]);
+// };
+
+export const getLineInfo = <T>(arr: T[], lineIndice: number[]) => {
+  const line = lineIndice
+    .map((index) => arr[index])
+    .filter((v) => (v as unknown) !== "rainbow");
+
+  const isBingo = line.every((index) => index === line[0]);
+
+  return { isBingo, type: isBingo ? line[0] : null };
+};
+
+export const findAllBingos = <T>(arr: T[]) => {
+  const bingos = [];
+
+  for (let lineKey in lineIndice) {
+    const line = getLineInfo(arr, lineIndice[lineKey]);
+    if (line.isBingo) {
+      bingos.push({
+        location: lineKey,
+        type: line.type,
+      });
+    }
+  }
+  return bingos;
+};

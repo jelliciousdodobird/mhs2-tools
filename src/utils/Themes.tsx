@@ -64,7 +64,8 @@ export const darkTheme: Theme = {
   font: baseFont,
   breakpoints: bp,
   colors: {
-    primary: ccs({ main: "#43dbab", light: "#ff0000" }),
+    primary: ccs({ main: "#49d0b0", light: "#ff0000" }),
+    // primary: ccs({ main: "#43dbab", light: "#ff0000" }),
     secondary: ccs({ main: "#2dc3e9" }),
 
     background: ccs({ main: "#363f49" }),
@@ -91,25 +92,39 @@ export const lightTheme: Theme = {
   font: baseFont,
   breakpoints: bp,
   colors: {
-    primary: ccs({ main: "#43dbab" }),
+    primary: ccs({ main: "#49d0b0", light: "#bbf3fb" }),
     secondary: ccs({ main: "#6c63ff" }),
 
-    background: ccs({ main: "#edf0f5", light: "#f5f5f5" }),
+    background: ccs({ main: "#f6f8fc", dark: "#e9eef8", darker: "#f6f6f6" }),
+    // background: ccs({ main: "#f6f6f6", light: "#f6f8fc", dark: "#e9eef8" }),
     surface: ccs({ main: "#ffffff" }),
 
     onPrimary: ccs({ main: "#ffffff" }),
     onSecondary: ccs({ main: "#000000" }),
 
-    onBackground: ccs({ main: "#363f49" }),
-    onSurface: ccs({ main: "#2c333b" }),
+    onBackground: ccs({ main: "#2d4665" }),
+    onSurface: ccs({ main: "#09090a" }),
 
-    // error: ccs({ main: "#ff6b6b" }),
-    // error: ccs({ main: "#ff6b6b", light: "#fd3131" }),
-    // error: ccs({ main: "#fd3131", light: "#ff6b6b" }),
     error: ccs({ main: "#fd3131", light: "#ff5b5b" }),
 
     correct: ccs({ main: "#37d7b2" }),
     warning: ccs({ main: "#fee257" }),
+    // primary: ccs({ main: "#43dbab" }),
+    // secondary: ccs({ main: "#6c63ff" }),
+
+    // background: ccs({ main: "#edf0f5", light: "#f5f5f5" }),
+    // surface: ccs({ main: "#ffffff" }),
+
+    // onPrimary: ccs({ main: "#ffffff" }),
+    // onSecondary: ccs({ main: "#000000" }),
+
+    // onBackground: ccs({ main: "#363f49" }),
+    // onSurface: ccs({ main: "#2c333b" }),
+
+    // error: ccs({ main: "#fd3131", light: "#ff5b5b" }),
+
+    // correct: ccs({ main: "#37d7b2" }),
+    // warning: ccs({ main: "#fee257" }),
   },
 };
 
@@ -142,6 +157,11 @@ export const GlobalReset = () => {
           font-size: ${theme.font.size}px;
           font-weight: ${theme.font.weight};
           color: ${theme.colors.onBackground.main};
+
+          &::selection {
+            background: ${theme.colors.primary.main};
+            color: ${theme.colors.onPrimary.main};
+          }
         }
 
         html {
@@ -150,6 +170,8 @@ export const GlobalReset = () => {
           overflow: hidden;
 
           background-color: ${theme.colors.background.main};
+
+          /* background: ${`linear-gradient(45deg, ${theme.colors.primary.main}, ${theme.colors.primary.light})`}; */
 
           body {
             overflow: hidden;

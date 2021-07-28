@@ -4,29 +4,19 @@ import styled from "@emotion/styled";
 import { ReactElement, useState } from "react";
 
 // assets:
-import SvgWrapper from "./SvgWrapper";
-import { ReactComponent as PowerSvg } from "../assets/power.svg";
-import { ReactComponent as TechnicalSvg } from "../assets/technical.svg";
-import { ReactComponent as SpeedSvg } from "../assets/speed.svg";
+
+import Asset from "./AssetComponents";
 
 const iconSize = 36;
-const Power = (
-  <SvgWrapper svgComponent={PowerSvg} title="Power" size={iconSize} />
-);
-const Technical = (
-  <SvgWrapper svgComponent={TechnicalSvg} title="Technical" size={iconSize} />
-);
-const Speed = (
-  <SvgWrapper svgComponent={SpeedSvg} title="Speed" size={iconSize} />
-);
 
 const ELEMENT_COLOR = {
   "non-elemental": "#949494",
-  fire: "#cb0000",
-  water: "#234eaf",
-  thunder: "#c7ae00",
+  fire: "#fc6c6d",
+  water: "#76befe",
+  thunder: "#ffd76f",
   ice: "#07ade6",
   dragon: "#991ec7",
+  rainbow: "pink",
   "": "black",
 };
 
@@ -35,13 +25,7 @@ const GENE_SIZE_COLOR: { [key: number]: string } = {
   2: "gray",
   3: "#ebd557",
   4: "#b8f0fc",
-  "-1": "black",
-};
-
-const ATTACK_TYPE_COLOR: { [key: string]: ReactElement } = {
-  power: Power,
-  technical: Technical,
-  speed: Speed,
+  "-1": "salmon",
 };
 
 const octagonCssString = `polygon(
@@ -65,8 +49,8 @@ const GeneContainer = styled.div<{
   position: relative;
   /* margin: 5px; */
 
-  width: ${({ size }) => (size ? size : SIZE)}px;
-  height: ${({ size }) => (size ? size : SIZE)}px;
+  width: ${({ size }) => (size ? `${size}px` : "100%")};
+  height: ${({ size }) => (size ? `${size}px` : "100%")};
 
   ${({ maxZIndex }) =>
     maxZIndex &&
@@ -248,7 +232,15 @@ const Gene = ({ gene, size, disableSkillPreview = false }: GeneProps) => {
     >
       <GeneBorder bg={GENE_SIZE_COLOR[gene.geneSize]} />
       <GeneOctagon bg={ELEMENT_COLOR[gene.elementType]}></GeneOctagon>
-      <PowerType>{ATTACK_TYPE_COLOR[gene.attackType]}</PowerType>
+      <PowerType>
+        {/* {ATTACK_TYPE_COLOR[gene.attackType]} */}
+
+        <Asset
+          asset={gene.attackType}
+          title={gene.attackType}
+          size={iconSize}
+        />
+      </PowerType>
       {gene.geneName && (
         <GeneName>{gene.geneName.replace("Gene ", "")}</GeneName>
       )}

@@ -21,7 +21,8 @@ const Container = styled.div`
 `;
 
 const HexContainer = styled.div`
-  background-color: ${({ theme }) => theme.colors.onSurface.main};
+  /* background-color: ${({ theme }) => theme.colors.onSurface.main}; */
+  background-color: ${({ theme }) => theme.colors.background.main};
 
   width: 100%;
   height: 100%;
@@ -51,6 +52,8 @@ const Title = styled.h2`
   left: 50%;
   top: 50%;
   transform: translate3d(-50%, -50%, 0);
+
+  color: ${({ theme }) => theme.colors.onPrimary.main};
 
   text-transform: uppercase;
   font-weight: 600;
@@ -83,7 +86,7 @@ const Dot = styled.div`
   border-radius: 50%;
   border: 1px solid ${({ theme }) => theme.colors.primary.main};
 
-  background-color: ${({ theme }) => theme.colors.onBackground.main};
+  background-color: ${({ theme }) => theme.colors.surface.main};
 
   transform: translate3d(-50%, -50%, 0);
   ${({ position }: { position: { x: number; y: number } }) => css`
@@ -92,11 +95,12 @@ const Dot = styled.div`
   `};
 
   &:hover {
-    border: 1px solid ${({ theme }) => theme.colors.background.main};
-    background-color: ${({ theme }) => theme.colors.background.main};
+    /* border: 1px solid ${({ theme }) => theme.colors.background.main}; */
+    border: 0;
+    background-color: ${({ theme }) => theme.colors.onSurface.main};
 
-    width: ${dotSize * 1.5}px;
-    height: ${dotSize * 1.5}px;
+    width: ${dotSize * 2}px;
+    height: ${dotSize * 2}px;
   }
 `;
 

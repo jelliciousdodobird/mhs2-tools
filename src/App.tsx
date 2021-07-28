@@ -37,6 +37,7 @@ const AppContainer = styled.div`
 type SidebarPortalProps = {
   sidebarState: boolean;
 };
+
 const SidebarPortalLocation = styled(motion.div)<SidebarPortalProps>`
   /* border: 1px solid yellow; */
   position: relative;
@@ -67,11 +68,28 @@ const Spacing = styled.div`
 
 const PageContainer = styled.div`
   /* border: 2px solid pink; */
+
+  position: relative;
+
+  scroll-behavior: smooth;
+
   overflow: auto;
   flex: 1;
 
   display: flex;
   flex-direction: column;
+
+  /* border: 2px solid blue; */
+
+  padding: 2rem;
+  @media (max-width: ${({ theme }) => theme.breakpoints.m}px) {
+    padding: 1rem;
+  }
+
+  /* margin-left: 1rem;
+  @media (max-width: ${({ theme }) => theme.breakpoints.m}px) {
+    margin-left: 0;
+  } */
 `;
 
 const App = () => {
