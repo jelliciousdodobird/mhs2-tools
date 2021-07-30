@@ -4,10 +4,10 @@ import styled from "@emotion/styled";
 
 import { createElement } from "react";
 
-const SvgWrapperContainer = styled.span<{ size: number }>`
+const SvgWrapperContainer = styled.span<{ size?: number }>`
   svg {
     ${({ size }) =>
-      size !== -1 &&
+      size &&
       css`
         width: ${size}px;
         height: ${size}px;
@@ -25,7 +25,7 @@ type SvgWrapperProps = {
   title?: string;
 };
 
-const SvgWrapper = ({ svgComponent, size = -1, title }: SvgWrapperProps) => {
+const SvgWrapper = ({ svgComponent, size, title }: SvgWrapperProps) => {
   return (
     <SvgWrapperContainer size={size} title={title}>
       {createElement(svgComponent)}

@@ -9,21 +9,38 @@ import { MdFastForward } from "react-icons/md";
 import { randomNumber } from "../utils/utils";
 import { rgba } from "emotion-rgba";
 import { memo } from "react";
+import { motion } from "framer-motion";
+import { useUIState } from "../contexts/UIContext";
+import color from "color";
+import { ElementType, ELEMENT_COLOR } from "../utils/ProjectTypes";
 
-const ELEMENT_COLOR = {
-  non_elemental: "#949494",
-  fire: "#fc6c6d",
-  water: "#76befe",
-  thunder: "#ffd76f",
-  ice: "#a8e9ff",
-  dragon: "#d04fff",
-  rainbow: "pink",
-  "": "black",
-};
+// export const ELEMENT_COLOR = {
+//   "non-elemental": "#949494",
+//   non_elemental: "#949494",
+//   fire: "#fc6c6d",
+//   water: "#76befe",
+//   thunder: "#ffd76f",
+//   ice: "#a8e9ff",
+//   dragon: "#d04fff",
+//   rainbow: "pink",
+//   "": "black",
+// };
 
-type ElementType = keyof typeof ELEMENT_COLOR;
+// export const ELEMENT_COLOR = {
+//   "non-elemental": color("#949494").darken(0.1).hex(),
+//   non_elemental: color("#949494").darken(0.1).hex(),
+//   fire: color("#fc6c6d").darken(0.1).hex(),
+//   water: color("#76befe").darken(0.1).hex(),
+//   thunder: color("#ffd76f").darken(0.1).hex(),
+//   ice: color("#a8e9ff").darken(0.1).hex(),
+//   dragon: color("#d04fff").darken(0.1).hex(),
+//   rainbow: color("pink").darken(0.1).hex(),
+//   "": "black",
+// };
 
-const Container = styled.div<{ bg: string }>`
+// export type ElementType = keyof typeof ELEMENT_COLOR;
+
+const Container = styled(motion.div)<{ bg: string }>`
   position: relative;
 
   background-color: ${({ bg, theme }) => (bg ? bg : theme.colors.surface.main)};
@@ -231,17 +248,22 @@ type MonstieCardProps = {
   monstie: any;
 };
 
-const MonstieCard = memo(({ monstie }: MonstieCardProps) => {
+const MonstieCard = ({ monstie }: MonstieCardProps) => {
+  const { isMobile } = useUIState();
   const { strength, weakness } = monstie;
 
-  const strength_element = ELEMENT_COLOR[strength as ElementType];
-  const weakness_element = ELEMENT_COLOR[weakness as ElementType];
+  const strength_element = ELEMENT_COLOR[strength as ElementType].main;
+  const weakness_element = ELEMENT_COLOR[weakness as ElementType].main;
   const has2ndAbility = monstie.ability2 !== "---";
-
   const spacing = { marginBottom: "1.2rem" };
 
   return (
-    <Container bg={strength_element}>
+    <Container
+      bg={strength_element}
+      key={monstie.name + monstie.strength}
+      // notice that the shuffle animation is turned off by setting layoutId = undefined
+      layoutId={isMobile ? undefined : monstie.name + monstie.strength}
+    >
       <Name>{monstie.name}</Name>
       <Number>#{randomNumber(0, 88)}</Number>
       {monstie.ability1 && (
@@ -257,29 +279,28 @@ const MonstieCard = memo(({ monstie }: MonstieCardProps) => {
         <Stat bg={strength_element} title="Strongest Attack Stat">
           {monstie[`atk_${strength}`]}
         </Stat>
+
         <Stat bg={weakness_element} title="Weakest Defense Stat">
           {monstie[`def_${weakness}`]}
         </Stat>
+
         <BaseStat bg={strength_element}>
           <span>hp</span>
           {monstie.hp}
-          {/* <ImHeart /> */}
         </BaseStat>
 
         <BaseStat bg={strength_element}>
           <span>rec</span>
           {monstie.recovery}
-
-          {/* <GiHealthNormal /> */}
         </BaseStat>
+
         <BaseStat bg={strength_element}>
           <span>sp</span>
           {monstie.speed}
-          {/* <MdFastForward /> */}
         </BaseStat>
       </StatContainer>
     </Container>
   );
-});
+};
 
 export default MonstieCard;

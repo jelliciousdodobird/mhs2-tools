@@ -8,7 +8,13 @@ import useResizeObserver from "use-resize-observer/polyfilled";
 import { useLongPress } from "use-long-press";
 
 // types:
-import { AttackType, MonstieGene, Skill, SkillType, ElementType } from "./Gene";
+import {
+  AttackType,
+  MonstieGene,
+  Skill,
+  SkillType,
+} from "../utils/ProjectTypes";
+// import { ElementType } from "./MonstieCard";
 
 // hooks:
 import { useUIState } from "../contexts/UIContext";
@@ -33,6 +39,7 @@ import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { GiRoundStar } from "react-icons/gi";
 import { ImHeart } from "react-icons/im";
 import FlashTooltip from "./FlashTooltip";
+import { ElementType } from "../utils/ProjectTypes";
 
 const verticalPadding = 14;
 

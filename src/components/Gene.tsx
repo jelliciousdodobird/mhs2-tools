@@ -1,31 +1,31 @@
 // styling:
-import { css, Theme } from "@emotion/react";
+import { css, keyframes, Theme, ThemeContext } from "@emotion/react";
 import styled from "@emotion/styled";
 import { ReactElement, useState } from "react";
+
+import color from "color";
 
 // assets:
 
 import Asset from "./AssetComponents";
+import { ELEMENT_COLOR, ElementType, MonstieGene } from "../utils/ProjectTypes";
+import { rgba } from "emotion-rgba";
+import { motion } from "framer-motion";
 
-const iconSize = 36;
-
-const ELEMENT_COLOR = {
-  "non-elemental": "#949494",
-  fire: "#fc6c6d",
-  water: "#76befe",
-  thunder: "#ffd76f",
-  ice: "#07ade6",
-  dragon: "#991ec7",
-  rainbow: "pink",
-  "": "black",
-};
-
-const GENE_SIZE_COLOR: { [key: number]: string } = {
+const GENE_SIZE_COLOR: { [key: string]: string } = {
   1: "black",
   2: "gray",
   3: "#ebd557",
   4: "#b8f0fc",
-  "-1": "salmon",
+  "": "salmon",
+};
+
+const GENE_SIZE_LETTER: { [key: string]: string } = {
+  1: "S",
+  2: "M",
+  3: "L",
+  4: "XL",
+  "": "",
 };
 
 const octagonCssString = `polygon(
@@ -38,8 +38,6 @@ const octagonCssString = `polygon(
     0 50%,
     15% 15%
   )`;
-
-const SIZE = 100;
 
 const GeneContainer = styled.div<{
   size: number | undefined;
@@ -59,21 +57,46 @@ const GeneContainer = styled.div<{
     `}
 `;
 
-const GeneOctagon = styled.div<{ bg: string }>`
+const rainbowAnimation = keyframes`
+  0%{background-position:0% 82%}
+    50%{background-position:100% 19%}
+    100%{background-position:0% 82%}
+`;
+
+const GeneOctagon = styled.div<{ c: string; rainbow: boolean }>`
   /* z-index: 10; */
   position: absolute;
   top: 0;
   left: 0;
+
   height: 100%;
   width: 100%;
-  background-color: ${({ bg }) => bg};
+  border-radius: 50%;
 
-  transform: scale(0.85);
-
+  background-color: ${({ c }) => c};
   clip-path: ${octagonCssString};
+  /* transform: scale(0.8); */
+
+  ${({ rainbow }) =>
+    rainbow &&
+    css`
+      animation: ${rainbowAnimation} 10s linear infinite;
+      background-size: 1800% 1800%;
+      background-image: linear-gradient(
+        90deg,
+        #e81d1d,
+        #e8b71d,
+        #e3e81d,
+        #1de840,
+        #1ddde8,
+        #2b1de8,
+        #dd00f3,
+        #dd00f3
+      );
+    `}
 `;
 
-const GeneBorder = styled.div<{ bg: string }>`
+const GeneBorder = styled.div<{ c: string }>`
   /* z-index: 5; */
 
   position: absolute;
@@ -81,45 +104,91 @@ const GeneBorder = styled.div<{ bg: string }>`
   left: 0;
   height: 100%;
   width: 100%;
-  background-color: ${({ bg }) => bg};
+  background-color: ${({ c }) => c};
 
-  clip-path: ${octagonCssString};
+  transform: scale(1.1);
+
+  border-radius: 50%;
+
+  /* clip-path: ${octagonCssString}; */
 `;
 
-const PowerType = styled.div`
+const PowerType = styled.div<{ c?: string; rainbow: boolean }>`
   position: absolute;
   top: 50%;
   left: 50%;
 
   transform: translate3d(-50%, -50%, 0);
+
+  span {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    svg {
+      height: 90%;
+      width: 90%;
+
+      /* opacity: ${({ rainbow }) => (rainbow ? 1 : 1)}; */
+
+      path,
+      circle {
+        fill: ${({ c, rainbow }) => (rainbow ? "white" : c)};
+      }
+
+      line {
+        stroke: ${({ c, rainbow }) => (rainbow ? "white" : c)};
+      }
+    }
+  }
 `;
 
-const GeneName = styled.p`
-  position: absolute;
-  bottom: 8px;
-  left: 50%;
-
-  background-color: ${({ theme }) => theme.colors.onSurface.main};
-  color: ${({ theme }) => theme.colors.background.main};
-
-  padding: 2px 5px;
-  border-radius: 3px;
-
-  cursor: all-scroll;
-
-  /* width: 100%; */
-  max-width: 100%;
-  /* height: 1.6rem; */
-
-  white-space: nowrap;
-  font-size: 0.8rem;
-  font-weight: 600;
-
-  text-align: center;
-
+const GeneName = styled.span<{ c?: string; borderColor?: string }>`
+  user-select: none;
   overflow: hidden;
 
+  position: absolute;
+  bottom: 0;
+  left: 50%;
   transform: translate3d(-50%, 0, 0);
+
+  background-color: ${({ c }) => c};
+
+  border-radius: 3px;
+  height: 1.5rem;
+  padding: 0.22rem 0;
+  border-right: 0.5rem solid ${({ borderColor }) => borderColor};
+  border-left: 0.5rem solid ${({ borderColor }) => borderColor};
+
+  width: 100%;
+  max-width: 100%;
+
+  text-align: center;
+  white-space: nowrap;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: white;
+
+  /* clip-path: polygon(11% 0, 89% 0, 100% 50%, 89% 100%, 11% 100%, 0% 50%); */
+`;
+
+const GeneSize = styled.p`
+  position: absolute;
+  top: 0;
+  right: 0;
+
+  width: 1.5rem;
+  height: 1.5rem;
+
+  border-radius: 50%;
+
+  background-color: ${({ theme }) => theme.colors.onSurface.main};
+
+  color: ${({ theme }) => theme.colors.surface.main};
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `;
 
 const SkillContainer = styled.div`
@@ -184,33 +253,12 @@ const SkillDesc = styled.p`
   font-style: italic;
 `;
 
-export type SkillType = "active" | "passive" | "";
-export type AttackType = "power" | "technical" | "speed" | "";
-export type ElementType =
-  | "non-elemental"
-  | "fire"
-  | "water"
-  | "thunder"
-  | "ice"
-  | "dragon"
-  | "";
+const removeSizeFromName = (name: string) => name.split("(")[0];
 
-export type Skill = {
-  skillName: string;
-  skillType: SkillType;
-  desc: string;
-};
+const removeGeneFromName = (name: string) => name.replace("Gene", "").trim();
 
-export type MonstieGene = {
-  geneName: string;
-  geneNumber: number;
-  attackType: AttackType;
-  elementType: ElementType;
-  requiredLvl: number;
-  geneSize: number;
-  skill: Skill;
-  possessedBy: { native: string[]; random: string[] };
-};
+const formatGeneName = (name: string) =>
+  removeGeneFromName(removeSizeFromName(name));
 
 type GeneProps = {
   gene: MonstieGene;
@@ -219,31 +267,50 @@ type GeneProps = {
 };
 
 const Gene = ({ gene, size, disableSkillPreview = false }: GeneProps) => {
+  // state:
   const [showSkill, setShowSkill] = useState(false);
+  const [hover, setHover] = useState(false);
+
+  // colors:
+  const geneColor = ELEMENT_COLOR[gene.elementType as ElementType].main;
+  const darkenGeneColor = ELEMENT_COLOR[gene.elementType as ElementType].dark;
+  const borderColor = color(geneColor).darken(0.4).hex();
+
+  // formatted strings:
+  const geneSizeLetter = GENE_SIZE_LETTER[gene.geneSize];
+  const formattedGeneName = formatGeneName(gene.geneName);
+
+  // misc:
+  const isRainbowGene = gene.geneName === "rainbow";
 
   return (
     <GeneContainer
+      onMouseEnter={() => setHover(true)}
       size={size}
       maxZIndex={showSkill}
-      onMouseLeave={() => setShowSkill(false)}
+      onMouseLeave={() => {
+        setShowSkill(false);
+        setHover(false);
+      }}
       onClick={() => {
         if (!disableSkillPreview) setShowSkill((v) => !v);
+        console.log(gene);
       }}
     >
-      <GeneBorder bg={GENE_SIZE_COLOR[gene.geneSize]} />
-      <GeneOctagon bg={ELEMENT_COLOR[gene.elementType]}></GeneOctagon>
-      <PowerType>
-        {/* {ATTACK_TYPE_COLOR[gene.attackType]} */}
-
-        <Asset
-          asset={gene.attackType}
-          title={gene.attackType}
-          size={iconSize}
-        />
+      {/* <GeneBorder c={GENE_SIZE_COLOR[gene.geneSize]} /> */}
+      <GeneOctagon c={geneColor} rainbow={isRainbowGene}></GeneOctagon>
+      <PowerType c={darkenGeneColor} rainbow={isRainbowGene}>
+        <Asset asset={gene.attackType} />
       </PowerType>
-      {gene.geneName && (
-        <GeneName>{gene.geneName.replace("Gene ", "")}</GeneName>
+      {!isRainbowGene && (
+        <>
+          <GeneSize>{geneSizeLetter}</GeneSize>
+          <GeneName c={darkenGeneColor} borderColor={borderColor}>
+            {formattedGeneName}
+          </GeneName>
+        </>
       )}
+
       {showSkill && (
         <SkillContainer>
           <SkillDetails>

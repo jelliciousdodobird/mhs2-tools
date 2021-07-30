@@ -7,7 +7,7 @@ import { AnimateSharedLayout, motion } from "framer-motion";
 import { createRef, Ref, RefObject, useEffect, useRef, useState } from "react";
 
 // types:
-import { MonstieGene } from "./Gene";
+import { MonstieGene } from "../utils/ProjectTypes";
 import { DropProps } from "../hooks/useDrop";
 
 // custom components:
@@ -88,6 +88,8 @@ const pattern3 = () => css`
 const gap = 14;
 // ${pattern2}
 const Grid = styled.div`
+  overflow: hidden;
+
   display: grid;
 
   padding: ${(gap / 3) * 1.5}px;
@@ -101,10 +103,10 @@ const Grid = styled.div`
   border-radius: 10px;
 
   /* background-color: white; */
-  /* background-color: ${({ theme }) => theme.colors.surface.main}; */
+  background-color: ${({ theme }) => theme.colors.surface.main};
 
-  background: ${({ theme }) =>
-    `linear-gradient(115deg, ${theme.colors.background.dark} 49.6%, ${theme.colors.surface.main} 50%)`};
+  /* background: ${({ theme }) =>
+    `linear-gradient(115deg, ${theme.colors.background.dark} 49.6%, ${theme.colors.surface.main} 50%)`}; */
 
   /* background-color: blue; */
 
@@ -146,7 +148,7 @@ const Cell = styled.div<{ gridArea: GridArea }>`
 `;
 
 const BingoTypeWrapper = styled.div`
-  background-color: ${({ theme }) => theme.colors.background.main};
+  /* background-color: ${({ theme }) => theme.colors.background.main}; */
 
   min-width: ${bingoCircleSize}px;
   min-height: ${bingoCircleSize}px;
@@ -174,7 +176,8 @@ const GeneGridCell = styled.div`
   border-radius: 10px;
   background-color: ${({ theme }) => theme.colors.surface.main};
   /* box-shadow: 0px 3px 20px 0px rgba(0, 0, 0, 0.75); */
-  box-shadow: 0px 17px 60px -20px ${({ theme }) => theme.colors.primary.main};
+  /* box-shadow: 0px 17px 60px -20px ${({ theme }) =>
+    theme.colors.primary.main}; */
 
   display: flex;
   justify-content: center;
@@ -380,9 +383,9 @@ const BingoBoard = ({
   return (
     <>
       {/* <Debug data={board.map((gene) => gene.geneName)} drag /> */}
-      <button type="button" onClick={shuffle}>
+      {/* <button type="button" onClick={shuffle}>
         shuffle
-      </button>
+      </button> */}
 
       <Grid>
         {outerGrid.map((el) => (
@@ -390,7 +393,7 @@ const BingoBoard = ({
             <BingoTypeWrapper>
               <Asset
                 asset={el.type}
-                size={16}
+                size={20}
                 title={`${el.type} ${el.gridArea}`}
               />
             </BingoTypeWrapper>

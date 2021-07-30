@@ -3,7 +3,7 @@ import { css, jsx, Theme, useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
 import { ReactElement, forwardRef } from "react";
 import { useDrop } from "react-dnd";
-import { MonstieGene } from "./Gene";
+import { MonstieGene } from "../utils/ProjectTypes";
 
 const octagonCssString = `polygon(
     50% 0,
@@ -37,10 +37,15 @@ const SlotHole = styled.div<{ isOver: boolean }>`
   height: 100%;
   border-radius: 50%;
 
-  background-color: ${({ isOver, theme }) =>
-    isOver ? theme.colors.correct.main : theme.colors.background.main};
+  transform: scale(0.9);
 
-  clip-path: ${octagonCssString};
+  /* background-color: ${({ isOver, theme }) =>
+    isOver ? theme.colors.correct.main : theme.colors.background.main}; */
+
+  border: 5px solid ${({ theme }) => theme.colors.background.main};
+  /* border: 5px solid red; */
+
+  /* clip-path: ${octagonCssString}; */
 
   display: flex;
   justify-content: center;

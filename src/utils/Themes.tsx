@@ -68,14 +68,16 @@ export const darkTheme: Theme = {
     // primary: ccs({ main: "#43dbab", light: "#ff0000" }),
     secondary: ccs({ main: "#2dc3e9" }),
 
-    background: ccs({ main: "#363f49" }),
-    surface: ccs({ main: "#2c333b" }),
+    background: ccs({ main: "#2c333b" }),
+    surface: ccs({ main: "#363f49" }),
+    // background: ccs({ main: "#363f49" }),
+    // surface: ccs({ main: "#2c333b" }),
 
     onPrimary: ccs({ main: "#ffffff" }),
     onSecondary: ccs({ main: "#ffffff" }),
 
     onBackground: ccs({ main: "#ffffff" }),
-    onSurface: ccs({ main: "#f6f6f6" }),
+    onSurface: ccs({ main: "#ffffff" }),
 
     // error: ccs({ main: "#ff6b6b" }),
     // error: ccs({ main: "#ff6b6b", light: "#fd3131" }),

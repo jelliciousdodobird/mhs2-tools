@@ -7,7 +7,8 @@ import { useEffect, useRef, useState } from "react";
 
 import { useLongPress } from "use-long-press";
 
-import Gene, { MonstieGene } from "./Gene";
+import { MonstieGene } from "../utils/ProjectTypes";
+import Gene from "./Gene";
 
 const DraggableContainer = styled(motion.div)<{
   bringToFront: boolean;
@@ -72,7 +73,11 @@ const DraggableGene = ({
           repeatType: "mirror" as "mirror",
         },
       },
-      noshake: { rotate: 0, scale: 1 },
+      noshake: {
+        rotate: 0,
+        scale: 1,
+        borderRadius: 0, // borderRadius is to stop framer motion from distorting this element's border
+      },
     },
     initial: "noshake",
     animate: shake ? "shake" : "noshake",

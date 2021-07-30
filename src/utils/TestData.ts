@@ -1,4 +1,4 @@
-import { MonstieGene } from "../components/Gene";
+import { MonstieGene } from "../utils/ProjectTypes";
 
 export const TEST_BOARD: MonstieGene[] = [
   {

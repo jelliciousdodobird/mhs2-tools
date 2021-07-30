@@ -1,10 +1,10 @@
 import {
-  AttackType,
   ElementType,
+  AttackType,
   MonstieGene,
   Skill,
   SkillType,
-} from "../components/Gene";
+} from "../utils/ProjectTypes";
 
 export const EMPTY_GENE: MonstieGene = {
   geneName: "",

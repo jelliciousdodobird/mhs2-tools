@@ -10,6 +10,7 @@ import { ReactComponent as WaterSvg } from "../assets/water.svg";
 import { ReactComponent as PowerSvg } from "../assets/power.svg";
 import { ReactComponent as TechnicalSvg } from "../assets/technical.svg";
 import { ReactComponent as SpeedSvg } from "../assets/speed.svg";
+import { ReactComponent as RainbowSvg } from "../assets/rainbow.svg";
 
 import { memo } from "react";
 
@@ -20,6 +21,7 @@ const ICONS = {
   power: PowerSvg,
   technical: TechnicalSvg,
   speed: SpeedSvg,
+  rainbow: RainbowSvg,
 
   // elemental icons:
   "non-elemental": NonElementSvg,

@@ -26,6 +26,17 @@ const Container = styled.div`
   background-color: ${({ theme }) => theme.colors.background.main};
 `;
 
+const Heading = styled.h2`
+  font-weight: 700;
+
+  font-size: 3rem;
+  margin-bottom: 1rem;
+
+  color: ${({ theme }) => theme.colors.onSurface.main};
+
+  display: flex;
+`;
+
 const TeamBuilderPage = () => {
   const { drop, setDrop } = useDrop();
   const [dropSuccess, setDropSuccess] = useState(false);
@@ -33,6 +44,7 @@ const TeamBuilderPage = () => {
   return (
     <>
       <Container>
+        <Heading>Gene Manipulator 5000</Heading>
         <BingoBoard
           drop={drop}
           setDrop={setDrop}

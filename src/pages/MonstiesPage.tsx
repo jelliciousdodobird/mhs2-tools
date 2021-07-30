@@ -182,6 +182,9 @@ const MonstiesPage = () => {
       <Container>
         <Test href="#compare">C</Test>
         <Heading id="compare">Compare {"->"}</Heading>
+
+        {/* <BingoTest></BingoTest> */}
+
         <SurfaceContainer>
           <ButtonContainer>
             {[1, 10, 20, 30, 40, 50, 75, 99].map((lvl) => (

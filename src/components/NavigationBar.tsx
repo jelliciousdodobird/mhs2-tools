@@ -43,11 +43,12 @@ const NavbarContainer = styled(motion.nav)`
   justify-content: center;
   align-items: center;
 
-  border-right: 1px solid ${({ theme }) => theme.colors.background.main};
   background-color: ${({ theme }) => theme.colors.surface.main};
 
   @media (max-width: ${({ theme }) => theme.breakpoints.m}px) {
     flex-direction: column-reverse;
+
+    border-bottom: 2px solid ${({ theme }) => theme.colors.background.main};
 
     ${({ theme }) => css`
       height: ${theme.dimensions.mainNav.maxHeight}px;
@@ -62,6 +63,7 @@ const NavbarContainer = styled(motion.nav)`
   @media (min-width: ${({ theme }) => theme.breakpoints.m + 1}px) {
     flex-direction: column;
 
+    border-right: 1px solid ${({ theme }) => theme.colors.background.main};
     ${({ theme }) => css`
       width: ${theme.dimensions.mainNav.maxWidth}px;
       max-width: ${theme.dimensions.mainNav.maxWidth}px;
