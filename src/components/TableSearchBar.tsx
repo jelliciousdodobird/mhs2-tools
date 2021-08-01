@@ -32,6 +32,8 @@ const SBContainer = styled(motion.div)<SBProps>`
   /* opacity: 0.94; */
   /* backdrop-filter: blur(2px); */
 
+  border-radius: 5rem;
+
   background-color: ${({ theme }) => theme.colors.surface.main};
 
   border: 1px solid
@@ -298,14 +300,10 @@ const SearchBar = ({
   }, []);
 
   return (
-    <SBContainer
-      onClick={focusInput}
-      showAlert={showAlert}
-      // {...ctrlFAnimProps}
-    >
-      <motion.span>
+    <SBContainer onClick={focusInput} showAlert={showAlert} {...ctrlFAnimProps}>
+      {/* <motion.span>
         <BiSearch />
-      </motion.span>
+      </motion.span> */}
 
       {/* {showAlert && <CtrlFAlert />} */}
 

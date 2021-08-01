@@ -18,6 +18,8 @@ import ExpandSearchMenu from "./ExpandSearchMenu";
 // icons:
 import { BiSearch } from "react-icons/bi";
 import { MdSort } from "react-icons/md";
+import FloatingPoint from "./FloatingPoint";
+import PagePortal from "./PageContainerPortal";
 
 const Container = styled.div<{ searchPadding: boolean }>`
   position: relative;
@@ -35,15 +37,15 @@ const Container = styled.div<{ searchPadding: boolean }>`
   padding-bottom: ${({ searchPadding }) => (searchPadding ? "5rem" : 0)};
 `;
 
-const FloatingPoint = styled(motion.div)`
-  z-index: 10;
+// const FloatingPoint = styled(motion.div)`
+//   z-index: 10;
 
-  position: sticky;
-  top: 100%;
-  left: 0;
+//   position: sticky;
+//   top: 100%;
+//   left: 0;
 
-  height: 0;
-`;
+//   height: 0;
+// `;
 
 const FAB = styled(motion.button)`
   z-index: 15;
@@ -164,7 +166,7 @@ const MonstieList = ({ data, column }: MonstieListProps) => {
 
   return (
     <>
-      <FloatingPoint className="yooooo">
+      <PagePortal portalId="floating-point-monstie-list">
         <SortButton
           {...btnAnimationProps}
           {...staticProps2}
@@ -172,15 +174,16 @@ const MonstieList = ({ data, column }: MonstieListProps) => {
         >
           <MdSort />
         </SortButton>
-        <FAB {...btnAnimationProps} {...staticProps} onClick={toggleShowSearch}>
+        <FAB {...staticProps} onClick={toggleShowSearch}>
           <BiSearch />
         </FAB>
         <AnimatePresence>
           {showSearch && (
             <ExpandSearchMenu
+              key="search"
               value={searchText}
               onChange={setSearch}
-              key="search"
+              placeholderText="Filter monsties by name, egg color, ability, and more!"
             />
           )}
           {showSort && (
@@ -191,14 +194,9 @@ const MonstieList = ({ data, column }: MonstieListProps) => {
             />
           )}
         </AnimatePresence>
-      </FloatingPoint>
+      </PagePortal>
 
-      <Container
-        searchPadding={showSearch}
-        onClick={() => {
-          // console.log(tableData);
-        }}
-      >
+      <Container searchPadding={showSearch}>
         <AnimateSharedLayout>
           {tableData.map((monstie: any) => (
             <MonstieCard

@@ -1,9 +1,20 @@
 // styling:
 import { css, jsx, Theme, useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
-import { motion, PanInfo, useDragControls } from "framer-motion";
+import {
+  motion,
+  PanInfo,
+  useDragControls,
+  useMotionValue,
+} from "framer-motion";
 
-import { useEffect, useRef, useState } from "react";
+import {
+  MutableRefObject,
+  RefObject,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import { useLongPress } from "use-long-press";
 
@@ -12,16 +23,53 @@ import Gene from "./Gene";
 
 const DraggableContainer = styled(motion.div)<{
   bringToFront: boolean;
+  size: number | undefined;
 }>`
   z-index: ${({ bringToFront }) => (bringToFront ? 99 : 1)};
   position: relative;
   cursor: move;
+
+  /* user-select: none; */
   touch-action: none; // very important line or else long press to drag will not work on mobile
+
+  width: ${({ size }) => (size ? `${size}px` : "100%")};
+  height: ${({ size }) => (size ? `${size}px` : "100%")};
+  max-width: ${({ size }) => (size ? `${size}px` : "100%")};
+  max-height: ${({ size }) => (size ? `${size}px` : "100%")};
+  min-width: ${({ size }) => (size ? `${size}px` : "100%")};
+  min-height: ${({ size }) => (size ? `${size}px` : "100%")};
 
   display: flex;
   justify-content: center;
   align-items: center;
 `;
+
+const transformString = (
+  str: string,
+  scrollRef: MutableRefObject<HTMLElement | undefined>
+) => {
+  const a = str.split("translate3d(");
+
+  if (a.length > 1) {
+    const st = scrollRef.current?.scrollTop || 0;
+
+    const b = a[1].indexOf(")"); // 5
+    const c = a[1].slice(0, b); // "255px, 443px, 0"
+    const d = c.replaceAll("px,", "").split(" "); // ["255", "443", "0"]
+    const e = d.map((num) => parseInt(num)); // [255, 443, 0]
+
+    const ogTranslateString = `translate3d(${c})`;
+
+    // const y = e[1] > 0 ? e[1] - st : e[1] + st;
+    const y = e[1] - st;
+
+    const newTranslateString = `translate3d(${e[0]}px, ${y}px, ${e[2]}px)`;
+
+    // console.log(ogTranslateString, newTranslateString);
+
+    return str.replace(ogTranslateString, newTranslateString);
+  } else return str;
+};
 
 type DraggableGeneProps = {
   gene: MonstieGene;
@@ -38,6 +86,7 @@ type DraggableGeneProps = {
   longPressToDrag?: boolean;
   longPressThreshold?: number;
   size?: number;
+  layoutIdOn?: boolean;
 };
 
 const DraggableGene = ({
@@ -49,11 +98,18 @@ const DraggableGene = ({
   longPressToDrag = false,
   longPressThreshold = 200,
   size,
+  layoutIdOn = true,
 }: DraggableGeneProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const dragControls = useDragControls();
 
+  const scrollRef = useRef<HTMLElement>();
+
   const [held, setHeld] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // const isDragging = useRef(false);
+  // const setIsDragging = (value: boolean) => (isDragging.current = value);
 
   const shake = held && longPressToDrag;
 
@@ -105,6 +161,7 @@ const DraggableGene = ({
     event: MouseEvent | TouchEvent | PointerEvent,
     info: PanInfo
   ) => {
+    setIsDragging(true);
     onDragStart(event, info);
   };
 
@@ -112,11 +169,21 @@ const DraggableGene = ({
     event: MouseEvent | TouchEvent | PointerEvent,
     info: PanInfo
   ) => {
-    onDragEnd(event, info);
+    const newInfo = info;
+    newInfo.point.y = info.point.y - (scrollRef.current?.scrollTop || 0);
 
     setHeld(false);
+    setIsDragging(false);
+
+    onDragEnd(event, newInfo);
+
     // if (longPressToDrag) setHeld(false);
   };
+
+  useEffect(() => {
+    const scrollElement = document.getElementsByTagName("html")[0];
+    scrollRef.current = scrollElement;
+  }, []);
 
   useEffect(() => {
     if (held) containerRef.current?.click();
@@ -130,6 +197,7 @@ const DraggableGene = ({
 
   return (
     <DraggableContainer
+      size={size}
       ref={containerRef}
       onClick={(e) => {
         // console.log("clicked");
@@ -168,15 +236,18 @@ const DraggableGene = ({
       key={gene.geneName}
       layoutId={gene.geneName}
       drag={held || !longPressToDrag}
-      // held={held}
       dragMomentum={false}
       dragElastic={1}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       bringToFront={bringToFront}
-      dragControls={dragControls}
+      dragControls={held || !longPressToDrag ? dragControls : undefined}
       style={{ opacity }}
-      // onLayoutAnimationComplete={() => console.log("yo", gene.geneName)}
+      transformTemplate={(data, str) => {
+        // if (isDragging.current === true) {
+        if (isDragging) return transformString(str, scrollRef);
+        else return str;
+      }}
     >
       <Gene gene={gene} disableSkillPreview={true} size={size} />
     </DraggableContainer>

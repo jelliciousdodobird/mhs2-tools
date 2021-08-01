@@ -13,7 +13,13 @@ export const ELEMENT_COLOR = {
     dark: "#6D6D6D",
     darker: "black",
   },
-  fire: { main: "#FB494A", light: "#fc6c6d", dark: "#FA191B", darker: "black" },
+  // fire: { main: "#FB494A", light: "#fc6c6d", dark: "#FA191B", darker: "black" },
+  fire: {
+    main: "#FB494A",
+    light: "#fc6c6d",
+    dark: "#f30507",
+    darker: "black",
+  },
   water: {
     main: "#51ACFE",
     light: "#76befe",
@@ -37,7 +43,7 @@ export const ELEMENT_COLOR = {
   "": { main: "black", light: "black", dark: "black", darker: "black" },
 };
 
-console.log(JSON.stringify(ELEMENT_COLOR));
+// console.log(JSON.stringify(ELEMENT_COLOR));
 
 export type ElementType = keyof typeof ELEMENT_COLOR;
 export type SkillType = "active" | "passive" | "";

@@ -7,6 +7,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { useEffect } from "react";
 import { useMediaQuery } from "react-responsive";
 
 type State = {
@@ -50,10 +51,7 @@ const UIStateProvider = ({ children }: UIProviderProps) => {
   });
   const toggleSidebar = () => setSidebarState((val) => !val);
 
-  // const dropPosition = useRef({ x: 0, y: 0 });
-  // const setDropPosition = (val: { x: number; y: number }) => {
-  //   dropPosition.current = val;
-  // };
+  // const scrollRef = useRef<HTMLElement>();
 
   return (
     <UIStateContext.Provider

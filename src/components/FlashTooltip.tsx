@@ -6,28 +6,35 @@ import { useState } from "react";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 
-const Wrapper = styled.div`
+const Wrapper = styled.div<{ text: string }>`
+  opacity: ${({ text }) => (text === "" ? 0 : 1)};
+
   position: absolute;
   width: 100%;
   height: 100%;
-  overflow: hidden;
+  /* overflow: hidden; */
 `;
 
 const Container = styled(motion.p)`
-  z-index: 10000;
+  z-index: 200;
   position: absolute;
-  top: 3.5rem;
+  top: -23rem;
   left: 50%;
+
+  box-shadow: 0px 0px 20px -13px green;
+  box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.5);
 
   border-radius: 5px;
   font-weight: 600;
+  font-size: 0.9rem;
+  color: ${({ theme }) => theme.colors.onPrimary.main};
   /* right: 0; */
 
   /* transform: translateX(-50%); */
 
   padding: 0.25rem 1rem;
 
-  background-color: red;
+  background-color: ${({ theme }) => theme.colors.error.dark};
 `;
 
 type FlashTooltipProps = {
@@ -43,11 +50,11 @@ const FlashTooltip = ({ text, delay = 2500 }: FlashTooltipProps) => {
     variants: {
       appear: { y: 0, x: "-50%" },
       outOfView: { y: 500, x: "-50%" },
-      exit: { backgroundColor: "blue" },
+      // exit: { backgroundColor: "blue" },
     },
     initial: "appear",
     animate: show ? "appear" : "outOfView",
-    exit: "exit",
+    // exit: "exit",
   };
 
   useEffect(() => {
@@ -66,7 +73,7 @@ const FlashTooltip = ({ text, delay = 2500 }: FlashTooltipProps) => {
   }, [text, show]);
 
   return (
-    <Wrapper>
+    <Wrapper text={text}>
       <Container {...animationProps}>{text}</Container>
     </Wrapper>
   );

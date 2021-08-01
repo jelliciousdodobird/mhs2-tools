@@ -29,7 +29,6 @@ function usePagination<T>(data: Array<T>, resultsPerPage: number) {
   const resetPage = () => setPage(INITIAL_PAGE);
 
   useEffect(() => {
-    console.log("updating page stuff");
     resetPage();
   }, [data, resultsPerPage]);
 

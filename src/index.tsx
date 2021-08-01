@@ -6,12 +6,16 @@ import { HelmetProvider } from "react-helmet-async";
 import { ThemeStateProvider } from "./contexts/ThemeContext";
 import { UIStateProvider } from "./contexts/UIContext";
 
+import { BrowserRouter } from "react-router-dom";
+
 ReactDOM.render(
   <React.StrictMode>
     <ThemeStateProvider>
       <UIStateProvider>
         <HelmetProvider>
-          <App />
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
         </HelmetProvider>
       </UIStateProvider>
     </ThemeStateProvider>

@@ -95,6 +95,8 @@ const Grid = styled.div`
   padding: ${(gap / 3) * 1.5}px;
   gap: ${gap / 3}px;
 
+  min-width: ${GRID_SIZE}px;
+  min-height: ${GRID_SIZE}px;
   width: ${GRID_SIZE}px;
   height: ${GRID_SIZE}px;
 
@@ -174,7 +176,7 @@ const GeneGridCell = styled.div`
   /* display: inline-block; */
 
   border-radius: 10px;
-  background-color: ${({ theme }) => theme.colors.surface.main};
+  /* background-color: ${({ theme }) => theme.colors.surface.main}; */
   /* box-shadow: 0px 3px 20px 0px rgba(0, 0, 0, 0.75); */
   /* box-shadow: 0px 17px 60px -20px ${({ theme }) =>
     theme.colors.primary.main}; */
@@ -252,7 +254,7 @@ const gridElements: GridElement[] = [
   ...gridAreas.map((area) => ({ gridArea: area, type: area })),
 ].filter((areas) => areas.gridArea !== "gene-grid");
 
-console.log(gridElements);
+// console.log(gridElements);
 
 const BingoBoard = ({
   drop,

@@ -36,8 +36,12 @@ import { useUIState } from "../contexts/UIContext";
 // background: ${({ theme }) =>
 //   `linear-gradient(45deg, ${theme.colors.primary.main}, ${theme.colors.primary.light})`};
 const NavbarContainer = styled(motion.nav)`
-  position: relative;
-  z-index: 200;
+  position: sticky;
+  top: 0;
+  left: 0;
+
+  /* position: relative; */
+  z-index: 2;
 
   display: flex;
   justify-content: center;
@@ -70,7 +74,7 @@ const NavbarContainer = styled(motion.nav)`
       min-width: ${theme.dimensions.mainNav.maxWidth}px;
     `}
 
-    height: 100%;
+    height: 100vh;
     padding: 0.5rem 0;
   }
 `;

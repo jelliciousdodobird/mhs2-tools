@@ -36,7 +36,7 @@ type AssetType = keyof typeof ICONS;
 
 const iconKeys = [...Object.keys(ICONS)] as AssetType[];
 
-console.log(iconKeys);
+// console.log(iconKeys);
 
 export const coerceStringIntoAssetType = (str: string): AssetType => {
   str = str.toLowerCase().replaceAll("_", "-").replaceAll(" ", "-");

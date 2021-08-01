@@ -1,9 +1,16 @@
 // styling:
-import { css, jsx } from "@emotion/react";
+import { css, jsx, useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
 
 // library:
-import { useEffect, useRef, useLayoutEffect, RefObject, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useLayoutEffect,
+  RefObject,
+  useState,
+  Fragment,
+} from "react";
 import useResizeObserver from "use-resize-observer/polyfilled";
 import { useLongPress } from "use-long-press";
 
@@ -23,8 +30,10 @@ import { DropProps } from "../hooks/useDrop";
 // custom components:
 import DraggableGene from "./DraggableGene";
 import Gene from "./Gene";
-import SearchBar from "./SearchBar";
 import TableSearchBar from "./TableSearchBar";
+import FlashTooltip from "./FlashTooltip";
+import { ElementType } from "../utils/ProjectTypes";
+import ExpandSearchMenu from "./ExpandSearchMenu";
 
 // data:
 import DATA from "../utils/output.json";
@@ -38,20 +47,34 @@ import usePagination from "../hooks/usePagination";
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { GiRoundStar } from "react-icons/gi";
 import { ImHeart } from "react-icons/im";
-import FlashTooltip from "./FlashTooltip";
-import { ElementType } from "../utils/ProjectTypes";
+import { HiPlus } from "react-icons/hi";
+import { MdClose } from "react-icons/md";
 
-const verticalPadding = 14;
+const DummyWidthMeasurementDiv = styled.div`
+  width: 100%;
+`;
 
-const Container = styled.div<{ height: number; dragging: boolean }>`
-  z-index: 500;
+const Container = styled(motion.div)<{
+  height?: number;
+  dragging: boolean;
+  padding: number;
+}>`
+  z-index: 1;
+
   position: absolute;
-  bottom: 0;
-  left: 0;
+  bottom: 5rem;
+  right: 0;
 
+  width: 100%;
+
+  padding: ${({ padding }) => padding}px 0;
+
+  border-radius: 1rem;
   background-color: ${({ theme }) => theme.colors.background.dark};
+  background-color: ${({ theme }) => theme.colors.surface.main};
+  box-shadow: 0px 0px 20px -13px black;
 
-  /* background-color: red; */
+  max-height: ${({ height }) => height}px;
 
   ${({ dragging }) =>
     dragging
@@ -59,46 +82,30 @@ const Container = styled.div<{ height: number; dragging: boolean }>`
           overflow: hidden;
         `
       : null}
-
-  width: 100%;
-  height: ${({ height }) => height}px;
-  max-height: ${({ height }) => height}px;
-
-  display: flex;
-  flex-direction: column;
 `;
 
 const Results = styled(motion.div)`
-  /* background-color: blue; */
+  z-index: 100;
 
-  position: absolute;
-  z-index: 9999;
+  position: relative;
+  /* top: 0; */
+  /* left: 0; */
 
-  top: 3rem;
-  left: 0;
-
-  padding: 1rem 0;
-
+  height: 100%;
   width: 100%;
 
   flex-wrap: wrap;
+
   display: flex;
   justify-content: center;
   align-items: center;
 `;
 
-const GeneContainer = styled.div`
+const GeneContainer = styled.div<{ padding: number }>`
   position: relative;
-  padding: 5px;
+  padding: ${({ padding }) => padding}px;
 
   /* background-color: red; */
-`;
-
-const MeasurementOnlyContainter = styled(GeneContainer)`
-  position: absolute;
-  top: 0;
-  left: 0;
-  opacity: 0;
 `;
 
 const ShadowItem = styled(GeneContainer)`
@@ -112,11 +119,11 @@ const ShadowItem = styled(GeneContainer)`
 `;
 
 const Controls = styled.div`
-  position: absolute;
-  top: 0;
-  right: 0;
+  z-index: 50;
 
-  z-index: 999;
+  position: absolute;
+  bottom: 0.5rem;
+  right: 4rem;
 
   height: 3rem;
   /* width: 100px; */
@@ -142,11 +149,13 @@ const Controls = styled.div`
   }
 `;
 
-const LB = styled.button<{ size?: number }>`
-  width: 3rem;
-  height: 3rem;
+const LB = styled(motion.button)<{ size?: number }>`
+  width: 2.5rem;
+  height: 2.5rem;
 
-  border-radius: 0;
+  margin-left: 0.5rem;
+
+  border-radius: 50%;
 
   background-color: ${({ theme }) => theme.colors.onSurface.dark};
 
@@ -173,6 +182,47 @@ const LB = styled.button<{ size?: number }>`
   }
 `;
 
+const FAB = styled(motion.button)`
+  z-index: 50;
+
+  position: absolute;
+  bottom: 0;
+  right: 0;
+
+  border-radius: 50%;
+  width: 4rem;
+  height: 4rem;
+
+  background-color: ${({ theme }) => theme.colors.primary.main};
+
+  box-shadow: 0px 0px 20px 0px ${({ theme }) => theme.colors.primary.main};
+  box-shadow: 0px 0px 20px -10px black;
+  /* background: ${({ theme }) =>
+    `linear-gradient(45deg, ${theme.colors.primary.main}, ${theme.colors.primary.light})`}; */
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  svg {
+    width: 1.5rem;
+    height: 1.5rem;
+
+    path {
+      fill: ${({ theme }) => theme.colors.onPrimary.main};
+    }
+  }
+`;
+
+const EmptyResult = styled.div<{ size: number }>`
+  /* border: 1px dashed red; */
+
+  ${({ size }) => css`
+    width: ${size}px;
+    height: ${size}px;
+  `}
+`;
+
 const pageVariants = {
   enter: (direction: number) => {
     return {
@@ -193,6 +243,12 @@ const pageVariants = {
   },
 };
 
+const tapAnimation = {
+  whileTap: {
+    scale: 0.9,
+  },
+};
+
 const pageAnimation = {
   variants: pageVariants,
   initial: "enter",
@@ -202,6 +258,38 @@ const pageAnimation = {
     x: { type: "spring", stiffness: 300, damping: 30 },
     opacity: { duration: 0.2 },
   },
+};
+
+const hideResultsAnimation = {
+  variants: {
+    show: { opacity: 1, height: "auto", transition: { delay: 0.2 } },
+    hide: {
+      opacity: 0,
+      height: "0",
+    },
+  },
+  initial: "hide",
+  animate: "show",
+  exit: "hide",
+};
+
+const navButtonAnimation = {
+  variants: {
+    show: (i: number) => ({
+      opacity: 1,
+      scale: 1,
+      transition: { delay: 0.1 + 0.1 * i },
+    }),
+    hide: (i: number) => ({
+      opacity: 0,
+      scale: 0,
+      transition: { delay: 0.2 - 0.1 * i },
+    }),
+  },
+  initial: "hide",
+  animate: "show",
+  exit: "hide",
+  ...tapAnimation,
 };
 
 const sanitizeGenes = (dirtyGenes: any) => {
@@ -241,6 +329,8 @@ type GeneSearchProps = {
   setDropSuccess: React.Dispatch<React.SetStateAction<boolean>>;
   dropSuccess: boolean;
   rows?: number;
+  itemSize?: number;
+  itemPadding?: number;
 };
 
 const GeneSearch = ({
@@ -248,25 +338,26 @@ const GeneSearch = ({
   setDropSuccess,
   dropSuccess,
   rows = 2,
+  itemSize = 85,
+  itemPadding = 7,
 }: GeneSearchProps) => {
+  const theme = useTheme();
   const [genes, setGenes] = useState<MonstieGene[]>([]);
   const [searchResults, setSearchResults] = useState<MonstieGene[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
+  const { isMobile } = useUIState();
 
   const [draggingGene, setDraggingGene] = useState<MonstieGene | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const { isMobile } = useUIState();
+  const [isDragging, setIsDragging] = useState(true);
+  const [dropMessage, setDropMessage] = useState("");
 
   // browseMode refers to whether the user is browsing the results by swiping or clicking through the pages
   // browseMode should be set to false when they start dragging a gene else where
   // an overflow: hidden is applied to the Container element depending on the browseMode
   const [browseMode, setBrowseMode] = useState(true);
 
-  // search result pagination:
-  const [resultBoxWidth, setResultBoxWidth] = useState(0);
-  const [resultItemSize, setResultItemSize] = useState({ w: 100, h: 100 });
-  // const [rows, setRows] = useState(3);
-
+  // pagination:
   const [resultsPerPage, setResultsPerPage] = useState(20);
   const { pageResult, totalPages, page, nextPage, prevPage } = usePagination(
     searchResults,
@@ -274,20 +365,26 @@ const GeneSearch = ({
   );
 
   // for measuring:
-  const resultContainerRef = useRef<HTMLDivElement>(null);
-  const resultItemRef = useRef<HTMLDivElement>(null);
-  const {} = useResizeObserver({
-    ref: resultContainerRef,
-    onResize: (val) => {
-      console.log("resize");
-      setResultBoxWidth(val.width || 0);
-    },
+  const dummyParentContainerRef = useRef<HTMLDivElement>(null);
+  const { width: parentContainerWidth } = useResizeObserver({
+    ref: dummyParentContainerRef,
   });
 
   // DERIVED ATTRIBUTES:
-  const searchBarHeight = 3 * 14;
+  // const searchBarHeight = 3 * 14;
+  // const componentHeight = rows * resultItemSize.h + verticalPadding * 2;
   const componentHeight =
-    rows * resultItemSize.h + searchBarHeight + verticalPadding * 2;
+    rows * itemSize + rows * itemPadding * 2 + itemPadding * 2;
+
+  // ANIMATION PROPS:
+  const fabProps = {
+    variants: {
+      normal: { scale: 1, backgroundColor: theme.colors.primary.main },
+      shrink: { scale: 0.75, backgroundColor: theme.colors.error.light },
+    },
+    initial: "normal",
+    animate: showSearch ? "shrink" : "normal",
+  };
 
   const next = () => {
     setBrowseMode(true);
@@ -299,8 +396,16 @@ const GeneSearch = ({
     prevPage();
   };
 
+  const toggleSearch = () => {
+    setBrowseMode(true);
+    setShowSearch((v) => !v);
+  };
+
   const isDraggingGene = (gene: MonstieGene) =>
     gene.geneName === draggingGene?.geneName;
+
+  const setSearch = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setSearchTerm(e.target.value);
 
   useEffect(() => {
     const dataFromApiCall = DATA.genes;
@@ -309,28 +414,15 @@ const GeneSearch = ({
     setSearchResults(cleanGenes.slice(0, 20));
   }, []);
 
-  /////////////////////////////////////////////////////////////////////////////////////////
-
-  useEffect(() => {
-    if (resultItemRef.current) {
-      const { width, height } = resultItemRef.current?.getBoundingClientRect();
-      setResultItemSize({ w: width, h: height });
-    }
-  }, []);
-
   // recalculate pagination parameters:
   useEffect(() => {
-    const { w, h } = resultItemSize;
-    if (resultContainerRef.current) {
-      const { width } = resultContainerRef.current?.getBoundingClientRect();
+    const itemWidth = itemSize + itemPadding * 2;
 
-      const itemsPerPage = Math.floor(width / w) * rows;
+    const itemsPerPage =
+      Math.floor((parentContainerWidth || 0) / itemWidth) * rows;
 
-      setResultsPerPage(itemsPerPage);
-    }
-  }, [resultBoxWidth, resultItemSize, rows]);
-
-  /////////////////////////////////////////////////////////////////////////////////////////
+    setResultsPerPage(itemsPerPage);
+  }, [parentContainerWidth, rows, itemSize, itemPadding]);
 
   useEffect(() => {
     if (searchTerm === "") setSearchResults(genes);
@@ -344,107 +436,134 @@ const GeneSearch = ({
     }
   }, [searchTerm, genes]);
 
-  const GeneItem = (
-    gene: MonstieGene,
-    ref: RefObject<HTMLDivElement> | null,
-    Container = GeneContainer
-  ) => (
-    <Container key={gene.geneName} ref={ref}>
+  useEffect(() => {
+    if (!isDragging && !dropSuccess) {
+      setDropMessage("Drop failed: Duplicate gene!");
+    } else {
+      setDropMessage("");
+    }
+  }, [isDragging, dropSuccess]);
+
+  const GeneItem = (gene: MonstieGene) => (
+    <GeneContainer key={gene.geneName} padding={itemPadding}>
       <DraggableGene
-        size={90}
+        size={itemSize}
         gene={gene}
         onDragStart={() => {
           setDraggingGene(gene);
           setDropSuccess(false);
           setBrowseMode(false);
+          setIsDragging(true);
         }}
-        onDragEnd={(_, drag) => {
+        onDragEnd={(_, info) => {
+          setIsDragging(false);
+
           setDrop({
             type: DROP_TYPES.GENE_PLACE,
-            position: drag.point,
+            position: info.point,
             data: gene,
           });
         }}
         opacity={isDraggingGene(gene) && dropSuccess ? 0 : 1}
         // opacity={isDraggingGene(gene) ? 1 : 0}
         bringToFront={isDraggingGene(gene)}
-        // dragOff={browseMode}
         longPressToDrag
       />
       {isDraggingGene(gene) && (
-        <ShadowItem>
+        <ShadowItem padding={itemPadding}>
           <Gene gene={gene} />
         </ShadowItem>
       )}
-    </Container>
-  );
-
-  const MeasurementGene = GeneItem(
-    EMPTY_GENE,
-    resultItemRef,
-    MeasurementOnlyContainter
+    </GeneContainer>
   );
 
   return (
-    <Container
-      height={componentHeight}
-      dragging={browseMode}
-      ref={resultContainerRef}
-    >
-      <TableSearchBar
-        value={searchTerm}
-        onChange={(e: any) => setSearchTerm(e.target.value)}
-        placeholderText="Search for a gene to place.."
-        // results={searchResults.length}
-      />
+    <>
+      <DummyWidthMeasurementDiv ref={dummyParentContainerRef} />
+      <FAB type="button" {...fabProps} onClick={toggleSearch}>
+        {showSearch ? <MdClose /> : <HiPlus />}
+      </FAB>
+      <AnimatePresence>
+        {showSearch && (
+          <Controls>
+            <LB key="prev" onClick={prev} {...navButtonAnimation} custom={1}>
+              <MdKeyboardArrowLeft />
+            </LB>
+            <LB key="next" onClick={next} {...navButtonAnimation} custom={0}>
+              <MdKeyboardArrowRight />
+            </LB>
+            {/* <LB onClick={next} size={16}>
+              <ImHeart />
+            </LB> */}
+          </Controls>
+        )}
+        {showSearch && (
+          <ExpandSearchMenu
+            key="gene-search"
+            value={searchTerm}
+            onChange={setSearch}
+            placeholderText="Search for a gene.."
+          />
+        )}
 
-      <FlashTooltip text={`Page: ${page.number + 1} of ${totalPages}`} />
-
-      <AnimatePresence initial={false} custom={page.direction}>
-        <Results
-          key={page.number}
-          drag={isMobile ? "x" : false}
-          dragElastic={1}
-          dragConstraints={{ left: 0, right: 0 }}
-          custom={page.direction}
-          onDragStart={() => {
-            setBrowseMode(true);
-          }}
-          onDragEnd={(e, info) => {
-            const { offset, velocity } = info;
-            const swipe = swipePower(offset.x, velocity.x);
-            if (swipe < -swipeConfidenceThreshold) next();
-            else if (swipe > swipeConfidenceThreshold) prev();
-          }}
-          {...pageAnimation}
-        >
-          {MeasurementGene}
-          {pageResult
-            // .slice(range.start, numberOfResultsShown)
-            .map((gene, i) => GeneItem(gene, null))}
-        </Results>
+        {showSearch && (
+          <Fragment key="idk">
+            <FlashTooltip text={`Page: ${page.number + 1} of ${totalPages}`} />
+            <FlashTooltip text={dropMessage} />
+          </Fragment>
+        )}
+        {showSearch && (
+          <Container
+            {...hideResultsAnimation}
+            padding={itemPadding}
+            key="results-container"
+            height={componentHeight}
+            dragging={browseMode || !showSearch}
+            // ref={resultContainerRef}
+          >
+            <Results
+              {...pageAnimation}
+              className="results"
+              key={page.number}
+              drag={isMobile ? "x" : false}
+              dragElastic={1}
+              dragConstraints={{ left: 0, right: 0 }}
+              custom={page.direction}
+              onDragStart={() => {
+                setBrowseMode(true);
+              }}
+              onDragEnd={(_, info) => {
+                const { offset, velocity } = info;
+                const swipe = swipePower(offset.x, velocity.x);
+                if (swipe < -swipeConfidenceThreshold) next();
+                else if (swipe > swipeConfidenceThreshold) prev();
+              }}
+            >
+              {pageResult.map((gene) => GeneItem(gene))}
+              {[...Array(resultsPerPage - pageResult.length).keys()].map(
+                (val) => (
+                  <EmptyResult
+                    size={itemSize + itemPadding * 2}
+                    key={`empty-result-${val}`}
+                  />
+                )
+              )}
+            </Results>
+          </Container>
+        )}
       </AnimatePresence>
+    </>
+  );
+};
 
-      <Controls>
-        {/* <p>
+export default GeneSearch;
+
+{
+  /* <p>
           {page.number + 1}/{totalPages}
         </p>
         <p>
           {" " + pageResult.length}/{resultsPerPage + " "}
         </p>
-        <p>Results: {searchResults.length}</p> */}
-        <LB onClick={prev}>
-          <MdKeyboardArrowLeft />
-        </LB>
-        <LB onClick={next}>
-          <MdKeyboardArrowRight />
-        </LB>
-        <LB onClick={next} size={16}>
-          <ImHeart />
-        </LB>
-      </Controls>
-    </Container>
-  );
-};
-
-export default GeneSearch;
+        <p>Results: {searchResults.length}</p> */
+}

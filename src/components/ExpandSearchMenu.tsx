@@ -32,6 +32,8 @@ export const popOutMenuBaseStyles = (props: any) => css`
 const SearchBox = styled(motion.div)`
   ${popOutMenuBaseStyles}
 
+  /* max-width: 50rem; */
+  width: 100%;
   overflow: hidden;
 
   height: 4rem;
@@ -40,7 +42,7 @@ const SearchBox = styled(motion.div)`
 const animationProps = {
   variants: {
     appear: { width: "100%", opacity: 0.94 },
-    exit: { width: "0%", opacity: 0 },
+    exit: { width: "0%", opacity: 0, transition: { delay: 0.2 } },
   },
   initial: "exit",
   animate: "appear",
@@ -50,15 +52,20 @@ const animationProps = {
 type ExpandSearchMenuProps = {
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  placeholderText?: string;
 };
 
-const ExpandSearchMenu = ({ value, onChange }: ExpandSearchMenuProps) => {
+const ExpandSearchMenu = ({
+  value,
+  onChange,
+  placeholderText,
+}: ExpandSearchMenuProps) => {
   return (
     <SearchBox {...animationProps}>
       <TableSearchBar
         value={value}
         onChange={onChange}
-        placeholderText="Filter monsties by name, egg color, ability, and more!"
+        placeholderText={placeholderText}
       />
     </SearchBox>
   );

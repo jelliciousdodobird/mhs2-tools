@@ -5,6 +5,7 @@ import { rgba } from "emotion-rgba";
 
 // library:
 import { useState, useMemo, useEffect, useRef } from "react";
+import { motion, PanInfo } from "framer-motion";
 
 // data:
 import DATA from "../utils/output.json";
@@ -12,10 +13,16 @@ import DATA from "../utils/output.json";
 // custom components:
 import Table from "../components/Table";
 import MonstieList from "../components/MonstieList";
+import DraggableGene from "../components/DraggableGene";
+import { TEST_BOARD } from "../utils/TestData";
+import FloatingPoint from "../components/FloatingPoint";
+import { useUIState } from "../contexts/UIContext";
 
 const Container = styled.div`
   /* width: 100%; */
   /* height: 100%; */
+
+  position: relative;
 
   display: flex;
   flex-direction: column;
@@ -46,14 +53,18 @@ const SurfaceContainer = styled.div`
   padding: 2rem;
   margin-bottom: 1rem;
 
+  p {
+    user-select: none;
+  }
+
   /* width: 100%; */
 
   border-radius: 20px;
   background-color: ${({ theme }) => theme.colors.surface.main};
 
   display: flex;
-  justify-content: center;
-  align-items: center;
+  /* justify-content: center; */
+  /* align-items: center; */
 `;
 
 const Heading = styled.h2`
@@ -67,7 +78,7 @@ const Heading = styled.h2`
   display: flex;
 `;
 
-const Test = styled.a`
+const QuickLinkCompare = styled.a`
   z-index: 10;
 
   align-self: flex-end;
@@ -76,7 +87,7 @@ const Test = styled.a`
   /* z-index: 9999; */
   /* position: fixed; */
   /* margin: 3rem; */
-  top: 0;
+  top: 2rem;
   right: 0;
 
   border-radius: 50%;
@@ -104,13 +115,26 @@ const Test = styled.a`
       fill: ${({ theme }) => theme.colors.onPrimary.main};
     }
   }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.m}px) {
+    top: calc(${({ theme }) => theme.dimensions.mainNav.maxHeight}px + 1rem);
+  }
 `;
 
-const Test2 = styled(Test)`
-  top: 3rem;
+const QuickLinkMonstieList = styled(QuickLinkCompare)`
+  top: 5rem;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.m}px) {
+    top: calc(${({ theme }) => theme.dimensions.mainNav.maxHeight}px + 4rem);
+  }
 `;
 
 const MonstiesPage = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { isMobile } = useUIState();
+
+  const floatPointOffset = isMobile ? 10.5 : 28;
+
   const [lvl, setLvl] = useState(1);
   const [data, setData] = useState(DATA.monsties);
   const column = useMemo(
@@ -177,28 +201,25 @@ const MonstiesPage = () => {
     setData(newStats);
   }, [lvl]);
 
+  const handleDragStart = (
+    event: MouseEvent | TouchEvent | PointerEvent,
+    info: PanInfo
+  ) => {
+    console.log(info);
+  };
+
   return (
     <>
-      <Container>
-        <Test href="#compare">C</Test>
+      <Container ref={containerRef}>
+        <QuickLinkCompare href="#compare">C</QuickLinkCompare>
         <Heading id="compare">Compare {"->"}</Heading>
 
-        {/* <BingoTest></BingoTest> */}
-
-        <SurfaceContainer>
-          <ButtonContainer>
-            {[1, 10, 20, 30, 40, 50, 75, 99].map((lvl) => (
-              <LvlSelectorButton
-                key={lvl}
-                onClick={() => {
-                  setLvl(lvl);
-                }}
-              >
-                {lvl}
-              </LvlSelectorButton>
-            ))}
-          </ButtonContainer>
-        </SurfaceContainer>
+        <FloatingPoint
+          parentContainerRef={containerRef}
+          bottom={floatPointOffset}
+          right={floatPointOffset}
+          portalId="floating-point-monstie-list"
+        />
 
         <SurfaceContainer>
           <p>
@@ -248,7 +269,6 @@ const MonstiesPage = () => {
             earum exercitationem quibusdam magni consectetur.
           </p>
         </SurfaceContainer>
-
         <SurfaceContainer>
           <p>
             Lorem ipsum, dolor sit amet consectetur adipisicing elit.
@@ -311,7 +331,8 @@ const MonstiesPage = () => {
             voluptate repellat tempore cum, architecto, deleniti ipsum tenetur.
           </p>
         </SurfaceContainer>
-        <Test2 href="#monstie-list">M</Test2>
+
+        <QuickLinkMonstieList href="#monstie-list">M</QuickLinkMonstieList>
         <Heading id="monstie-list">Monstie List {"->"}</Heading>
         <MonstieList data={data} column={column} />
 

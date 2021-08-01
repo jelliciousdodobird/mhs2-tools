@@ -167,25 +167,36 @@ export const GlobalReset = () => {
         }
 
         html {
-          width: 100%;
-          height: 100%;
-          overflow: hidden;
+          /* border: 2px dashed teal; */
+
+          /* width: 100%; */
+          /* height: 100%; */
+          /* overflow: hidden; */
+          overflow: auto;
+          scroll-behavior: smooth;
 
           background-color: ${theme.colors.background.main};
 
           /* background: ${`linear-gradient(45deg, ${theme.colors.primary.main}, ${theme.colors.primary.light})`}; */
 
           body {
-            overflow: hidden;
-            width: 100%;
-            height: 100%;
+            /* border: 2px dashed salmon; */
+
+            /* overflow: auto; */
+
+            /* overflow: hidden; */
+            /* width: 100%; */
+            /* height: 100%; */
 
             #root {
-              overflow: hidden;
-              width: 100%;
-              height: 100%;
+              /* border: 2px dashed orange; */
 
-              display: flex;
+              /* overflow: hidden; */
+              /* overflow: auto; */
+              /* width: 100%; */
+              /* height: 100%; */
+
+              /* display: flex; */
             }
           }
         }

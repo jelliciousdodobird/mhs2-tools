@@ -49,6 +49,10 @@ const GeneContainer = styled.div<{
 
   width: ${({ size }) => (size ? `${size}px` : "100%")};
   height: ${({ size }) => (size ? `${size}px` : "100%")};
+  max-width: ${({ size }) => (size ? `${size}px` : "100%")};
+  max-height: ${({ size }) => (size ? `${size}px` : "100%")};
+  min-width: ${({ size }) => (size ? `${size}px` : "100%")};
+  min-height: ${({ size }) => (size ? `${size}px` : "100%")};
 
   ${({ maxZIndex }) =>
     maxZIndex &&
@@ -172,6 +176,8 @@ const GeneName = styled.span<{ c?: string; borderColor?: string }>`
 `;
 
 const GeneSize = styled.p`
+  user-select: none;
+
   position: absolute;
   top: 0;
   right: 0;
@@ -274,7 +280,7 @@ const Gene = ({ gene, size, disableSkillPreview = false }: GeneProps) => {
   // colors:
   const geneColor = ELEMENT_COLOR[gene.elementType as ElementType].main;
   const darkenGeneColor = ELEMENT_COLOR[gene.elementType as ElementType].dark;
-  const borderColor = color(geneColor).darken(0.4).hex();
+  const borderColor = color(geneColor).darken(0.35).hex();
 
   // formatted strings:
   const geneSizeLetter = GENE_SIZE_LETTER[gene.geneSize];

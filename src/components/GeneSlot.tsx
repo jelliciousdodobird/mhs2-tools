@@ -4,6 +4,7 @@ import styled from "@emotion/styled";
 import { ReactElement, forwardRef } from "react";
 import { useDrop } from "react-dnd";
 import { MonstieGene } from "../utils/ProjectTypes";
+import { ELEMENT_COLOR } from "../utils/ProjectTypes";
 
 const octagonCssString = `polygon(
     50% 0,
@@ -16,6 +17,19 @@ const octagonCssString = `polygon(
     15% 15%
   )`;
 
+const EC = ELEMENT_COLOR;
+
+const rainbowGradient = (degree = 150) =>
+  `repeating-linear-gradient(
+    ${degree}deg,
+    ${EC["fire"].main} 0%,
+    ${EC["thunder"].main} 3%,
+    #49d0b0 7%,
+    ${EC["water"].main} 10%,
+    ${EC["dragon"].main} 13%,
+    ${EC["fire"].main} 15%
+)`;
+
 const Container = styled.div`
   position: relative;
   width: 100%;
@@ -26,6 +40,12 @@ const Container = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+
+  border-radius: 50%;
+  transform: scale(0.9);
+
+  background-attachment: fixed;
+  background-image: ${({ theme }) => rainbowGradient()};
 `;
 
 const SlotHole = styled.div<{ isOver: boolean }>`
@@ -37,13 +57,14 @@ const SlotHole = styled.div<{ isOver: boolean }>`
   height: 100%;
   border-radius: 50%;
 
-  transform: scale(0.9);
+  transform: scale(0.85);
+
+  background-color: ${({ theme }) => theme.colors.surface.main};
 
   /* background-color: ${({ isOver, theme }) =>
     isOver ? theme.colors.correct.main : theme.colors.background.main}; */
 
-  border: 5px solid ${({ theme }) => theme.colors.background.main};
-  /* border: 5px solid red; */
+  /* border: 5px solid ${({ theme }) => theme.colors.background.main}; */
 
   /* clip-path: ${octagonCssString}; */
 
