@@ -16,6 +16,7 @@ import Debug from "./components/Debug";
 import MonstiesPage from "./pages/MonstiesPage";
 import GenesPage from "./pages/GenesPage";
 import TeamBuilderPage from "./pages/TeamBuilderPage";
+import BuildPage from "./pages/BuildPage";
 
 const AppContainer = styled.div`
   /* border: 2px dashed lightblue; */
@@ -31,7 +32,7 @@ const AppContainer = styled.div`
   }
 `;
 
-const PageContainer = styled.div`
+const PageContainer = styled.main`
   /* border: 2px dashed pink; */
 
   z-index: 1;
@@ -72,7 +73,9 @@ const App = () => {
         <Switch>
           <Route path="/monsties" component={MonstiesPage} />
           <Route path="/genes" component={GenesPage} />
-          <Route path="/team-builder" component={TeamBuilderPage} />
+          <Route exact path="/builds" component={TeamBuilderPage} />
+          {/* <Route exact path="/builds/:id" component={} /> */}
+          <Route path="/builds/edit/:id" component={BuildPage} />
         </Switch>
       </PageContainer>
     </AppContainer>

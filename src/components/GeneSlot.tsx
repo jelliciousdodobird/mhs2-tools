@@ -19,21 +19,21 @@ const octagonCssString = `polygon(
 
 const EC = ELEMENT_COLOR;
 
-const rainbowGradient = (degree = 150) =>
+export const rainbowGradient = (degree = 160) =>
   `repeating-linear-gradient(
     ${degree}deg,
     ${EC["fire"].main} 0%,
-    ${EC["thunder"].main} 3%,
-    #49d0b0 7%,
-    ${EC["water"].main} 10%,
-    ${EC["dragon"].main} 13%,
-    ${EC["fire"].main} 15%
+    ${EC["thunder"].main} 6%,
+    #49d0b0 12%,
+    ${EC["water"].main} 18%,
+    ${EC["dragon"].main} 24%,
+    ${EC["fire"].main} 30%
 )`;
 
 const Container = styled.div`
   position: relative;
-  width: 100%;
-  height: 100%;
+  width: 90%;
+  height: 90%;
 
   border-radius: 5px;
 
@@ -41,17 +41,25 @@ const Container = styled.div`
   justify-content: center;
   align-items: center;
 
+  margin: auto;
   border-radius: 50%;
-  transform: scale(0.9);
+  /*
+    putting a transform on this container breaks background-attachment: fixed on firefox
+    so we have to settle for setting the width and height to be 90% instead
+    which means this component needs to be centered by its parent >:()
+  */
+  /* transform: scale(0.9); */
 
   background-attachment: fixed;
-  background-image: ${({ theme }) => rainbowGradient()};
+  background-image: ${rainbowGradient()};
 `;
 
 const SlotHole = styled.div<{ isOver: boolean }>`
   position: absolute;
   top: 0;
   left: 0;
+
+  transform: scale(0.9);
 
   width: 100%;
   height: 100%;

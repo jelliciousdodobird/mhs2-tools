@@ -38,7 +38,7 @@ import ExpandSearchMenu from "./ExpandSearchMenu";
 // data:
 import DATA from "../utils/output.json";
 import { DROP_TYPES } from "../utils/DropTypes";
-import { clamp, EMPTY_GENE } from "../utils/utils";
+// import { clamp, BLANK_GENE } from "../utils/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import Debug from "./Debug";
 import usePagination from "../hooks/usePagination";
@@ -47,8 +47,7 @@ import usePagination from "../hooks/usePagination";
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { GiRoundStar } from "react-icons/gi";
 import { ImHeart } from "react-icons/im";
-import { HiPlus } from "react-icons/hi";
-import { MdClose } from "react-icons/md";
+import { MdClose, MdAdd } from "react-icons/md";
 
 const DummyWidthMeasurementDiv = styled.div`
   width: 100%;
@@ -73,6 +72,8 @@ const Container = styled(motion.div)<{
   background-color: ${({ theme }) => theme.colors.background.dark};
   background-color: ${({ theme }) => theme.colors.surface.main};
   box-shadow: 0px 0px 20px -13px black;
+
+  opacity: 0.94;
 
   max-height: ${({ height }) => height}px;
 
@@ -262,7 +263,7 @@ const pageAnimation = {
 
 const hideResultsAnimation = {
   variants: {
-    show: { opacity: 1, height: "auto", transition: { delay: 0.2 } },
+    show: { opacity: 0.94, height: "auto", transition: { delay: 0.2 } },
     hide: {
       opacity: 0,
       height: "0",
@@ -481,7 +482,7 @@ const GeneSearch = ({
     <>
       <DummyWidthMeasurementDiv ref={dummyParentContainerRef} />
       <FAB type="button" {...fabProps} onClick={toggleSearch}>
-        {showSearch ? <MdClose /> : <HiPlus />}
+        {showSearch ? <MdClose /> : <MdAdd />}
       </FAB>
       <AnimatePresence>
         {showSearch && (

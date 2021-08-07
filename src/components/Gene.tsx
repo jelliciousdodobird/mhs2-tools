@@ -146,7 +146,7 @@ const PowerType = styled.div<{ c?: string; rainbow: boolean }>`
   }
 `;
 
-const GeneName = styled.span<{ c?: string; borderColor?: string }>`
+const GeneName = styled.p<{ c?: string; borderColor?: string }>`
   user-select: none;
   overflow: hidden;
 
@@ -300,7 +300,7 @@ const Gene = ({ gene, size, disableSkillPreview = false }: GeneProps) => {
       }}
       onClick={() => {
         if (!disableSkillPreview) setShowSkill((v) => !v);
-        console.log(gene);
+        // console.log(gene);
       }}
     >
       {/* <GeneBorder c={GENE_SIZE_COLOR[gene.geneSize]} /> */}

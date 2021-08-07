@@ -99,7 +99,7 @@ export const lightTheme: Theme = {
 
     background: ccs({ main: "#f6f8fc", dark: "#e9eef8", darker: "#f6f6f6" }),
     // background: ccs({ main: "#f6f6f6", light: "#f6f8fc", dark: "#e9eef8" }),
-    surface: ccs({ main: "#ffffff" }),
+    surface: ccs({ main: "#ffffff", lighter: "#e6e6e7" }),
 
     onPrimary: ccs({ main: "#ffffff" }),
     onSecondary: ccs({ main: "#000000" }),

@@ -47,7 +47,7 @@ const Container = styled.div<{ searchPadding: boolean }>`
 //   height: 0;
 // `;
 
-const FAB = styled(motion.button)`
+export const FAB = styled(motion.button)`
   z-index: 15;
 
   position: absolute;

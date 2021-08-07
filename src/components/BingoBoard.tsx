@@ -22,72 +22,32 @@ import {
   place,
   swap,
   shuffleArray,
-  isEmptyGene,
-  findAllBingos,
+  isBlankGene,
+  findBingosInFlatArray,
+  cleanGeneBuild,
   matrix,
 } from "../utils/utils";
 import { DROP_TYPES } from "../utils/DropTypes";
 import Asset from "./AssetComponents";
+import useResizeObserver from "use-resize-observer/polyfilled";
 
 const SLOT_SIZE = 110;
 
 const GRID_SIZE = 350;
 const bingoCircleSize = 25;
 
-const pattern1 = () => css`
-  /* background-color: #f7a800; */
-  background-size: calc(100% / 7) calc(100% / 7);
-  background-image: linear-gradient(135deg, transparent 55%, blue 55%),
-    radial-gradient(
-      transparent 5px,
-      #ffffff 6px,
-      #ffffff 9px,
-      transparent 10px,
-      transparent 14px,
-      #ffffff 15px,
-      #ffffff 18px,
-      transparent 19px,
-      transparent 23px,
-      #ffffff 24px,
-      #ffffff 27px,
-      transparent 28px
-    );
-`;
-
-const pattern2 = () => css`
-  /* background-color: #00b5f7; */
-  background-size: calc(100% / 7) calc(100% / 7);
-  background-image: radial-gradient(
-    transparent 27px,
-    #ffffff 28px,
-    #ffffff 31px,
-    transparent 32px
-  );
-
-  background-position: 25% 25%;
-`;
-
-const pattern3 = () => css`
-  /* background-color: #f70b45; */
-  background-size: calc(100% / 7) calc(100% / 7);
-  background-image: radial-gradient(
-      transparent 20px,
-      #ffffff 21px,
-      #ffffff 23px,
-      transparent 24px
-    ),
-    radial-gradient(
-      transparent 20px,
-      #ffffff 21px,
-      #ffffff 23px,
-      transparent 24px
-    );
-  background-position: 0 0, 25px 25px;
-`;
-
 const gap = 14;
 // ${pattern2}
-const Grid = styled.div`
+
+const MAX_SIZE = 400;
+const MIN_SIZE = 300;
+// width: 100%;
+// height: ${({ gridHeight }) => gridHeight}px;
+// min-height: ${({ gridHeight }) => gridHeight}px;
+
+// max-width: ${MAX_SIZE}px;
+// max-height: ${MAX_SIZE}px;
+const Grid = styled.div<{ gridHeight: number; size: number | undefined }>`
   overflow: hidden;
 
   display: grid;
@@ -95,25 +55,34 @@ const Grid = styled.div`
   padding: ${(gap / 3) * 1.5}px;
   gap: ${gap / 3}px;
 
-  min-width: ${GRID_SIZE}px;
-  min-height: ${GRID_SIZE}px;
-  width: ${GRID_SIZE}px;
-  height: ${GRID_SIZE}px;
+  ${({ gridHeight, size }) =>
+    size
+      ? css`
+          width: ${size}px;
+          min-width: ${size}px;
+          max-width: ${size}px;
+          height: ${size}px;
+          min-height: ${size}px;
+          max-height: ${size}px;
+        `
+      : css`
+          width: 100%;
+          /* max-width: ${MAX_SIZE}px; */
+
+          height: ${gridHeight}px;
+          min-height: ${gridHeight}px;
+          max-height: ${MAX_SIZE}px;
+        `}
+
+  /* min-width: ${MIN_SIZE}px; */
+  /* min-height: ${MIN_SIZE}px; */
 
   /* image-rendering: smooth; */
 
-  border-radius: 10px;
+  border-radius: 1rem;
 
   /* background-color: white; */
   background-color: ${({ theme }) => theme.colors.surface.main};
-
-  /* background: ${({ theme }) =>
-    `linear-gradient(115deg, ${theme.colors.background.dark} 49.6%, ${theme.colors.surface.main} 50%)`}; */
-
-  /* background-color: blue; */
-
-  /* background-image: radial-gradient(red 1px, transparent 1px); */
-  /* background-size: 50px 50px; */
 
   grid:
     "e-diagnol1 e-column1 e-column2 e-column3 a-diagnol2"
@@ -212,7 +181,6 @@ const SlotGrid = styled.div`
 const GeneGrid = styled(motion.div)`
   position: relative;
   z-index: 200;
-
   ${geneGridCellStyles}
 `;
 
@@ -225,6 +193,13 @@ type BingoBoardProps = {
   drop: DropProps;
   setDrop: React.Dispatch<React.SetStateAction<DropProps>>;
   setDropSuccess: React.Dispatch<React.SetStateAction<boolean>>;
+
+  geneBuild: MonstieGene[];
+  setGeneBuild: React.Dispatch<React.SetStateAction<MonstieGene[]>>;
+
+  className?: string;
+
+  size?: number;
 };
 
 const gridAreas = [
@@ -257,20 +232,27 @@ const gridElements: GridElement[] = [
 // console.log(gridElements);
 
 const BingoBoard = ({
+  geneBuild,
+  setGeneBuild,
   drop,
   setDrop,
   setDropSuccess,
-  data,
+  className,
+  size,
 }: BingoBoardProps) => {
   // STATE:
   const [isDragging, setIsDragging] = useState(false);
   const [dragGene, setDragGene] = useState<MonstieGene | null>(null);
-  const [board, setBoard] = useState<MonstieGene[]>(clean(EMPTY_BOARD));
+  // const [geneBuild, setGeneBuild] = useState<MonstieGene[]>(clean(EMPTY_BOARD));
   const [slotRefs, setSlotRefs] = useState<RefObject<HTMLDivElement>[]>([]);
-  const [outerGrid, setOuterGrid] = useState<GridElement[]>(gridElements);
+  const [outerGrid, setOuterGrid] = useState<GridElement[]>([]);
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { width } = useResizeObserver({ ref: containerRef });
+  const gridWidth = containerRef.current?.getBoundingClientRect().width || 0;
 
   // DERIVED STATE:
-  const boardLength = board.length;
+  const boardLength = geneBuild.length;
 
   // FUNCTIONS:
   const getIntersectionIndex = (dropPosition: { x: number; y: number }) => {
@@ -288,7 +270,7 @@ const BingoBoard = ({
   };
 
   const placeGene = (targetIndex: number, gene: MonstieGene) =>
-    setBoard((genes) => {
+    setGeneBuild((genes) => {
       // housekeeping:
       const i = genes.findIndex(({ geneName }) => geneName === gene.geneName);
       const copy = [...genes];
@@ -304,7 +286,7 @@ const BingoBoard = ({
     });
 
   const swapGenes = (targetIndex: number, gene: MonstieGene) =>
-    setBoard((genes) => {
+    setGeneBuild((genes) => {
       // housekeeping:
       const i = genes.findIndex(({ geneName }) => geneName === gene.geneName);
       const copy = [...genes];
@@ -318,7 +300,11 @@ const BingoBoard = ({
       return copy;
     });
 
-  const shuffle = () => setBoard((list) => clean(shuffleArray([...list])));
+  const shuffle = () => setGeneBuild((list) => clean(shuffleArray([...list])));
+
+  useEffect(() => {
+    // setGeneBuild(cleanGeneBuild);
+  }, []);
 
   useEffect(() => {
     setSlotRefs((refs) =>
@@ -346,23 +332,28 @@ const BingoBoard = ({
   }, [drop]);
 
   useEffect(() => {
-    const attackTypes = board.map(({ attackType }, i) =>
-      attackType === "" ? i : attackType
+    const attackTypes = geneBuild
+      .map(({ attackType }, i) => attackType)
+      // .map(({ attackType }, i) => (attackType === "" ? i : attackType))
+      .filter((v) => v !== undefined);
+
+    const elementTypes = geneBuild
+      .map(({ elementType }, i) => elementType)
+      .filter((v) => v !== undefined);
+
+    const attackTypeBingos = findBingosInFlatArray(attackTypes).map(
+      (bingo) => ({
+        ...bingo,
+        location: `a-${bingo.location}`,
+      })
     );
 
-    const elementTypes = board.map(({ elementType }, i) =>
-      elementType === "" ? i : elementType
+    const elementTypeBingos = findBingosInFlatArray(elementTypes).map(
+      (bingo) => ({
+        ...bingo,
+        location: `e-${bingo.location}`,
+      })
     );
-
-    const attackTypeBingos = findAllBingos(attackTypes).map((bingo) => ({
-      ...bingo,
-      location: `a-${bingo.location}`,
-    }));
-
-    const elementTypeBingos = findAllBingos(elementTypes).map((bingo) => ({
-      ...bingo,
-      location: `e-${bingo.location}`,
-    }));
 
     const arr: GridElement[] = [];
     attackTypeBingos.forEach((bingo) =>
@@ -372,24 +363,17 @@ const BingoBoard = ({
       arr.push({ gridArea: bingo.location, type: bingo.type })
     );
 
-    // console.log("-----------------------------");
-    // console.log(matrix(elementTypes));
-    // console.log(elementTypeBingos);
-    // console.log(matrix(attackTypes));
-    // console.log(attackTypeBingos);
-    // console.log(arr);
-
     setOuterGrid(arr);
-  }, [board]);
+  }, [geneBuild]);
 
   return (
     <>
-      {/* <Debug data={board.map((gene) => gene.geneName)} drag /> */}
-      {/* <button type="button" onClick={shuffle}>
-        shuffle
-      </button> */}
-
-      <Grid>
+      <Grid
+        ref={containerRef}
+        className={className}
+        gridHeight={gridWidth}
+        size={size}
+      >
         {outerGrid.map((el) => (
           <Cell key={el.gridArea} gridArea={el.gridArea}>
             <BingoTypeWrapper>
@@ -401,21 +385,17 @@ const BingoBoard = ({
             </BingoTypeWrapper>
           </Cell>
         ))}
-        <GeneGridCell
-          onClick={() => {
-            console.log(board);
-          }}
-        >
+        <GeneGridCell>
           <SlotGrid>
-            {board.map((_, i) => (
+            {[...Array(9).keys()].map((_, i) => (
               <GeneSlot ref={slotRefs[i]} key={i} index={i} />
             ))}
           </SlotGrid>
 
           <GeneGrid>
             <AnimateSharedLayout>
-              {board.map((gene, i) =>
-                !isEmptyGene(gene) ? (
+              {geneBuild.map((gene, i) =>
+                !isBlankGene(gene) ? (
                   <DraggableGene
                     key={gene.geneName}
                     gene={gene}
@@ -447,223 +427,3 @@ const BingoBoard = ({
 };
 
 export default BingoBoard;
-
-// // styling:
-// import { css, jsx } from "@emotion/react";
-// import styled from "@emotion/styled";
-
-// // library:
-// import { AnimateSharedLayout, motion } from "framer-motion";
-// import { createRef, Ref, RefObject, useEffect, useRef, useState } from "react";
-
-// // types:
-// import { MonstieGene } from "./Gene";
-// import { DropProps } from "../hooks/useDrop";
-
-// // custom components:
-// import GeneSlot from "./GeneSlot";
-// import DraggableGene from "./DraggableGene";
-// import Debug from "./Debug";
-
-// // utils:
-// import {
-//   EMPTY_BOARD,
-//   addEmptyGeneInfo as clean,
-//   place,
-//   swap,
-//   shuffleArray,
-//   isEmptyGene,
-//   findAllBingos,
-//   matrix,
-// } from "../utils/utils";
-// import { DROP_TYPES } from "../utils/DropTypes";
-
-// const SLOT_SIZE = 110;
-
-// const Container = styled.div`
-//   position: relative;
-//   width: ${SLOT_SIZE * 3}px;
-//   height: ${SLOT_SIZE * 3}px;
-// `;
-
-// const gridStyles = () => css`
-//   width: 100%;
-//   height: 100%;
-
-//   display: grid;
-//   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
-//   grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
-//   gap: 0.5rem;
-// `;
-
-// const SlotGrid = styled(motion.div)`
-//   position: relative;
-//   background-color: ${({ theme }) => theme.colors.surface.main};
-
-//   ${gridStyles}
-// `;
-
-// const GeneGrid = styled(motion.div)`
-//   position: absolute;
-//   top: 0;
-//   left: 0;
-//   ${gridStyles}
-// `;
-
-// const EmptySlot = styled.div``;
-
-// /////////////////////////////////////////////////////////////////////////////////
-
-// type BingoBoardProps = {
-//   data?: MonstieGene[];
-//   drop: DropProps;
-//   setDrop: React.Dispatch<React.SetStateAction<DropProps>>;
-//   setDropSuccess: React.Dispatch<React.SetStateAction<boolean>>;
-// };
-
-// const BingoBoard = ({
-//   drop,
-//   setDrop,
-//   setDropSuccess,
-//   data,
-// }: BingoBoardProps) => {
-//   // STATE:
-//   const [isDragging, setIsDragging] = useState(false);
-//   const [dragGene, setDragGene] = useState<MonstieGene | null>(null);
-//   const [board, setBoard] = useState<MonstieGene[]>(clean(EMPTY_BOARD));
-//   const [slotRefs, setSlotRefs] = useState<RefObject<HTMLDivElement>[]>([]);
-
-//   // DERIVED STATE:
-//   const boardLength = board.length;
-
-//   // FUNCTIONS:
-//   const getIntersectionIndex = (dropPosition: { x: number; y: number }) => {
-//     let targetIndex = -1;
-
-//     const { x, y } = dropPosition;
-//     slotRefs.forEach((el, i) => {
-//       const { top, bottom, left, right } =
-//         el?.current?.getBoundingClientRect() as DOMRect;
-
-//       if (x < right && x > left && y < bottom && y > top) targetIndex = i;
-//     });
-
-//     return targetIndex;
-//   };
-
-//   const placeGene = (targetIndex: number, gene: MonstieGene) =>
-//     setBoard((genes) => {
-//       // housekeeping:
-//       const i = genes.findIndex(({ geneName }) => geneName === gene.geneName);
-//       const copy = [...genes];
-//       let success = true;
-
-//       // the droppedGene is already on the board:
-//       if (i !== -1) success = false;
-//       // place the gene at the target location:
-//       else place(targetIndex, gene, copy);
-
-//       setDropSuccess(success);
-//       return copy;
-//     });
-
-//   const swapGenes = (targetIndex: number, gene: MonstieGene) =>
-//     setBoard((genes) => {
-//       // housekeeping:
-//       const i = genes.findIndex(({ geneName }) => geneName === gene.geneName);
-//       const copy = [...genes];
-
-//       // dragged from another board component so a swap isnt possible:
-//       if (i === -1) place(targetIndex, gene, copy);
-//       // swap the two elements in question:
-//       else swap(i, targetIndex, copy);
-
-//       setDropSuccess(true);
-//       return copy;
-//     });
-
-//   const shuffle = () => setBoard((list) => clean(shuffleArray([...list])));
-
-//   useEffect(() => {
-//     setSlotRefs((refs) =>
-//       [...Array(boardLength).keys()].map((_, i) => refs[i] || createRef())
-//     );
-//   }, [boardLength]);
-
-//   useEffect(() => {
-//     const { type, position, data } = drop;
-//     const targetIndex = getIntersectionIndex(position);
-
-//     if (targetIndex !== -1) {
-//       switch (type) {
-//         case DROP_TYPES.GENE_SWAP:
-//           swapGenes(targetIndex, data);
-//           break;
-//         case DROP_TYPES.GENE_PLACE:
-//           placeGene(targetIndex, data);
-//           break;
-//         default:
-//           setDropSuccess(false);
-//           break;
-//       }
-//     }
-//   }, [drop]);
-
-//   return (
-//     <>
-//       {/* <Debug data={board.map((gene) => gene.geneName)} drag /> */}
-//       <button type="button" onClick={shuffle}>
-//         shuffle
-//       </button>
-
-//       <Container
-//         onClick={() => {
-//           const attackTypes = board.map((v) => v.attackType);
-//           const elementTypes = board.map((v) => v.elementType);
-
-//           console.log(matrix(attackTypes));
-//           console.log("attackTypes:", findAllBingos(attackTypes));
-//           console.log(matrix(elementTypes));
-//           console.log("elementTypes:", findAllBingos(elementTypes));
-//         }}
-//       >
-//         <SlotGrid>
-//           {board.map((_, i) => (
-//             <GeneSlot ref={slotRefs[i]} key={i} index={i} />
-//           ))}
-//         </SlotGrid>
-
-//         <GeneGrid>
-//           <AnimateSharedLayout>
-//             {board.map((gene, i) =>
-//               !isEmptyGene(gene) ? (
-//                 <DraggableGene
-//                   key={gene.geneName}
-//                   gene={gene}
-//                   onDragStart={() => {
-//                     setIsDragging(true);
-//                     setDragGene(gene);
-//                   }}
-//                   onDragEnd={(_, drag) => {
-//                     setIsDragging(false);
-//                     setDragGene(gene);
-//                     setDrop({
-//                       type: DROP_TYPES.GENE_SWAP,
-//                       position: drag.point,
-//                       data: gene,
-//                     });
-//                   }}
-//                   bringToFront={dragGene?.geneName === gene.geneName}
-//                 />
-//               ) : (
-//                 <EmptySlot key={gene.geneName} />
-//               )
-//             )}
-//           </AnimateSharedLayout>
-//         </GeneGrid>
-//       </Container>
-//     </>
-//   );
-// };
-
-// export default BingoBoard;

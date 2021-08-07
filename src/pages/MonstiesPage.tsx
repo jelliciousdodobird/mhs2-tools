@@ -35,18 +35,6 @@ const Container = styled.div`
   } */
 `;
 
-const LvlSelectorButton = styled.button`
-  background-color: ${({ theme }) => theme.colors.background.light};
-  padding: 1rem;
-  margin: 1px;
-
-  color: ${({ theme }) => theme.colors.background.main};
-`;
-
-const ButtonContainer = styled.div`
-  display: flex;
-`;
-
 const SurfaceContainer = styled.div`
   /* border: 1px solid yellow; */
   position: relative;
@@ -152,14 +140,14 @@ const MonstiesPage = () => {
       { key: "hp", label: "HP", width: 50 },
       { key: "recovery", label: "Rec", width: 60 },
 
-      { key: "atk_non_elemental", label: "Non Elemental Attack", width: 50 },
+      { key: "atk_non-elemental", label: "Non Elemental Attack", width: 50 },
       { key: "atk_fire", label: "Fire Attack", width: 50 },
       { key: "atk_water", label: "Water Attack", width: 50 },
       { key: "atk_thunder", label: "Thunder Attack", width: 50 },
       { key: "atk_ice", label: "Ice Attack", width: 50 },
       { key: "atk_dragon", label: "Dragon Attack", width: 50 },
 
-      { key: "def_non_elemental", label: "Non Elemental Defense", width: 50 },
+      { key: "def_non-elemental", label: "Non Elemental Defense", width: 50 },
       { key: "def_fire", label: "Fire Defense", width: 50 },
       { key: "def_water", label: "Water Defense", width: 50 },
       { key: "def_thunder", label: "Thunder Defense", width: 50 },
@@ -182,14 +170,14 @@ const MonstiesPage = () => {
         hp: statline?.hp,
         recovery: statline?.recovery,
 
-        atk_non_elemental: statline?.attack.non_elemental,
+        "atk_non-elemental": statline?.attack["non-elemental"],
         atk_fire: statline?.attack.fire,
         atk_water: statline?.attack.water,
         atk_thunder: statline?.attack.thunder,
         atk_ice: statline?.attack.ice,
         atk_dragon: statline?.attack.dragon,
 
-        def_non_elemental: statline?.defense.non_elemental,
+        "def_non-elemental": statline?.defense["non-elemental"],
         def_fire: statline?.defense.fire,
         def_water: statline?.defense.water,
         def_thunder: statline?.defense.thunder,

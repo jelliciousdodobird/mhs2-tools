@@ -283,7 +283,7 @@ const SearchBar = ({
         boxShadow: `inset 0px 0px 0px 0px ${theme.colors.correct.main}`,
       },
     },
-    initial: "alert",
+    initial: "none",
     animate: showAlert ? "alert" : "none",
   };
 

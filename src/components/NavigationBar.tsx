@@ -419,7 +419,7 @@ const NavigationBar = () => {
             <NavItem
               text="Team Builder"
               icon={MdBuild}
-              to="/team-builder"
+              to="/builds"
               iconSize={18}
               onClick={closeMainNav}
             />
