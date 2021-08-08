@@ -69,11 +69,10 @@ const Container = styled(motion.div)<{
   padding: ${({ padding }) => padding}px 0;
 
   border-radius: 1rem;
-  background-color: ${({ theme }) => theme.colors.background.dark};
-  background-color: ${({ theme }) => theme.colors.surface.main};
+  /* background-color: ${({ theme }) => theme.colors.surface.main}; */
   box-shadow: 0px 0px 20px -13px black;
 
-  opacity: 0.94;
+  /* opacity: 0.94; */
 
   max-height: ${({ height }) => height}px;
 
@@ -83,6 +82,24 @@ const Container = styled(motion.div)<{
           overflow: hidden;
         `
       : null}
+
+  &::after {
+    content: "";
+
+    position: absolute;
+    left: 0;
+    top: 0;
+
+    width: 100%;
+    height: 100%;
+
+    border-radius: 1rem;
+
+    opacity: 0.94;
+
+    background-color: red;
+    background-color: ${({ theme }) => theme.colors.surface.main};
+  }
 `;
 
 const Results = styled(motion.div)`
@@ -224,6 +241,8 @@ const EmptyResult = styled.div<{ size: number }>`
   `}
 `;
 
+const ResultInfo = styled.div``;
+
 const pageVariants = {
   enter: (direction: number) => {
     return {
@@ -263,7 +282,7 @@ const pageAnimation = {
 
 const hideResultsAnimation = {
   variants: {
-    show: { opacity: 0.94, height: "auto", transition: { delay: 0.2 } },
+    show: { opacity: 1, height: "auto", transition: { delay: 0.2 } },
     hide: {
       opacity: 0,
       height: "0",
@@ -350,7 +369,7 @@ const GeneSearch = ({
   const { isMobile } = useUIState();
 
   const [draggingGene, setDraggingGene] = useState<MonstieGene | null>(null);
-  const [isDragging, setIsDragging] = useState(true);
+  const [isDragging, setIsDragging] = useState(false);
   const [dropMessage, setDropMessage] = useState("");
 
   // browseMode refers to whether the user is browsing the results by swiping or clicking through the pages
@@ -437,13 +456,13 @@ const GeneSearch = ({
     }
   }, [searchTerm, genes]);
 
-  useEffect(() => {
-    if (!isDragging && !dropSuccess) {
-      setDropMessage("Drop failed: Duplicate gene!");
-    } else {
-      setDropMessage("");
-    }
-  }, [isDragging, dropSuccess]);
+  // useEffect(() => {
+  //   if (!isDragging && !dropSuccess) {
+  //     setDropMessage("Drop failed: Duplicate gene!");
+  //   } else {
+  //     setDropMessage("");
+  //   }
+  // }, [isDragging, dropSuccess]);
 
   const GeneItem = (gene: MonstieGene) => (
     <GeneContainer key={gene.geneName} padding={itemPadding}>
@@ -466,7 +485,6 @@ const GeneSearch = ({
           });
         }}
         opacity={isDraggingGene(gene) && dropSuccess ? 0 : 1}
-        // opacity={isDraggingGene(gene) ? 1 : 0}
         bringToFront={isDraggingGene(gene)}
         longPressToDrag
       />
@@ -508,10 +526,12 @@ const GeneSearch = ({
         )}
 
         {showSearch && (
-          <Fragment key="idk">
-            <FlashTooltip text={`Page: ${page.number + 1} of ${totalPages}`} />
-            <FlashTooltip text={dropMessage} />
-          </Fragment>
+          <ResultInfo key="idk">
+            {/* <FlashTooltip text={`Page: ${page.number + 1} of ${totalPages}`} /> */}
+            {/* <FlashTooltip text={dropMessage} /> */}
+
+            <div>{`Page: ${page.number + 1} of ${totalPages}`} </div>
+          </ResultInfo>
         )}
         {showSearch && (
           <Container

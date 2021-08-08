@@ -64,7 +64,7 @@ const App = () => {
   }, [pathname]);
 
   return (
-    <AppContainer>
+    <AppContainer id="app">
       <Helmet>
         <meta name="theme-color" content={theme.colors.background.main} />
       </Helmet>

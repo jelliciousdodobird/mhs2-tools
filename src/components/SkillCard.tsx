@@ -16,6 +16,7 @@ const Container = styled.div``;
 
 const SkillContainer = styled.div<{ bg?: string }>`
   min-height: 12rem;
+  /* min-width: 15rem; */
   border-radius: 1rem;
   padding: 1rem;
   gap: 0.5rem;

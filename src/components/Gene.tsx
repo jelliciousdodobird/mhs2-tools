@@ -12,22 +12,8 @@ import { ELEMENT_COLOR, ElementType, MonstieGene } from "../utils/ProjectTypes";
 import { rgba } from "emotion-rgba";
 import { motion } from "framer-motion";
 import { formatGeneName, GENE_SIZE_LETTER } from "../utils/utils";
-
-const GENE_SIZE_COLOR: { [key: string]: string } = {
-  1: "black",
-  2: "gray",
-  3: "#ebd557",
-  4: "#b8f0fc",
-  "": "salmon",
-};
-
-// const GENE_SIZE_LETTER: { [key: string]: string } = {
-//   1: "S",
-//   2: "M",
-//   3: "L",
-//   4: "XL",
-//   "": "",
-// };
+import PagePortal from "./PageContainerPortal";
+import SkillCard from "./SkillCard";
 
 const octagonCssString = `polygon(
     50% 0,
@@ -42,11 +28,10 @@ const octagonCssString = `polygon(
 
 const GeneContainer = styled.div<{
   size: number | undefined;
-  maxZIndex: boolean;
+  bringToFront: boolean;
 }>`
   user-select: none;
   position: relative;
-  /* margin: 5px; */
 
   width: ${({ size }) => (size ? `${size}px` : "100%")};
   height: ${({ size }) => (size ? `${size}px` : "100%")};
@@ -54,12 +39,6 @@ const GeneContainer = styled.div<{
   max-height: ${({ size }) => (size ? `${size}px` : "100%")};
   min-width: ${({ size }) => (size ? `${size}px` : "100%")};
   min-height: ${({ size }) => (size ? `${size}px` : "100%")};
-
-  ${({ maxZIndex }) =>
-    maxZIndex &&
-    css`
-      z-index: 999;
-    `}
 `;
 
 const rainbowAnimation = keyframes`
@@ -101,23 +80,6 @@ const GeneOctagon = styled.div<{ c: string; rainbow: boolean }>`
     `}
 `;
 
-const GeneBorder = styled.div<{ c: string }>`
-  /* z-index: 5; */
-
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  background-color: ${({ c }) => c};
-
-  transform: scale(1.1);
-
-  border-radius: 50%;
-
-  /* clip-path: ${octagonCssString}; */
-`;
-
 const PowerType = styled.div<{ c?: string; rainbow: boolean }>`
   position: absolute;
   top: 50%;
@@ -151,6 +113,8 @@ const GeneName = styled.p<{ c?: string; borderColor?: string }>`
   user-select: none;
   overflow: hidden;
 
+  cursor: pointer;
+
   position: absolute;
   bottom: 0;
   left: 50%;
@@ -173,13 +137,18 @@ const GeneName = styled.p<{ c?: string; borderColor?: string }>`
   font-weight: 700;
   color: white;
 
+  &:hover {
+    background-color: ${({ borderColor }) => borderColor};
+  }
+
   /* clip-path: polygon(11% 0, 89% 0, 100% 50%, 89% 100%, 11% 100%, 0% 50%); */
 `;
 
 const GeneSize = styled.p`
-  user-select: none;
+  /* user-select: none; */
 
   position: absolute;
+  z-index: 0;
   top: 0;
   right: 0;
 
@@ -199,77 +168,33 @@ const GeneSize = styled.p`
 `;
 
 const SkillContainer = styled.div`
-  z-index: 999;
-  position: absolute;
+  position: fixed;
+  top: calc(100vh / 2);
   left: 50%;
-  bottom: 0;
 
-  width: 300px;
-  /* height: 100px; */
-  min-height: 100px;
-  transform: translate3d(-50%, 100%, 0);
+  padding: 0 0.7rem;
 
-  display: flex;
-  flex-direction: column;
-
-  &::before {
-    margin-top: 2px;
-    content: "";
-    height: 6px;
-    width: 100%;
-
-    background-color: ${({ theme }) => theme.colors.onSurface.main};
-
-    clip-path: polygon(50% 0, 48% 100%, 52% 100%);
-  }
-`;
-
-const SkillDetails = styled.div`
-  background-color: ${({ theme }) => theme.colors.surface.main};
+  transform: translate3d(-50%, -50%, 0);
 
   width: 100%;
-  border: 2px solid ${({ theme }) => theme.colors.onSurface.main};
-
-  border-radius: 5px;
-
-  padding: 0.5rem;
-  overflow: hidden;
-
-  display: flex;
-  flex-direction: column;
-`;
-
-const SkillHeading = styled.span`
-  display: flex;
-  margin-bottom: 0.5rem;
-`;
-
-const Dot = styled.span`
-  margin: 0 0.3rem;
-`;
-
-const SkillName = styled.p`
-  font-weight: 700;
-`;
-
-const SkillType = styled.p`
-  text-transform: capitalize;
-`;
-
-const SkillDesc = styled.p`
-  font-style: italic;
+  max-width: 30rem;
 `;
 
 type GeneProps = {
   gene: MonstieGene;
   size?: number;
   disableSkillPreview?: boolean;
+  bringToFront?: boolean;
 };
 
-const Gene = ({ gene, size, disableSkillPreview = false }: GeneProps) => {
+const Gene = ({
+  gene,
+  size,
+  bringToFront = false,
+  disableSkillPreview = false,
+}: GeneProps) => {
   // state:
   const [showSkill, setShowSkill] = useState(false);
-  const [hover, setHover] = useState(false);
 
   // colors:
   const geneColor = ELEMENT_COLOR[gene.elementType as ElementType].main;
@@ -284,45 +209,33 @@ const Gene = ({ gene, size, disableSkillPreview = false }: GeneProps) => {
   const isRainbowGene = gene.geneName === "rainbow";
 
   return (
-    <GeneContainer
-      onMouseEnter={() => setHover(true)}
-      size={size}
-      maxZIndex={showSkill}
-      onMouseLeave={() => {
-        setShowSkill(false);
-        setHover(false);
-      }}
-      onClick={() => {
-        if (!disableSkillPreview) setShowSkill((v) => !v);
-        // console.log(gene);
-      }}
-    >
-      {/* <GeneBorder c={GENE_SIZE_COLOR[gene.geneSize]} /> */}
+    <GeneContainer size={size} bringToFront={bringToFront}>
       <GeneOctagon c={geneColor} rainbow={isRainbowGene}></GeneOctagon>
       <PowerType c={darkenGeneColor} rainbow={isRainbowGene}>
         <Asset asset={gene.attackType} />
       </PowerType>
+
       {!isRainbowGene && (
         <>
           <GeneSize>{geneSizeLetter}</GeneSize>
-          <GeneName c={darkenGeneColor} borderColor={borderColor}>
+          <GeneName
+            c={darkenGeneColor}
+            borderColor={borderColor}
+            onClick={() => {
+              if (!disableSkillPreview) setShowSkill((v) => !v);
+            }}
+          >
             {formattedGeneName}
           </GeneName>
         </>
       )}
 
-      {showSkill && (
-        <SkillContainer>
-          <SkillDetails>
-            <SkillHeading>
-              <SkillName>{gene.skill.skillName} </SkillName>
-              <Dot>&#8226;</Dot>
-              <SkillType>{gene.skill.skillType}</SkillType>
-            </SkillHeading>
-
-            <SkillDesc>{gene.skill.desc}</SkillDesc>
-          </SkillDetails>
-        </SkillContainer>
+      {showSkill && !disableSkillPreview && (
+        <PagePortal portalId="app" backdrop close={() => setShowSkill(false)}>
+          <SkillContainer>
+            <SkillCard gene={gene} />
+          </SkillContainer>
+        </PagePortal>
       )}
     </GeneContainer>
   );

@@ -161,6 +161,8 @@ const DraggableGene = ({
     event: MouseEvent | TouchEvent | PointerEvent,
     info: PanInfo
   ) => {
+    event.preventDefault();
+
     setIsDragging(true);
     onDragStart(event, info);
   };
@@ -169,6 +171,8 @@ const DraggableGene = ({
     event: MouseEvent | TouchEvent | PointerEvent,
     info: PanInfo
   ) => {
+    event.preventDefault();
+
     const newInfo = info;
     newInfo.point.y = info.point.y - (scrollRef.current?.scrollTop || 0);
 
@@ -249,7 +253,7 @@ const DraggableGene = ({
         else return str;
       }}
     >
-      <Gene gene={gene} disableSkillPreview={true} size={size} />
+      <Gene gene={gene} size={size} />
     </DraggableContainer>
   );
 };
