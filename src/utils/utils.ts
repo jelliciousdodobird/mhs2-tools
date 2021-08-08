@@ -23,6 +23,14 @@ export const BLANK_GENE: MonstieGene = {
   possessedBy: { native: [], random: [] },
 };
 
+export const GENE_SIZE_LETTER: { [key: string]: string } = {
+  1: "S",
+  2: "M",
+  3: "L",
+  4: "XL",
+  "": "",
+};
+
 export const EMPTY_BOARD = [...Array(9).keys()].map(() => BLANK_GENE);
 
 export const isBlankGene = (gene: MonstieGene) =>
@@ -204,3 +212,11 @@ export const getBingoCountAndBonus = (geneBuild: MonstieGene[]) => {
     bonus: calcBonusMultiplier(freqs[key as StrictAttack | StrictElement]),
   }));
 };
+
+export const removeSizeFromName = (name: string) => name.split("(")[0];
+
+export const removeGeneFromName = (name: string) =>
+  name.replace("Gene", "").trim();
+
+export const formatGeneName = (name: string) =>
+  removeGeneFromName(removeSizeFromName(name));

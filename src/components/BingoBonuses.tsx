@@ -15,7 +15,7 @@ import Asset from "./AssetComponents";
 
 const Container = styled.table`
   width: 100%;
-  height: 100%;
+  /* height: 100%; */
 
   border-radius: 1rem;
   background-color: ${({ theme }) => theme.colors.surface.main};

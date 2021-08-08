@@ -2,7 +2,11 @@
 import { css, jsx, useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
 import { ELEMENT_COLOR, MonstieGene } from "../utils/ProjectTypes";
-import { isBlankGene } from "../utils/utils";
+import {
+  GENE_SIZE_LETTER,
+  isBlankGene,
+  removeSizeFromName,
+} from "../utils/utils";
 import Asset from "./AssetComponents";
 import BlankSkillCard from "./BlankSkillCard";
 
@@ -47,7 +51,7 @@ const Desc = styled.div<{ bg: string }>`
   /* background-color: ${({ theme }) => theme.colors.surface.main}; */
 
   /* opacity: 0.9; */
-  border-radius: 1rem;
+  border-radius: 0.5rem;
   padding: 0.75rem;
 
   margin-top: auto;
@@ -78,10 +82,10 @@ const Desc = styled.div<{ bg: string }>`
 
 const Bubble = styled.h5<{ bg?: string; bgDark?: string }>`
   position: relative;
-  /* width: 10rem; */
+
   width: min-content;
   height: 2rem;
-  padding: 0 1.1rem;
+  padding: 0 0.8rem;
 
   overflow: hidden;
 
@@ -91,10 +95,8 @@ const Bubble = styled.h5<{ bg?: string; bgDark?: string }>`
   color: ${({ theme }) => theme.colors.onPrimary.main};
 
   white-space: nowrap;
-  font-size: 0.9rem;
   text-transform: capitalize;
-
-  /* color: ${({ bgDark }) => bgDark}; */
+  font-size: 0.9rem;
   font-weight: 600;
 
   display: flex;
@@ -110,19 +112,39 @@ const Bubble = styled.h5<{ bg?: string; bgDark?: string }>`
     margin-right: 0.5rem;
 
     color: ${({ bgDark }) => bgDark};
-    /* color: ${({ theme }) => theme.colors.onPrimary.main}; */
   }
-
-  /* margin-bottom: 0.5rem; */
 `;
 
-const DescText = styled.h4`
+const FromBubble = styled(Bubble)`
+  padding-right: 0.3rem;
+`;
+
+const DescText = styled.p`
   position: relative;
   z-index: 1;
   color: ${({ theme }) => theme.colors.onPrimary.main};
   font-size: 0.9rem;
   font-style: italic;
   /* font-weight: 600; */
+`;
+
+const GeneSize = styled.p`
+  width: 1.5rem;
+  height: 1.5rem;
+
+  margin-left: 0.5rem;
+
+  border-radius: 50%;
+
+  background-color: white;
+
+  color: black;
+  font-size: 0.8rem;
+  font-weight: 700;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `;
 
 type SkillCardProps = {
@@ -142,10 +164,11 @@ const SkillCard = ({ gene }: SkillCardProps) => {
         <Asset asset={gene.elementType} size={20} />
       </GroupContainer>
 
-      <Bubble bg={light} bgDark={dark}>
+      <FromBubble bg={light} bgDark={dark}>
         <span>From</span>
-        {gene.geneName}
-      </Bubble>
+        {removeSizeFromName(gene.geneName)}
+        <GeneSize>{GENE_SIZE_LETTER[gene.geneSize]}</GeneSize>
+      </FromBubble>
 
       <GroupContainer>
         <Bubble bg={light} bgDark={dark}>

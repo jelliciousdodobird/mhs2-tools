@@ -11,6 +11,7 @@ import Asset from "./AssetComponents";
 import { ELEMENT_COLOR, ElementType, MonstieGene } from "../utils/ProjectTypes";
 import { rgba } from "emotion-rgba";
 import { motion } from "framer-motion";
+import { formatGeneName, GENE_SIZE_LETTER } from "../utils/utils";
 
 const GENE_SIZE_COLOR: { [key: string]: string } = {
   1: "black",
@@ -20,13 +21,13 @@ const GENE_SIZE_COLOR: { [key: string]: string } = {
   "": "salmon",
 };
 
-const GENE_SIZE_LETTER: { [key: string]: string } = {
-  1: "S",
-  2: "M",
-  3: "L",
-  4: "XL",
-  "": "",
-};
+// const GENE_SIZE_LETTER: { [key: string]: string } = {
+//   1: "S",
+//   2: "M",
+//   3: "L",
+//   4: "XL",
+//   "": "",
+// };
 
 const octagonCssString = `polygon(
     50% 0,
@@ -258,13 +259,6 @@ const SkillType = styled.p`
 const SkillDesc = styled.p`
   font-style: italic;
 `;
-
-const removeSizeFromName = (name: string) => name.split("(")[0];
-
-const removeGeneFromName = (name: string) => name.replace("Gene", "").trim();
-
-const formatGeneName = (name: string) =>
-  removeGeneFromName(removeSizeFromName(name));
 
 type GeneProps = {
   gene: MonstieGene;
