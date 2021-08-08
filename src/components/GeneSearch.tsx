@@ -3,16 +3,8 @@ import { css, jsx, useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
 
 // library:
-import {
-  useEffect,
-  useRef,
-  useLayoutEffect,
-  RefObject,
-  useState,
-  Fragment,
-} from "react";
+import { useEffect, useRef, useState } from "react";
 import useResizeObserver from "use-resize-observer/polyfilled";
-import { useLongPress } from "use-long-press";
 
 // types:
 import {
@@ -76,6 +68,10 @@ const Container = styled(motion.div)<{
 
   max-height: ${({ height }) => height}px;
 
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
   ${({ dragging }) =>
     dragging
       ? css`
@@ -97,8 +93,48 @@ const Container = styled(motion.div)<{
 
     opacity: 0.94;
 
-    background-color: red;
     background-color: ${({ theme }) => theme.colors.surface.main};
+  }
+`;
+
+const ResultInfo = styled.div`
+  z-index: 100;
+
+  position: relative;
+
+  height: 2rem;
+  min-height: 2rem;
+  max-height: 2rem;
+  /* background-color: ${({ theme }) => theme.colors.background.main}; */
+
+  /* margin: 0 1rem; */
+  /* border-radius: 5rem; */
+
+  padding: 0 1rem;
+
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+`;
+
+const PageInfo = styled.p`
+  border-radius: 5rem;
+  height: 100%;
+  background-color: ${({ theme }) => theme.colors.background.main};
+
+  padding: 0 0.75rem;
+
+  font-size: 0.9rem;
+  /* font-weight: 600; */
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  span {
+    margin-right: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
   }
 `;
 
@@ -240,8 +276,6 @@ const EmptyResult = styled.div<{ size: number }>`
     height: ${size}px;
   `}
 `;
-
-const ResultInfo = styled.div``;
 
 const pageVariants = {
   enter: (direction: number) => {
@@ -394,7 +428,13 @@ const GeneSearch = ({
   // const searchBarHeight = 3 * 14;
   // const componentHeight = rows * resultItemSize.h + verticalPadding * 2;
   const componentHeight =
-    rows * itemSize + rows * itemPadding * 2 + itemPadding * 2;
+    rows * itemSize +
+    rows * itemPadding * 2 +
+    itemPadding * 2 +
+    14 * 2 +
+    14 / 2;
+  // const componentHeight =
+  //   rows * itemSize + rows * itemPadding * 2 + itemPadding * 2;
 
   // ANIMATION PROPS:
   const fabProps = {
@@ -525,14 +565,13 @@ const GeneSearch = ({
           />
         )}
 
-        {showSearch && (
+        {/* {showSearch && (
           <ResultInfo key="idk">
-            {/* <FlashTooltip text={`Page: ${page.number + 1} of ${totalPages}`} /> */}
-            {/* <FlashTooltip text={dropMessage} /> */}
+
 
             <div>{`Page: ${page.number + 1} of ${totalPages}`} </div>
           </ResultInfo>
-        )}
+        )} */}
         {showSearch && (
           <Container
             {...hideResultsAnimation}
@@ -542,6 +581,16 @@ const GeneSearch = ({
             dragging={browseMode || !showSearch}
             // ref={resultContainerRef}
           >
+            <ResultInfo>
+              <PageInfo>
+                <span>Results</span>
+                {searchResults.length}
+              </PageInfo>
+              <PageInfo>
+                <span>Page</span>
+                {`${page.number + 1} of ${totalPages}`}
+              </PageInfo>
+            </ResultInfo>
             <Results
               {...pageAnimation}
               className="results"

@@ -12,7 +12,7 @@ import { ELEMENT_COLOR, ElementType, MonstieGene } from "../utils/ProjectTypes";
 import { rgba } from "emotion-rgba";
 import { motion } from "framer-motion";
 import { formatGeneName, GENE_SIZE_LETTER } from "../utils/utils";
-import PagePortal from "./PageContainerPortal";
+import Portal from "./DynamicPortal";
 import SkillCard from "./SkillCard";
 
 const octagonCssString = `polygon(
@@ -231,11 +231,11 @@ const Gene = ({
       )}
 
       {showSkill && !disableSkillPreview && (
-        <PagePortal portalId="app" backdrop close={() => setShowSkill(false)}>
+        <Portal portalId="app" backdrop close={() => setShowSkill(false)}>
           <SkillContainer>
             <SkillCard gene={gene} />
           </SkillContainer>
-        </PagePortal>
+        </Portal>
       )}
     </GeneContainer>
   );

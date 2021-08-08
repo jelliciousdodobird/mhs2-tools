@@ -19,7 +19,7 @@ import ExpandSearchMenu from "./ExpandSearchMenu";
 import { BiSearch } from "react-icons/bi";
 import { MdSort } from "react-icons/md";
 import FloatingPoint from "./FloatingPoint";
-import PagePortal from "./PageContainerPortal";
+import Portal from "./DynamicPortal";
 
 const Container = styled.div<{ searchPadding: boolean }>`
   position: relative;
@@ -166,7 +166,7 @@ const MonstieList = ({ data, column }: MonstieListProps) => {
 
   return (
     <>
-      <PagePortal portalId="floating-point-monstie-list">
+      <Portal portalId="floating-point-monstie-list">
         <SortButton
           {...btnAnimationProps}
           {...staticProps2}
@@ -194,7 +194,7 @@ const MonstieList = ({ data, column }: MonstieListProps) => {
             />
           )}
         </AnimatePresence>
-      </PagePortal>
+      </Portal>
 
       <Container searchPadding={showSearch}>
         <AnimateSharedLayout>

@@ -22,7 +22,7 @@ const Background = styled.div`
   background-color: rgba(0, 0, 0, 0.85);
 `;
 
-type PagePortalProps = {
+type PortalProps = {
   children: React.ReactNode;
   portalId: string;
   disableScroll?: boolean;
@@ -30,13 +30,13 @@ type PagePortalProps = {
   close?: () => void;
 };
 
-const PagePortal = ({
+const Portal = ({
   children,
   portalId,
   disableScroll = false,
   backdrop = false,
   close,
-}: PagePortalProps) => {
+}: PortalProps) => {
   const [mounted, setMounted] = useState<Boolean>(false);
   const safeElement = document.getElementById("root") as Element;
   const pageElement = useRef<Element>(safeElement);
@@ -69,4 +69,4 @@ const PagePortal = ({
     : null;
 };
 
-export default PagePortal;
+export default Portal;
