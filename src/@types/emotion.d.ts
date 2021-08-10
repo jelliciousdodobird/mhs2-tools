@@ -24,6 +24,7 @@ declare module "@emotion/react" {
     m: number;
     l: number;
     xl: number;
+    xxl: number;
   }
 
   export interface Color {

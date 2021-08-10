@@ -21,6 +21,7 @@ import { FAB } from "../components/MonstieList";
 
 // icons:
 import { MdAdd } from "react-icons/md";
+import Gutter from "../components/Gutter";
 
 const Container = styled.div`
   /* border: 2px dashed green; */
@@ -30,7 +31,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.m}px) {
+  @media (max-width: ${({ theme }) => theme.breakpoints.s}px) {
     align-items: center;
   }
 
@@ -69,7 +70,7 @@ const TeamBuilderPage = () => {
   const floatPointOffset = isMobile ? 10.5 : 28;
 
   return (
-    <>
+    <Gutter>
       <Container ref={containerRef}>
         <Heading>Gene Builds</Heading>
         {/* <BingoBoard
@@ -85,7 +86,6 @@ const TeamBuilderPage = () => {
         <FloatingPoint
           parentContainerRef={containerRef}
           bottom={floatPointOffset}
-          right={floatPointOffset}
         >
           <FAB
             type="button"
@@ -97,7 +97,7 @@ const TeamBuilderPage = () => {
           </FAB>
         </FloatingPoint>
       </Container>
-    </>
+    </Gutter>
   );
 };
 

@@ -25,9 +25,9 @@ const AppContainer = styled.div`
   width: 100%;
 
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.m}px) {
+  @media (max-width: ${({ theme }) => theme.breakpoints.s}px) {
     flex-direction: column;
   }
 `;
@@ -43,11 +43,6 @@ const PageContainer = styled.main`
 
   display: flex;
   flex-direction: column;
-
-  padding: 2rem;
-  @media (max-width: ${({ theme }) => theme.breakpoints.m}px) {
-    padding: 0.75rem;
-  }
 `;
 
 const App = () => {

@@ -42,7 +42,7 @@ const UIStateContext = createContext<State | undefined>(undefined);
 const UIStateProvider = ({ children }: UIProviderProps) => {
   const theme = useTheme();
   const isMobile = useMediaQuery({
-    query: `(max-width: ${theme.breakpoints.m}px)`,
+    query: `(max-width: ${theme.breakpoints.s}px)`,
   });
   const [sidebarState, setSidebarState] = useState<boolean>(true);
   const [dropPosition, setDropPosition] = useState<{ x: number; y: number }>({

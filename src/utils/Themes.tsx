@@ -51,11 +51,12 @@ export const baseFont: Font = {
 };
 
 export const bp: Breakpoints = {
-  xs: 300,
-  s: 400,
-  m: 550,
-  l: 1080,
-  xl: 1440,
+  xs: 350,
+  s: 550,
+  m: 1366,
+  l: 1920,
+  xl: 2560,
+  xxl: 4096,
 };
 
 export const darkTheme: Theme = {
@@ -158,11 +159,11 @@ export const GlobalReset = () => {
           font-family: ${theme.font.family};
           font-size: ${theme.font.size}px;
           font-weight: ${theme.font.weight};
-          color: ${theme.colors.onBackground.main};
+          color: ${theme.colors.onSurface.main};
 
           &::selection {
             background: ${theme.colors.primary.main};
-            color: ${theme.colors.onPrimary.main};
+            color: black;
           }
         }
 
@@ -172,7 +173,20 @@ export const GlobalReset = () => {
           /* width: 100%; */
           /* height: 100%; */
           /* overflow: hidden; */
-          overflow: auto;
+          /* overflow-y: scroll; */
+          /* overflow-x: hidden; */
+
+          /*
+            !important is here because we need the scroll bar to always show 
+            otherwise there is a jarring jump when users click between pages that may
+            or may not have content that overflows.
+          
+            However, there is some function or library in this project
+            that adds overflow: auto to the html element (our viewport scrollbar) which negates
+            this rule here.
+          */
+
+          overflow: hidden scroll !important;
           scroll-behavior: smooth;
 
           background-color: ${theme.colors.background.main};

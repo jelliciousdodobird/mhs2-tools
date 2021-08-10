@@ -1,5 +1,5 @@
 // styling:
-import { css, jsx, ThemeContext } from "@emotion/react";
+import { css, jsx, ThemeContext, useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
 import { ReactElement } from "react";
 import useResizeObserver from "use-resize-observer/polyfilled";
@@ -8,10 +8,15 @@ type ContainerProps = {
   w: number;
   offset: { x: number; y: number };
 
-  top?: number;
-  left?: number;
-  right?: number;
-  bottom?: number;
+  top?: number | null;
+  left?: number | null;
+  right?: number | null;
+  bottom?: number | null;
+
+  // top?: boolean;
+  // left?: boolean;
+  // right?: boolean;
+  // bottom?: boolean;
 
   zIndex?: number;
 };
@@ -41,12 +46,15 @@ const Container = styled.div<ContainerProps>`
 
 type FloatingPointProps = {
   parentContainerRef: React.RefObject<HTMLElement>;
-  children?: ReactElement;
+  children?: ReactElement | ReactElement[];
   portalId?: string;
 
+  // top?: boolean;
+  // left?: boolean;
+  // right?: boolean;
+  // bottom?: boolean;
   top?: number;
-  left?: number;
-  right?: number;
+
   bottom?: number;
 
   zIndex?: number;
@@ -57,12 +65,13 @@ const FloatingPoint = ({
   children,
   portalId,
   top,
-  left,
-  right,
+
   bottom,
+
   zIndex,
 }: FloatingPointProps) => {
   const { width = 0 } = useResizeObserver({ ref: parentContainerRef });
+  const theme = useTheme();
 
   const offset = parentContainerRef.current?.getBoundingClientRect();
   const scroll = parentContainerRef.current?.scrollTop;
@@ -70,19 +79,21 @@ const FloatingPoint = ({
   const actualWidth = offset?.width || 0;
   const y = offset?.height || 0;
 
-  // console.log("------");
-  // console.log(offset, scroll);
-  // console.log(y, scroll);
-  // console.log(width);
+  const topAdjusted =
+    top !== undefined ? top + theme.dimensions.mainNav.maxHeight : undefined;
+  const bottomAdjusted = bottom; // bottom does not need any adjustments
+
+  const leftAdjusted = offset?.left || 0;
+
   return (
     <Container
       w={actualWidth}
       offset={{ x: 0, y }}
       id={portalId}
-      top={top}
-      bottom={bottom}
-      right={right}
-      left={left}
+      top={topAdjusted}
+      bottom={bottomAdjusted}
+      // right={rightAdjusted}
+      left={leftAdjusted}
       zIndex={zIndex}
     >
       {children}

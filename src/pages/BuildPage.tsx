@@ -26,7 +26,7 @@ import { ELEMENT_COLOR as EC } from "../utils/ProjectTypes";
 import BingoBonuses from "../components/BingoBonuses";
 import ObtainableGeneList from "../components/ObtainableGeneList";
 import SkillsList from "../components/SkillsList";
-import useResizeObserver from "use-resize-observer/polyfilled";
+import Gutter from "../components/Gutter";
 
 export const rainbowTextGradient = (degree = 150) =>
   `repeating-linear-gradient(
@@ -53,7 +53,7 @@ const Container = styled.div`
 
   gap: 2rem;
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.m}px) {
+  @media (max-width: ${({ theme }) => theme.breakpoints.s}px) {
     align-items: center;
   }
 
@@ -249,7 +249,7 @@ const BuildPage = ({ match }: PageProps) => {
   }, [geneBuild, buildName]);
 
   return (
-    <>
+    <Gutter>
       <Container ref={containerRef}>
         {/* <Heading>The Magene {"->"}</Heading> */}
         <BuildNameInput
@@ -299,7 +299,6 @@ const BuildPage = ({ match }: PageProps) => {
         <FloatingPoint
           parentContainerRef={containerRef}
           bottom={floatPointOffset}
-          right={floatPointOffset}
         >
           <GeneSearch
             // genes={genes}
@@ -309,7 +308,7 @@ const BuildPage = ({ match }: PageProps) => {
           />
         </FloatingPoint>
       </Container>
-    </>
+    </Gutter>
   );
 };
 
