@@ -10,7 +10,16 @@ import { rainbowTextGradient } from "../pages/BuildPage";
 import { motion, useTransform, useViewportScroll } from "framer-motion";
 import { useEffect } from "react";
 
-const Container = styled(motion.div)`
+const Container = styled.div`
+  position: relative;
+
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+`;
+
+const LogoClipContainer = styled(motion.div)`
   position: relative;
   /* border: 1px dashed red; */
   background-image: ${rainbowTextGradient()};
@@ -37,6 +46,13 @@ const Container = styled(motion.div)`
   display: flex;
 `;
 
+const Text = styled.p`
+  font-weight: 700;
+  font-style: italic;
+  font-size: 1.5rem;
+  text-transform: uppercase;
+`;
+
 type LogoProps = {};
 
 const Logo = ({}: LogoProps) => {
@@ -59,9 +75,11 @@ const Logo = ({}: LogoProps) => {
   }, []);
 
   return (
-    <Container style={{ backgroundPosition: percentString }}>
-      {/* <LogoSvg2 /> */}
-      <LogoClipSvg />
+    <Container>
+      <LogoClipContainer style={{ backgroundPosition: percentString }}>
+        <LogoClipSvg />
+      </LogoClipContainer>{" "}
+      <Text>Navirou</Text>
     </Container>
   );
 };

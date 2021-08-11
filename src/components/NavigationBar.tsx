@@ -333,14 +333,9 @@ const NavLink = ({
   );
 };
 
-const t = 24;
-
 const MenuButton = styled.button`
-  /* margin-left: auto; */
-
   width: 3rem;
   height: 3rem;
-  /* border: 1px solid; */
 
   border-radius: 50%;
 
@@ -351,9 +346,6 @@ const MenuButton = styled.button`
   align-items: center;
 
   svg {
-    width: ${t}px;
-    height: ${t}px;
-
     width: 1.5rem;
     height: 1.5rem;
     path {
@@ -366,6 +358,7 @@ const MenuButton = styled.button`
     svg {
       path {
         fill: ${({ theme }) => theme.colors.onPrimary.main};
+        stroke: ${({ theme }) => theme.colors.onPrimary.main};
       }
     }
   }
