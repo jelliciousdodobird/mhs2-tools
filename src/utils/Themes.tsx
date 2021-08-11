@@ -65,12 +65,23 @@ export const darkTheme: Theme = {
   font: baseFont,
   breakpoints: bp,
   colors: {
-    primary: ccs({ main: "#49d0b0", light: "#ff0000" }),
-    // primary: ccs({ main: "#43dbab", light: "#ff0000" }),
+    // primary: ccs({ main: "#49d0b0" }),
+    // primary: ccs({ main: "#2de9b7" }),
+    primary: ccs({ main: "#49d0b0" }),
     secondary: ccs({ main: "#2dc3e9" }),
 
-    background: ccs({ main: "#2c333b" }),
-    surface: ccs({ main: "#363f49" }),
+    background: ccs({ main: "#2e3035" }),
+    surface: ccs({ main: "#36383e" }),
+
+    // background: ccs({ main: "#1f1f1f" }),
+    // surface: ccs({ main: "#181818" }),
+
+    // background: ccs({ main: "#36383e" }),
+    // surface: ccs({ main: "#2e3035" }),
+
+    // background: ccs({ main: "#2c333b" }),
+    // surface: ccs({ main: "#363f49" }),
+
     // background: ccs({ main: "#363f49" }),
     // surface: ccs({ main: "#2c333b" }),
 
@@ -95,10 +106,13 @@ export const lightTheme: Theme = {
   font: baseFont,
   breakpoints: bp,
   colors: {
+    // primary: ccs({ main: "#49d0b0", light: "#bbf3fb" }),
+    // primary: ccs({ main: "#2de9b7", light: "#bbf3fb" }),
     primary: ccs({ main: "#49d0b0", light: "#bbf3fb" }),
     secondary: ccs({ main: "#6c63ff" }),
 
-    background: ccs({ main: "#f6f8fc", dark: "#e9eef8", darker: "#f6f6f6" }),
+    // background: ccs({ main: "#f6f8fc", dark: "#e9eef8", darker: "#f6f6f6" }),
+    background: ccs({ main: "#f2f2f2", dark: "#e9eef8", darker: "#f6f6f6" }),
     // background: ccs({ main: "#f6f6f6", light: "#f6f8fc", dark: "#e9eef8" }),
     surface: ccs({ main: "#ffffff", lighter: "#e6e6e7" }),
 

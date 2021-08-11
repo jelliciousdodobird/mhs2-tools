@@ -40,6 +40,7 @@ import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { GiRoundStar } from "react-icons/gi";
 import { ImHeart } from "react-icons/im";
 import { MdClose, MdAdd } from "react-icons/md";
+import FloatingActionButton from "./FloatingActionButton";
 
 const DummyWidthMeasurementDiv = styled.div`
   width: 100%;
@@ -236,7 +237,7 @@ const LB = styled(motion.button)<{ size?: number }>`
   }
 `;
 
-const FAB = styled(motion.button)`
+const FAB2 = styled(motion.button)`
   z-index: 50;
 
   position: absolute;
@@ -266,6 +267,12 @@ const FAB = styled(motion.button)`
       fill: ${({ theme }) => theme.colors.onPrimary.main};
     }
   }
+`;
+
+const FAB = styled(FloatingActionButton)`
+  position: absolute;
+  bottom: 0;
+  right: 0;
 `;
 
 const EmptyResult = styled.div<{ size: number }>`

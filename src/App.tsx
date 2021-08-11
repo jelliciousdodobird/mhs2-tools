@@ -17,12 +17,14 @@ import MonstiesPage from "./pages/MonstiesPage";
 import GenesPage from "./pages/GenesPage";
 import TeamBuilderPage from "./pages/TeamBuilderPage";
 import BuildPage from "./pages/BuildPage";
+import Footer from "./components/Footer";
 
 const AppContainer = styled.div`
   /* border: 2px dashed lightblue; */
 
   position: relative;
   width: 100%;
+  min-height: 100vh;
 
   display: flex;
   flex-direction: column;
@@ -38,6 +40,9 @@ const PageContainer = styled.main`
   z-index: 1;
   position: relative;
   /* scroll-behavior: smooth; */
+
+  padding-bottom: 2rem;
+  padding-top: 2rem;
 
   flex: 1;
 
@@ -73,6 +78,7 @@ const App = () => {
           <Route path="/builds/edit/:id" component={BuildPage} />
         </Switch>
       </PageContainer>
+      <Footer />
     </AppContainer>
   );
 };

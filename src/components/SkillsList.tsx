@@ -18,6 +18,9 @@ import BlankSkillCard from "./BlankSkillCard";
 import Debug from "./Debug";
 import SkillCard from "./SkillCard";
 
+const cardMinWidth = 20;
+const minInPixels = cardMinWidth * 14;
+
 const Container = styled.div<{ threeColumnView: boolean }>`
   /* border: 2px dashed red; */
   display: grid;
@@ -25,8 +28,8 @@ const Container = styled.div<{ threeColumnView: boolean }>`
   /* grid-template-columns: repeat(auto-fit, minmax(21.5rem, 1fr)); */
   grid-template-columns: ${({ threeColumnView }) =>
     threeColumnView
-      ? "repeat(3, minmax(21.5rem, 1fr))"
-      : "repeat(auto-fit, minmax(21.5rem, 1fr))"};
+      ? `repeat(3, minmax(${cardMinWidth}em, 1fr))`
+      : `repeat(auto-fit, minmax(${cardMinWidth}rem, 1fr))`};
 
   /* background-color: ${({ theme }) => theme.colors.surface.main}; */
   /* padding: 1rem; */
@@ -42,8 +45,8 @@ const SkillsList = ({ className, geneBuild }: SkilsListProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { width = 0 } = useResizeObserver({ ref: containerRef });
 
-  const oneColumnWidth = 21.5 * 14 * 2 + 14;
-  const twoColumnWidth = 21.5 * 14 * 3;
+  const oneColumnWidth = cardMinWidth * 14 * 2 + 14;
+  const twoColumnWidth = cardMinWidth * 14 * 3;
   const oneColumnView = width < oneColumnWidth;
   const twoColumnView = width < twoColumnWidth && width > oneColumnWidth;
   const threeColumnView = !(oneColumnView || twoColumnView);

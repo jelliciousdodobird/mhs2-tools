@@ -17,11 +17,12 @@ import FloatingPoint from "../components/FloatingPoint";
 import { useUIState } from "../contexts/UIContext";
 import { MonstieGene } from "../utils/ProjectTypes";
 import MonstieGeneBuild, { GeneBuild } from "../components/MonstieGeneBuild";
-import { FAB } from "../components/MonstieList";
+// import { FAB } from "../components/MonstieList";
 
 // icons:
 import { MdAdd } from "react-icons/md";
 import Gutter from "../components/Gutter";
+import FloatingActionButton from "../components/FloatingActionButton";
 
 const Container = styled.div`
   /* border: 2px dashed green; */
@@ -34,14 +35,6 @@ const Container = styled.div`
   @media (max-width: ${({ theme }) => theme.breakpoints.s}px) {
     align-items: center;
   }
-
-  &::after {
-    content: "";
-
-    width: 100%;
-    height: 100%;
-    min-height: 100vh;
-  }
 `;
 
 const Heading = styled.h2`
@@ -53,6 +46,12 @@ const Heading = styled.h2`
   color: ${({ theme }) => theme.colors.onSurface.main};
 
   display: flex;
+`;
+
+const CreateFAB = styled(FloatingActionButton)`
+  position: absolute;
+  bottom: 0;
+  right: 0;
 `;
 
 const TeamBuilderPage = () => {
@@ -80,21 +79,21 @@ const TeamBuilderPage = () => {
         /> */}
 
         {builds.map((build) => (
-          <MonstieGeneBuild />
+          <MonstieGeneBuild key={build.buildId} />
         ))}
 
         <FloatingPoint
           parentContainerRef={containerRef}
           bottom={floatPointOffset}
         >
-          <FAB
+          <CreateFAB
             type="button"
             onClick={() => {
               history.push(`/builds/edit/${nanoid()}`);
             }}
           >
             <MdAdd />
-          </FAB>
+          </CreateFAB>
         </FloatingPoint>
       </Container>
     </Gutter>

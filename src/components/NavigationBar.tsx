@@ -12,6 +12,7 @@ import { rainbowTextGradient } from "../pages/BuildPage";
 
 // icons:
 import { CgMenu } from "react-icons/cg";
+import { HiOutlineMenuAlt4 } from "react-icons/hi";
 import { MdClose } from "react-icons/md";
 
 // custom components:
@@ -45,18 +46,24 @@ const NavbarContainer = styled(motion.nav)`
   `}
 
   width: 100%;
-  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.16);
 `;
 
 const MainNav = styled(motion.ul)`
-  display: flex;
-  flex-direction: row;
-
   ${GUTTER}
 
   width: 100%;
   height: 100%;
 
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+
+  /*
+    &::after here represents the background for this container.
+    This is done so that we can have an opacity on the background without affecting the opacity
+    of children elements (like text, icons, buttons, etc).
+   */
   &::after {
     z-index: 5;
 
@@ -83,17 +90,39 @@ const LogoLI = styled.li`
   display: flex;
   justify-content: center;
   align-items: center;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.s}px) {
+    order: 2; // puts logo in the middle (there are only 3 items)
+  }
 `;
 
 const MenuButtonLI = styled.li`
   z-index: 10;
   position: relative;
 
+  order: 1;
   flex: 1;
+
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+`;
+
+const ThemeButtonLI = styled.li`
+  z-index: 10;
+  position: relative;
 
   display: flex;
   justify-content: flex-end;
   align-items: center;
+
+  order: 3;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.s}px) {
+    order: 3;
+
+    flex: 1;
+  }
 `;
 
 const LinkNavLI = styled(motion.li)`
@@ -113,17 +142,38 @@ const LinkNavLI = styled(motion.li)`
   @media (max-width: ${({ theme }) => theme.breakpoints.s}px) {
     z-index: 0; // move LinkNavLI BELOW background (::after element on MainNav)
 
-    background-color: ${({ theme }) => theme.colors.surface.main};
-
     flex-direction: column;
     gap: 0;
 
     width: 100%;
-    box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+    box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.16);
 
     position: absolute;
     top: ${({ theme }) => theme.dimensions.mainNav.maxHeight}px;
     left: 0;
+
+    padding-bottom: 1rem;
+
+    /*
+    &::after here represents the background for this container.
+    This is done so that we can have an opacity on the background without affecting the opacity
+    of children elements (like text, icons, buttons, etc).
+   */
+    &::after {
+      z-index: -1;
+
+      position: absolute;
+      top: 0;
+      left: 0;
+
+      content: "";
+
+      width: 100%;
+      height: 100%;
+
+      background-color: ${({ theme }) => rgba(theme.colors.surface.main, 0.97)};
+      backdrop-filter: blur(2px);
+    }
   }
 `;
 
@@ -172,7 +222,7 @@ const NavItemContainer = styled(motion.li)`
     padding: 0 2rem;
 
     &:hover {
-      background-color: ${({ theme }) => theme.colors.background.light};
+      background-color: ${({ theme }) => theme.colors.surface.dark};
     }
   }
 `;
@@ -223,7 +273,7 @@ const Marker = styled(motion.div)`
   bottom: 8px;
 
   width: 100%;
-  height: 4px;
+  height: 3px;
   border-radius: 3px;
 
   background-color: ${({ theme }) => theme.colors.primary.main};
@@ -292,7 +342,9 @@ const MenuButton = styled.button`
   height: 3rem;
   /* border: 1px solid; */
 
-  background-color: transparent;
+  border-radius: 50%;
+
+  background-color: ${({ theme }) => theme.colors.background.main};
 
   display: flex;
   justify-content: center;
@@ -301,7 +353,20 @@ const MenuButton = styled.button`
   svg {
     width: ${t}px;
     height: ${t}px;
+
+    width: 1.5rem;
+    height: 1.5rem;
     path {
+    }
+  }
+
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.primary.main};
+
+    svg {
+      path {
+        fill: ${({ theme }) => theme.colors.onPrimary.main};
+      }
     }
   }
 `;
@@ -395,10 +460,6 @@ const NavigationBar = () => {
                   />
 
                   {/* <NavItem> */}
-                  <NavItemContainer>
-                    {isMobile && <P>Theme</P>}
-                    <ThemeToggle />
-                  </NavItemContainer>
 
                   {/* </NavItem> */}
                 </ListContainer>
@@ -407,11 +468,14 @@ const NavigationBar = () => {
           </AnimatePresence>
         </AnimateSharedLayout>
 
+        <ThemeButtonLI>
+          <ThemeToggle />
+        </ThemeButtonLI>
         {/* ITEM 3 (Menu button for mobile mode) */}
         {isMobile && (
           <MenuButtonLI>
             <MenuButton type="button" onClick={closeSidebarToggleMainNav}>
-              {mainNav ? <MdClose /> : <CgMenu />}
+              {mainNav ? <MdClose /> : <HiOutlineMenuAlt4 />}
             </MenuButton>
           </MenuButtonLI>
         )}

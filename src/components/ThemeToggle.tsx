@@ -11,8 +11,8 @@ const Container = styled.button`
   background-color: ${({ theme }) => theme.colors.background.main};
   /* width: 5rem; */
   /* padding: 0 0.75rem; */
-  height: 2rem;
-  width: 2rem;
+  height: 3rem;
+  width: 3rem;
   /* border: 1px dashed red; */
 
   border-radius: 5rem;

@@ -5,17 +5,21 @@ import { ReactElement } from "react";
 
 export const GUTTER = (props: any) => css`
   @media (max-width: ${props.theme.breakpoints.xxl}px) {
-    padding: 0 30%;
+    padding: 0 25%;
+
+    /* padding: 0 30%; */
     /* background-color: red; */
   }
 
   @media (max-width: ${props.theme.breakpoints.xl}px) {
-    padding: 0 18%;
+    padding: 0 15%;
+
+    /* padding: 0 20%; */
     /* background-color: orange; */
   }
 
   @media (max-width: ${props.theme.breakpoints.l}px) {
-    padding: 0 15rem;
+    padding: 0 15%;
     /* background-color: yellow; */
   }
 

@@ -20,6 +20,7 @@ import { BiSearch } from "react-icons/bi";
 import { MdSort } from "react-icons/md";
 import FloatingPoint from "./FloatingPoint";
 import Portal from "./DynamicPortal";
+import FloatingActionButton from "./FloatingActionButton";
 
 const Container = styled.div<{ searchPadding: boolean }>`
   position: relative;
@@ -34,7 +35,7 @@ const Container = styled.div<{ searchPadding: boolean }>`
   /* 21.5rem -> supports 280px devices */
   grid-template-columns: repeat(auto-fit, minmax(21.5rem, 1fr));
 
-  padding-bottom: ${({ searchPadding }) => (searchPadding ? "5rem" : 0)};
+  padding-bottom: ${({ searchPadding }) => (searchPadding ? "6rem" : 0)};
 `;
 
 // const FloatingPoint = styled(motion.div)`
@@ -47,43 +48,16 @@ const Container = styled.div<{ searchPadding: boolean }>`
 //   height: 0;
 // `;
 
-export const FAB = styled(motion.button)`
-  z-index: 15;
-
+const SearchFAB = styled(FloatingActionButton)`
   position: absolute;
   bottom: 0;
   right: 0;
-
-  border-radius: 50%;
-  width: 4rem;
-  height: 4rem;
-
-  background-color: ${({ theme }) => theme.colors.primary.main};
-
-  box-shadow: 0px 0px 20px 0px ${({ theme }) => theme.colors.primary.main};
-  box-shadow: 0px 0px 20px -10px black;
-  /* background: ${({ theme }) =>
-    `linear-gradient(45deg, ${theme.colors.primary.main}, ${theme.colors.primary.light})`}; */
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  svg {
-    width: 1.5rem;
-    height: 1.5rem;
-
-    path {
-      fill: ${({ theme }) => theme.colors.onPrimary.main};
-    }
-  }
 `;
 
-const SortButton = styled(FAB)`
-  width: 3rem;
-  height: 3rem;
-
+const SortFAB = styled(FloatingActionButton)`
+  position: absolute;
   bottom: 5rem;
+  right: 0;
 `;
 
 const btnAnimationProps = {
@@ -167,16 +141,18 @@ const MonstieList = ({ data, column }: MonstieListProps) => {
   return (
     <>
       <Portal portalId="floating-point-monstie-list">
-        <SortButton
+        <SortFAB
+          size="m"
           {...btnAnimationProps}
           {...staticProps2}
           onClick={toggleShowSort}
         >
           <MdSort />
-        </SortButton>
-        <FAB {...staticProps} onClick={toggleShowSearch}>
+        </SortFAB>
+
+        <SearchFAB size="l" {...staticProps} onClick={toggleShowSearch}>
           <BiSearch />
-        </FAB>
+        </SearchFAB>
         <AnimatePresence>
           {showSearch && (
             <ExpandSearchMenu
