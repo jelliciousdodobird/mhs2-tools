@@ -28,9 +28,9 @@ import { ElementType } from "../utils/ProjectTypes";
 import ExpandSearchMenu from "./ExpandSearchMenu";
 
 // data:
-import DATA from "../utils/output.json";
+import GENES_DATA from "../utils/genes.json";
+
 import { DROP_TYPES } from "../utils/DropTypes";
-// import { clamp, BLANK_GENE } from "../utils/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import Debug from "./Debug";
 import usePagination from "../hooks/usePagination";
@@ -475,7 +475,7 @@ const GeneSearch = ({
     setSearchTerm(e.target.value);
 
   useEffect(() => {
-    const dataFromApiCall = DATA.genes;
+    const dataFromApiCall = GENES_DATA;
     const cleanGenes = sanitizeGenes(dataFromApiCall);
     setGenes(cleanGenes);
     setSearchResults(cleanGenes.slice(0, 20));
@@ -634,13 +634,3 @@ const GeneSearch = ({
 };
 
 export default GeneSearch;
-
-{
-  /* <p>
-          {page.number + 1}/{totalPages}
-        </p>
-        <p>
-          {" " + pageResult.length}/{resultsPerPage + " "}
-        </p>
-        <p>Results: {searchResults.length}</p> */
-}

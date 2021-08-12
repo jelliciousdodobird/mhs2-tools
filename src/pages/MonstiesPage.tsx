@@ -5,19 +5,17 @@ import { rgba } from "emotion-rgba";
 
 // library:
 import { useState, useMemo, useEffect, useRef } from "react";
-import { motion, PanInfo } from "framer-motion";
 
 // data:
-import DATA from "../utils/output.json";
+import MONSTIES_DATA from "../utils/monsties.json";
 
 // custom components:
-import Table from "../components/Table";
 import MonstieList from "../components/MonstieList";
-import DraggableGene from "../components/DraggableGene";
-import { TEST_BOARD } from "../utils/TestData";
 import FloatingPoint from "../components/FloatingPoint";
-import { useUIState } from "../contexts/UIContext";
 import Gutter from "../components/Gutter";
+
+// custom hooks:
+import { useUIState } from "../contexts/UIContext";
 
 const Container = styled.div`
   position: relative;
@@ -112,7 +110,7 @@ const MonstiesPage = () => {
   const floatPointOffset = isMobile ? 10.5 : 28;
 
   const [lvl, setLvl] = useState(1);
-  const [data, setData] = useState(DATA.monsties);
+  const [data, setData] = useState(MONSTIES_DATA);
   const column = useMemo(
     () => [
       {
@@ -146,7 +144,7 @@ const MonstiesPage = () => {
   );
 
   useEffect(() => {
-    const stats = DATA.monsties;
+    const stats = MONSTIES_DATA;
     const newStats = stats.map((monstie, i) => {
       // const lvlStats = [];
 

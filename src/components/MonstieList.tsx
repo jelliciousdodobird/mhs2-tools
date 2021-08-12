@@ -33,7 +33,7 @@ const Container = styled.div<{ searchPadding: boolean }>`
 
   /* 18rem -> supports 280px devices */
   /* 21.5rem -> supports 280px devices */
-  grid-template-columns: repeat(auto-fit, minmax(21.5rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr));
 
   padding-bottom: ${({ searchPadding }) => (searchPadding ? "6rem" : 0)};
 `;
@@ -101,6 +101,7 @@ const MonstieList = ({ data, column }: MonstieListProps) => {
   const [showSort, setShowSort] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchText, setSearchText] = useState("");
+  const [eggMode, setEggMode] = useState(false);
 
   const toggleShowSort = () => {
     setShowSearch(false);
@@ -172,12 +173,16 @@ const MonstieList = ({ data, column }: MonstieListProps) => {
         </AnimatePresence>
       </Portal>
 
-      <Container searchPadding={showSearch}>
+      <Container
+        searchPadding={showSearch}
+        onClick={() => setEggMode((v) => !v)}
+      >
         <AnimateSharedLayout>
           {tableData.map((monstie: any) => (
             <MonstieCard
               key={monstie.name + monstie.strength}
               monstie={monstie}
+              showEgg={eggMode}
             />
           ))}
         </AnimateSharedLayout>

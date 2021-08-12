@@ -54,17 +54,26 @@ export const coerceStringIntoAssetType = (str: string): AssetType => {
 };
 
 type AssetProps = {
+  className?: string | undefined;
   asset: string;
   size?: number;
   title?: string;
 };
 
-const Asset = memo(({ asset, size, title }: AssetProps) => {
+const Asset = memo(({ asset, size, title, className }: AssetProps) => {
   const svg = ICONS[asset as AssetType]
     ? ICONS[asset as AssetType]
     : ICONS[coerceStringIntoAssetType(asset)];
 
-  if (svg) return <SvgWrapper svgComponent={svg} size={size} title={title} />;
+  if (svg)
+    return (
+      <SvgWrapper
+        svgComponent={svg}
+        size={size}
+        title={title}
+        className={className}
+      />
+    );
   else return <>{asset}</>;
 });
 

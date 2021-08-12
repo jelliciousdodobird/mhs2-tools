@@ -150,7 +150,6 @@ const BingoBonuses = ({
 
   useEffect(() => {
     const freqs = getBingoCountAndBonus(geneBuild);
-    console.log(freqs);
 
     if (showBingosOnly) setBonuses(freqs.filter(({ count }) => count > 0));
     else setBonuses(freqs);
