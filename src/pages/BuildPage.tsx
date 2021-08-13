@@ -214,7 +214,7 @@ type PageProps = {
 
 const BingoBoard_ = styled(BingoBoard)``;
 const BingoBonuses_ = styled(BingoBonuses)``;
-const ObtainableGeneList_ = styled(ObtainableGeneList)``;
+const ObtainableGeneList_ = styled(ObtainableGeneList)`s`;
 const SkillsList_ = styled(SkillsList)``;
 
 const BLANK_BOARD = cleanGeneBuild([]);
