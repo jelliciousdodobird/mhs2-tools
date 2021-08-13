@@ -24,6 +24,7 @@ import { useUIState } from "../contexts/UIContext";
 import Logo from "./Logo";
 import ThemeToggle from "./ThemeToggle";
 import { GUTTER } from "./Gutter";
+import { useAuth } from "../contexts/AuthContext";
 
 // background: ${({ theme }) =>
 //   `linear-gradient(45deg, ${theme.colors.primary.main}, ${theme.colors.primary.light})`};
@@ -365,6 +366,8 @@ const MenuButton = styled.button`
 `;
 
 const NavigationBar = () => {
+  const { user } = useAuth();
+
   const { isMobile } = useUIState();
   const [mainNav, setMainNav] = useState(false);
   const { selectedTheme, toggleTheme } = useThemeState();
@@ -461,10 +464,12 @@ const NavigationBar = () => {
           </AnimatePresence>
         </AnimateSharedLayout>
 
+        {/* ITEM 3 (Theme Button) */}
         <ThemeButtonLI>
           <ThemeToggle />
         </ThemeButtonLI>
-        {/* ITEM 3 (Menu button for mobile mode) */}
+
+        {/* ITEM 4 (Menu button for mobile mode) */}
         {isMobile && (
           <MenuButtonLI>
             <MenuButton type="button" onClick={closeSidebarToggleMainNav}>

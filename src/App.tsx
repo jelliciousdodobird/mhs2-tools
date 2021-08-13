@@ -18,6 +18,7 @@ import GenesPage from "./pages/GenesPage";
 import TeamBuilderPage from "./pages/TeamBuilderPage";
 import BuildPage from "./pages/BuildPage";
 import Footer from "./components/Footer";
+import Register from "./components/Register";
 
 const AppContainer = styled.div`
   /* border: 2px dashed lightblue; */
@@ -76,6 +77,7 @@ const App = () => {
           <Route exact path="/builds" component={TeamBuilderPage} />
           {/* <Route exact path="/builds/:id" component={} /> */}
           <Route path="/builds/edit/:id" component={BuildPage} />
+          <Route path="/account" component={Register} />
         </Switch>
       </PageContainer>
       <Footer />
