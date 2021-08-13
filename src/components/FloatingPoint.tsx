@@ -6,7 +6,6 @@ import useResizeObserver from "use-resize-observer/polyfilled";
 
 type ContainerProps = {
   w: number;
-  offset: { x: number; y: number };
 
   top?: number | null;
   left?: number | null;
@@ -34,8 +33,6 @@ const Container = styled.div<ContainerProps>`
     right: ${right}px;
     left: ${left}px;
   `}
-
-  /* margin-left: ${({ offset }) => offset.x}px; */
 
   width: ${({ w }) => w}px;
   min-width: ${({ w }) => w}px;
@@ -88,7 +85,6 @@ const FloatingPoint = ({
   return (
     <Container
       w={actualWidth}
-      offset={{ x: 0, y }}
       id={portalId}
       top={topAdjusted}
       bottom={bottomAdjusted}

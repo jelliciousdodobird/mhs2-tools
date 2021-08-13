@@ -103,6 +103,28 @@ const CompareSection = styled(Gutter)`
 
 const MonstieListSection = styled(Gutter)``;
 
+const Test = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const Row = styled.div`
+  min-height: 20rem;
+  width: 100%;
+
+  border: 1px dashed red;
+
+  display: flex;
+`;
+
+const Item = styled.div`
+  border: 1px dashed yellow;
+
+  flex-grow: 1;
+  /* min-height: 100%; */
+`;
+
 const MonstiesPage = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { isMobile } = useUIState();
@@ -199,6 +221,7 @@ const MonstiesPage = () => {
               consectetur.
             </p>
           </SurfaceContainer>
+
           <SurfaceContainer>
             <p>
               Lorem, ipsum dolor sit amet consectetur adipisicing elit.
@@ -216,24 +239,6 @@ const MonstiesPage = () => {
               consectetur.
             </p>
           </SurfaceContainer>
-          <SurfaceContainer>
-            <p>
-              Lorem, ipsum dolor sit amet consectetur adipisicing elit.
-              Voluptatem doloremque quis laborum qui. Quibusdam quis aliquam
-              nesciunt est enim commodi rerum, repellat consectetur recusandae
-              eveniet non facilis odit corrupti, error necessitatibus animi
-              omnis nostrum! Nostrum, officia nobis. Inventore provident fugiat,
-              enim autem dicta assumenda earum tenetur temporibus eos impedit,
-              pariatur qui excepturi atque. Quos eveniet est, temporibus
-              architecto dolor, similique nobis cupiditate neque minima,
-              suscipit rerum. Sint, obcaecati ipsum fugit, illo hic cupiditate
-              magnam quo sapiente itaque enim aspernatur est eum, eligendi
-              accusamus vero aut quam ducimus. Ab iure in molestiae tenetur
-              fugiat, laboriosam debitis earum exercitationem quibusdam magni
-              consectetur.
-            </p>
-          </SurfaceContainer>
-          <SurfaceContainer></SurfaceContainer>
         </Container>
       </CompareSection>
 

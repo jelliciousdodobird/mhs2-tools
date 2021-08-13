@@ -16,7 +16,7 @@ import { ElementType, ELEMENT_COLOR } from "../utils/ProjectTypes";
 import Egg from "./Egg";
 import Asset from "./AssetComponents";
 
-const Container = styled(motion.div)<{ bg: string }>`
+const Container = styled.div<{ bg: string }>`
   position: relative;
 
   background-color: ${({ bg, theme }) => (bg ? bg : theme.colors.surface.main)};
@@ -28,6 +28,7 @@ const Container = styled(motion.div)<{ bg: string }>`
 
   width: 100%;
   min-height: 14rem;
+  max-height: 14rem;
   /* height: 10rem; */
 
   /* margin-right: 1rem; */
@@ -266,7 +267,7 @@ const MonstieCard = ({ monstie, showEgg = false }: MonstieCardProps) => {
       bg={strength_element}
       key={monstie.name + monstie.strength}
       // notice that the shuffle animation is turned off by setting layoutId = undefined
-      layoutId={isMobile ? undefined : monstie.name + monstie.strength}
+      // layoutId={isMobile ? undefined : monstie.name + monstie.strength}
     >
       <RowContainer>
         <AttackTypeIcon

@@ -4,7 +4,7 @@ import styled from "@emotion/styled";
 import { rgba } from "emotion-rgba";
 
 // library:
-import { useState, useEffect, useRef, ReactElement } from "react";
+import { useState, useEffect, useRef, ReactElement, useMemo } from "react";
 import { AnimatePresence, AnimateSharedLayout, motion } from "framer-motion";
 
 // custom hooks:
@@ -21,12 +21,27 @@ import { MdSort } from "react-icons/md";
 import FloatingPoint from "./FloatingPoint";
 import Portal from "./DynamicPortal";
 import FloatingActionButton from "./FloatingActionButton";
+import useVirtualScroll from "../hooks/useVirtualScroll";
+import useResizeObserver from "use-resize-observer/polyfilled";
+import Debug from "./Debug";
 
-const Container = styled.div<{ searchPadding: boolean }>`
+const BlankRow = styled.div<{ blankHeight: number }>`
+  height: ${({ blankHeight }) => blankHeight}px;
+  min-height: ${({ blankHeight }) => blankHeight}px;
+  max-height: ${({ blankHeight }) => blankHeight}px;
+`;
+
+const GridRow = styled.div`
+  height: 100%;
+  width: 100%;
+`;
+const Container = styled.div<{ listHeight: number; gridPadding: number }>`
   position: relative;
 
+  /* border: 1px dashed red; */
   /* display: flex;
   flex-wrap: wrap; */
+  padding-top: ${({ gridPadding }) => gridPadding}px;
 
   display: grid;
   gap: 1rem;
@@ -34,8 +49,14 @@ const Container = styled.div<{ searchPadding: boolean }>`
   /* 18rem -> supports 280px devices */
   /* 21.5rem -> supports 280px devices */
   grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr));
+  grid-template-rows: repeat(auto-fit, minmax(14rem, 14rem));
 
-  padding-bottom: ${({ searchPadding }) => (searchPadding ? "6rem" : 0)};
+  height: ${({ listHeight }) => listHeight}px;
+  min-height: ${({ listHeight }) => listHeight}px;
+  max-height: ${({ listHeight }) => listHeight}px;
+
+  /* display: flex; */
+  /* flex-direction: column; */
 `;
 
 // const FloatingPoint = styled(motion.div)`
@@ -71,20 +92,23 @@ type MonstieListProps = {
   defaultColumnWidth?: number;
 };
 
-const ShuffleAnimationWrapper = ({
-  animationOn,
-  children,
-}: {
-  animationOn: boolean;
-  children: ReactElement;
-}) => {
-  if (animationOn) return <AnimateSharedLayout>{children}</AnimateSharedLayout>;
-  else return <>{children}</>;
-};
-
-const Div = styled.div``;
-
 const MonstieList = ({ data, column }: MonstieListProps) => {
+  const listContainerRef = useRef<HTMLDivElement>(null);
+  const { width = 0 } = useResizeObserver({
+    ref: listContainerRef,
+    onResize: (_) => {
+      if (listContainerRef.current) {
+        const t = window
+          .getComputedStyle(listContainerRef.current)
+          .getPropertyValue("grid-template-columns")
+          .split(" ").length;
+
+        setItemsPerRow(t);
+      }
+    },
+  });
+  const [itemsPerRow, setItemsPerRow] = useState(1);
+
   const {
     changeColumnOrder,
     toggleMultiSort,
@@ -98,6 +122,20 @@ const MonstieList = ({ data, column }: MonstieListProps) => {
     toggleColumn,
     hiddenColumns,
   } = useTable(data, column, 150);
+
+  const { listHeight, renderList, blankHeight } = useVirtualScroll(
+    useMemo(
+      () => ({
+        list: tableData,
+        listContainerRef,
+        itemHeight: 14 * 14, // 14rem
+        itemPadding: 14, // 1rem
+        itemsPerRow,
+      }),
+      [tableData, listContainerRef, itemsPerRow]
+    )
+  );
+
   const [showSort, setShowSort] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchText, setSearchText] = useState("");
@@ -174,18 +212,18 @@ const MonstieList = ({ data, column }: MonstieListProps) => {
       </Portal>
 
       <Container
-        searchPadding={showSearch}
+        ref={listContainerRef}
+        listHeight={listHeight}
+        gridPadding={blankHeight}
         onClick={() => setEggMode((v) => !v)}
       >
-        <AnimateSharedLayout>
-          {tableData.map((monstie: any) => (
-            <MonstieCard
-              key={monstie.name + monstie.strength}
-              monstie={monstie}
-              showEgg={eggMode}
-            />
-          ))}
-        </AnimateSharedLayout>
+        {renderList.map((monstie: any) => (
+          <MonstieCard
+            key={monstie.name + monstie.strength}
+            monstie={monstie}
+            showEgg={eggMode}
+          />
+        ))}
       </Container>
     </>
   );
