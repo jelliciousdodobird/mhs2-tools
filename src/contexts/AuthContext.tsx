@@ -46,8 +46,8 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
   useEffect(() => {
     // console.log(auth.user());
     const state = auth.onAuthStateChange((event, session) => {
-      console.log("e", event);
-      console.log("session", session);
+      // console.log("e", event);
+      // console.log("session", session);
       setUser(session ? session.user : null);
     });
 

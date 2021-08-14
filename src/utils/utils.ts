@@ -1,3 +1,8 @@
+import base64url from "base64url";
+import { create } from "domain";
+import { nanoid } from "nanoid";
+import { GeneBuild } from "../components/MonstieGeneBuild";
+
 import {
   ElementType,
   AttackType,
@@ -57,6 +62,16 @@ export const cleanGeneBuild = (list: MonstieGene[]) => {
       return isBlankGene(gene) ? { ...gene, geneName: `blank_${v}` } : gene;
     else return { ...BLANK_GENE, geneName: `blank_${v}` };
   });
+};
+
+export const CLEAN_EMPTY_BOARD = cleanGeneBuild([]);
+
+export const CORRUPTED_BUILD: GeneBuild = {
+  buildId: "",
+  buildName: "Corrupted",
+  monstie: "",
+  createdBy: "",
+  geneBuild: CLEAN_EMPTY_BOARD,
 };
 
 export const randomNumber = (min: number, max: number) =>
@@ -220,3 +235,60 @@ export const removeGeneFromName = (name: string) =>
 
 export const formatGeneName = (name: string) =>
   removeGeneFromName(removeSizeFromName(name));
+
+export type ShortGeneBuild = {
+  i: string;
+  b: string;
+  c: string;
+  m: string;
+  g: number[];
+};
+
+export const shrinkGeneBuild = (build: GeneBuild): ShortGeneBuild => {
+  const { buildId, buildName, createdBy, monstie, geneBuild } = build;
+  return {
+    i: buildId,
+    b: buildName,
+    c: createdBy ? createdBy : "",
+    m: monstie,
+    g: geneBuild.map((gene) => gene.geneNumber),
+  };
+};
+
+export const expandGeneBuild = (build: ShortGeneBuild): GeneBuild => {
+  const { i, b, c, m, g } = build;
+
+  // TODO: ap call to get each gene data from the gene number
+  // becuase 'g' will be an array of numbers NOT an array of MonstieGene
+
+  return {
+    buildId: i,
+    buildName: b,
+    createdBy: c,
+    monstie: m,
+    geneBuild: CLEAN_EMPTY_BOARD,
+  };
+};
+
+export const encodeGeneBuildToBase64Url = (build: GeneBuild) => {
+  const str = JSON.stringify(shrinkGeneBuild(build));
+
+  const encoded = base64url(str);
+
+  return encoded;
+};
+
+export const decodeBase64UrlToGeneBuild = (
+  url: string
+): { error: any; build: GeneBuild } => {
+  try {
+    const decoded = base64url.decode(url);
+    const shortenedGeneBuild: ShortGeneBuild = JSON.parse(decoded);
+
+    const build = expandGeneBuild(shortenedGeneBuild);
+
+    return { error: null, build };
+  } catch (error) {
+    return { error, build: { ...CORRUPTED_BUILD, buildId: nanoid() } };
+  }
+};

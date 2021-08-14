@@ -46,7 +46,7 @@ const Register = ({}: Props) => {
   const loginUser = async () => {
     const { data, user, error, session } = await login(email, password);
 
-    console.log(data, user, session);
+    // console.log(data, user, session);
 
     if (error) console.log(error);
   };

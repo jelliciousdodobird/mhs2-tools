@@ -18,7 +18,12 @@ import FloatingPoint from "../components/FloatingPoint";
 import { useUIState } from "../contexts/UIContext";
 import { MonstieGene } from "../utils/ProjectTypes";
 import MonstieGeneBuild, { GeneBuild } from "../components/MonstieGeneBuild";
-import { cleanGeneBuild, shuffleArray } from "../utils/utils";
+import {
+  cleanGeneBuild,
+  decodeBase64UrlToGeneBuild,
+  encodeGeneBuildToBase64Url,
+  shuffleArray,
+} from "../utils/utils";
 import useGeneBuild from "../hooks/useGeneBuild";
 import TextInput from "../components/TextInput";
 import { rainbowGradient } from "../components/GeneSlot";
@@ -27,6 +32,8 @@ import BingoBonuses from "../components/BingoBonuses";
 import ObtainableGeneList from "../components/ObtainableGeneList";
 import SkillsList from "../components/SkillsList";
 import Gutter from "../components/Gutter";
+import { useAuth } from "../contexts/AuthContext";
+import { GENE_BUILDS } from "../utils/LocalStorageKeys";
 
 export const rainbowTextGradient = (degree = 150) =>
   `repeating-linear-gradient(
@@ -211,7 +218,6 @@ type PageProps = {
 };
 
 // components with grid areas applied:
-
 const BingoBoard_ = styled(BingoBoard)``;
 const BingoBonuses_ = styled(BingoBonuses)``;
 const ObtainableGeneList_ = styled(ObtainableGeneList)``;
@@ -220,12 +226,16 @@ const SkillsList_ = styled(SkillsList)``;
 const BLANK_BOARD = cleanGeneBuild([]);
 
 const BuildPage = ({ match }: PageProps) => {
+  const { user } = useAuth();
   // STATE:
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [geneBuild, setGeneBuild] = useState<MonstieGene[]>(BLANK_BOARD);
   const [isDirty, setIsDirty] = useState(false);
   const [buildName, setBuildName] = useState("");
+  // const [buildId, setBuildId] = useState("");
+
+  const [invalidBuildId, setInvalidBuildId] = useState(false);
 
   const [dropSuccess, setDropSuccess] = useState(false);
   const { drop, setDrop } = useDrop();
@@ -235,18 +245,90 @@ const BuildPage = ({ match }: PageProps) => {
 
   // DERIVED STATE:
   const floatPointOffset = isMobile ? 10.5 : 28;
+  const buildId = match.params.id;
 
   const shuffle = () => setGeneBuild((list) => shuffleArray([...list]));
   const clearBuild = () => setGeneBuild(BLANK_BOARD);
 
+  const saveToLocalStorage = () => {
+    const localData: GeneBuild[] | null = JSON.parse(
+      window.localStorage.getItem(GENE_BUILDS) || "null"
+    );
+
+    if (localData) {
+      const newData: GeneBuild = {
+        buildId,
+        buildName,
+        createdBy: null,
+        monstie: "",
+        geneBuild,
+      };
+
+      const buildIndex = localData.findIndex(
+        (builds) => builds.buildId === buildId
+      );
+      // console.log("b", build);
+
+      const arr =
+        buildIndex !== -1
+          ? [
+              ...localData.slice(0, buildIndex),
+              ...localData.slice(buildIndex + 1, localData.length),
+            ]
+          : localData;
+
+      const t = [...arr, newData];
+
+      window.localStorage.setItem(GENE_BUILDS, JSON.stringify(t));
+
+      setIsDirty(false);
+    }
+  };
+
+  const saveToDatabase = () => {};
+
+  const save = () => {
+    if (user) saveToDatabase();
+    else saveToLocalStorage();
+  };
+
   useEffect(() => {
-    // DO DATA FETCHING HERE
-    console.log(match.params.id);
+    const buildId = match.params.id;
+
+    if (user) {
+      // DO DATA FETCHING HERE
+    } else {
+      console.log(match.params.id);
+
+      const localData: GeneBuild[] | null = JSON.parse(
+        window.localStorage.getItem(GENE_BUILDS) || "null"
+      );
+
+      if (localData) {
+        const build = localData.find((builds) => builds.buildId === buildId);
+        console.log("b", build);
+
+        if (build) {
+          setGeneBuild(build.geneBuild);
+          setBuildName(build.buildName);
+        } else setInvalidBuildId(true);
+      } else {
+        // redirect cus invalid buildId
+        setInvalidBuildId(true);
+      }
+    }
   }, [match]);
 
   useEffect(() => {
     setIsDirty(true);
   }, [geneBuild, buildName]);
+
+  if (invalidBuildId)
+    return (
+      <Gutter>
+        <p>INVALID ID</p>
+      </Gutter>
+    );
 
   return (
     <Gutter>
@@ -264,7 +346,7 @@ const BuildPage = ({ match }: PageProps) => {
             <ButtonContainer>
               <Button onClick={clearBuild}>Clear</Button>
               <Button onClick={shuffle}>Random</Button>
-              <SaveButton isDirty={isDirty} onClick={() => setIsDirty(false)}>
+              <SaveButton isDirty={isDirty} onClick={save}>
                 Save
               </SaveButton>
             </ButtonContainer>
@@ -313,3 +395,68 @@ const BuildPage = ({ match }: PageProps) => {
 };
 
 export default BuildPage;
+
+//  const saveToLocalStorage = () => {
+//    const localData: string[] | null = JSON.parse(
+//      window.localStorage.getItem(GENE_BUILDS) || "null"
+//    );
+
+//    if (localData) {
+//      const newData: GeneBuild = {
+//        buildId,
+//        buildName,
+//        createdBy: "",
+//        monstie: "",
+//        geneBuild,
+//      };
+
+//      const newBuildUrl = encodeGeneBuildToBase64Url(newData);
+
+//      const buildIndex = localData.findIndex((url) => url === newBuildUrl);
+//      // console.log("b", build);
+
+//      const arr =
+//        buildIndex !== -1
+//          ? [
+//              ...localData.slice(0, buildIndex),
+//              ...localData.slice(buildIndex + 1, localData.length),
+//            ]
+//          : localData;
+
+//      const t = [...arr, newData];
+
+//      window.localStorage.setItem(GENE_BUILDS, JSON.stringify(t));
+
+//      setIsDirty(false);
+//    }
+//  };
+
+// useEffect(() => {
+//   const buildUrl = match.params.id;
+
+//   if (user) {
+//     // DO DATA FETCHING HERE
+//   } else {
+//     console.log(match.params.id);
+
+//     const localData: string[] | null = JSON.parse(
+//       window.localStorage.getItem(GENE_BUILDS) || "null"
+//     );
+
+//     if (localData) {
+//       const encodedUrl = localData.find((url) => url === buildUrl);
+
+//       console.log("b", encodedUrl);
+
+//       if (encodedUrl) {
+//         const { build } = decodeBase64UrlToGeneBuild(encodedUrl);
+//         setGeneBuild(build.geneBuild);
+//         setBuildName(build.buildName);
+//         setBuildId(build.buildId);
+//       } else setInvalidBuildId(true);
+//     } else {
+//       // redirect cus invalid buildId
+//       setInvalidBuildId(true);
+//     }
+//   }
+// }, [match]);
