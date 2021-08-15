@@ -42,6 +42,7 @@ import { ImHeart } from "react-icons/im";
 import { MdClose, MdAdd } from "react-icons/md";
 import FloatingActionButton from "./FloatingActionButton";
 import supabase from "../utils/supabase";
+import Fuse from "fuse.js";
 
 const DummyWidthMeasurementDiv = styled.div`
   width: 100%;
@@ -414,6 +415,13 @@ const GeneSearch = ({
   const [isDragging, setIsDragging] = useState(false);
   const [dropMessage, setDropMessage] = useState("");
 
+  const fuse = new Fuse(genes, {
+    keys: ["geneName", "attackType", "elementType"],
+    includeScore: true,
+    shouldSort: true,
+    threshold: 0.3,
+  });
+
   // browseMode refers to whether the user is browsing the results by swiping or clicking through the pages
   // browseMode should be set to false when they start dragging a gene else where
   // an overflow: hidden is applied to the Container element depending on the browseMode
@@ -509,11 +517,9 @@ const GeneSearch = ({
   useEffect(() => {
     if (searchTerm === "") setSearchResults(genes);
     else {
-      const search = searchTerm.toLowerCase().trim();
+      const sr = fuse.search(searchTerm);
+      const newResults = sr.map(({ item }) => item);
 
-      const newResults = genes.filter((val) =>
-        val.geneName.toLowerCase().includes(search)
-      );
       setSearchResults(newResults);
     }
   }, [searchTerm, genes]);
@@ -583,7 +589,7 @@ const GeneSearch = ({
             key="gene-search"
             value={searchTerm}
             onChange={setSearch}
-            placeholderText="Search for a gene.."
+            placeholderText="Search by a gene's name, element, or type"
           />
         )}
 
