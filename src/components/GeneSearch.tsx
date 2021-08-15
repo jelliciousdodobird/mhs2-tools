@@ -41,6 +41,7 @@ import { GiRoundStar } from "react-icons/gi";
 import { ImHeart } from "react-icons/im";
 import { MdClose, MdAdd } from "react-icons/md";
 import FloatingActionButton from "./FloatingActionButton";
+import supabase from "../utils/supabase";
 
 const DummyWidthMeasurementDiv = styled.div`
   width: 100%;
@@ -359,19 +360,19 @@ const sanitizeGenes = (dirtyGenes: any) => {
   dirtyGenes.forEach((gene: any) => {
     const cleanedGene: MonstieGene = {
       geneName: gene.gene_name,
-      geneNumber: gene.gene_number,
+      geneNumber: gene.g_id,
       attackType: gene.attack_type ? (gene.attack_type as AttackType) : "",
       elementType: gene.element_type as ElementType,
       requiredLvl: gene.required_lvl,
-      geneSize: gene.gene_size,
+      geneSize: gene.size_abbr,
       skill: {
-        skillName: gene.skill.name,
-        skillType: gene.skill.type as SkillType,
-        desc: gene.skill.desc,
+        skillName: gene.skill_name,
+        skillType: gene.trait_type as SkillType,
+        desc: gene.description,
       } as Skill,
       possessedBy: {
-        native: gene.possessed_by.native,
-        random: gene.possessed_by.random,
+        native: [],
+        random: [],
       },
     };
 
@@ -475,10 +476,24 @@ const GeneSearch = ({
     setSearchTerm(e.target.value);
 
   useEffect(() => {
-    const dataFromApiCall = GENES_DATA;
-    const cleanGenes = sanitizeGenes(dataFromApiCall);
-    setGenes(cleanGenes);
-    setSearchResults(cleanGenes.slice(0, 20));
+    const fetchAllGeneSkills = async () => {
+      let { data, error } = await supabase.from("gene_skills").select("*");
+
+      if (!error) {
+        const cleanGenes = sanitizeGenes(data);
+        setGenes(cleanGenes);
+        // setSearchResults(cleanGenes.slice(0, 20));
+      } else {
+        setGenes([]);
+      }
+    };
+
+    fetchAllGeneSkills();
+
+    // const dataFromApiCall = GENES_DATA;
+    // const cleanGenes = sanitizeGenes(dataFromApiCall);
+    // setGenes(cleanGenes);
+    // setSearchResults(cleanGenes.slice(0, 20));
   }, []);
 
   // recalculate pagination parameters:
@@ -512,7 +527,7 @@ const GeneSearch = ({
   // }, [isDragging, dropSuccess]);
 
   const GeneItem = (gene: MonstieGene) => (
-    <GeneContainer key={gene.geneName} padding={itemPadding}>
+    <GeneContainer key={gene.geneNumber} padding={itemPadding}>
       <DraggableGene
         size={itemSize}
         gene={gene}

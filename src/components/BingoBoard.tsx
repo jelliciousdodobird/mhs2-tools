@@ -272,7 +272,9 @@ const BingoBoard = ({
   const placeGene = (targetIndex: number, gene: MonstieGene) =>
     setGeneBuild((genes) => {
       // housekeeping:
-      const i = genes.findIndex(({ geneName }) => geneName === gene.geneName);
+      const i = genes.findIndex(
+        ({ geneNumber }) => geneNumber === gene.geneNumber
+      );
       const copy = [...genes];
       let success = true;
 
@@ -288,7 +290,9 @@ const BingoBoard = ({
   const swapGenes = (targetIndex: number, gene: MonstieGene) =>
     setGeneBuild((genes) => {
       // housekeeping:
-      const i = genes.findIndex(({ geneName }) => geneName === gene.geneName);
+      const i = genes.findIndex(
+        ({ geneNumber }) => geneNumber === gene.geneNumber
+      );
       const copy = [...genes];
 
       // dragged from another board component so a swap isnt possible:
@@ -397,7 +401,7 @@ const BingoBoard = ({
               {geneBuild.map((gene, i) =>
                 !isBlankGene(gene) ? (
                   <DraggableGene
-                    key={gene.geneName}
+                    key={gene.geneNumber}
                     gene={gene}
                     onDragStart={() => {
                       setIsDragging(true);

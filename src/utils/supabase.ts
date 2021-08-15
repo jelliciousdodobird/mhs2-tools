@@ -6,3 +6,4 @@ const supabase = createClient(
 );
 
 export const auth = supabase.auth;
+export default supabase;

@@ -202,11 +202,10 @@ const Gene = ({
   const borderColor = color(geneColor).darken(0.35).hex();
 
   // formatted strings:
-  const geneSizeLetter = GENE_SIZE_LETTER[gene.geneSize];
   const formattedGeneName = formatGeneName(gene.geneName);
 
   // misc:
-  const isRainbowGene = gene.geneName === "rainbow";
+  const isRainbowGene = gene.attackType === "all" && gene.elementType === "all";
 
   return (
     <GeneContainer size={size} bringToFront={bringToFront}>
@@ -217,7 +216,7 @@ const Gene = ({
 
       {!isRainbowGene && (
         <>
-          <GeneSize>{geneSizeLetter}</GeneSize>
+          <GeneSize>{gene.geneSize}</GeneSize>
           <GeneName
             c={darkenGeneColor}
             borderColor={borderColor}

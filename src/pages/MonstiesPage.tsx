@@ -16,6 +16,7 @@ import Gutter from "../components/Gutter";
 
 // custom hooks:
 import { useUIState } from "../contexts/UIContext";
+import supabase from "../utils/supabase";
 
 const Container = styled.div`
   position: relative;
@@ -107,6 +108,8 @@ const Test = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1rem;
+
+  text-transform: capitalize;
 `;
 
 const Row = styled.div`
@@ -197,13 +200,26 @@ const MonstiesPage = () => {
     setData(newStats);
   }, [lvl]);
 
+  const c = async () => {
+    let { data: gene_skills, error } = await supabase
+      .from("gene_skills")
+      .select("*");
+
+    return gene_skills;
+  };
+  useEffect(() => {}, []);
+
   return (
     <>
       <CompareSection>
-        <Container>
+        <Container
+          onClick={async () => {
+            console.log("yo");
+            console.log(await c());
+          }}
+        >
           <QuickLinkCompare href="#compare">C</QuickLinkCompare>
           <Heading id="compare">Compare {"->"}</Heading>
-
           <SurfaceContainer>
             <p>
               Lorem, ipsum dolor sit amet consectetur adipisicing elit.
@@ -221,7 +237,6 @@ const MonstiesPage = () => {
               consectetur.
             </p>
           </SurfaceContainer>
-
           <SurfaceContainer>
             <p>
               Lorem, ipsum dolor sit amet consectetur adipisicing elit.
@@ -238,7 +253,8 @@ const MonstiesPage = () => {
               fugiat, laboriosam debitis earum exercitationem quibusdam magni
               consectetur.
             </p>
-          </SurfaceContainer>
+          </SurfaceContainer>{" "}
+          <Test>negate 1-hit ko</Test>
         </Container>
       </CompareSection>
 

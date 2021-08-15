@@ -2,11 +2,7 @@
 import { css, jsx, useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
 import { ELEMENT_COLOR, MonstieGene } from "../utils/ProjectTypes";
-import {
-  GENE_SIZE_LETTER,
-  isBlankGene,
-  removeSizeFromName,
-} from "../utils/utils";
+import { isBlankGene, removeSizeFromName } from "../utils/utils";
 import Asset from "./AssetComponents";
 import BlankSkillCard from "./BlankSkillCard";
 
@@ -168,7 +164,7 @@ const SkillCard = ({ gene }: SkillCardProps) => {
       <FromBubble bg={light} bgDark={dark}>
         <span>From</span>
         {removeSizeFromName(gene.geneName)}
-        <GeneSize>{GENE_SIZE_LETTER[gene.geneSize]}</GeneSize>
+        <GeneSize>{gene.geneSize}</GeneSize>
       </FromBubble>
 
       <GroupContainer>

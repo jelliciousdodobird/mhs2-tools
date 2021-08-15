@@ -144,7 +144,7 @@ export const lineIndice: { [key: string]: number[] } = {
 export const getLineInfo = <T>(arr: T[], lineIndice: number[]) => {
   const line = lineIndice
     .map((index) => arr[index])
-    .filter((v) => (v as unknown) !== "rainbow");
+    .filter((v) => (v as unknown) !== "all");
 
   const isBingo = line.every((index) => index === line[0]);
 
@@ -221,11 +221,13 @@ export const getBingoCountAndBonus = (geneBuild: MonstieGene[]) => {
     freqs[type] = freqs[type] + 1;
   });
 
-  return Object.keys(freqs).map((key) => ({
-    type: key,
-    count: freqs[key as StrictAttack | StrictElement],
-    bonus: calcBonusMultiplier(freqs[key as StrictAttack | StrictElement]),
-  }));
+  return Object.keys(freqs)
+    .map((key) => ({
+      type: key,
+      count: freqs[key as StrictAttack | StrictElement],
+      bonus: calcBonusMultiplier(freqs[key as StrictAttack | StrictElement]),
+    }))
+    .filter(({ type }) => type !== "none");
 };
 
 export const removeSizeFromName = (name: string) => name.split("(")[0];

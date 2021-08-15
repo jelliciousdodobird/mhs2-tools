@@ -72,7 +72,7 @@ const SkillsList = ({ className, geneBuild }: SkilsListProps) => {
       threeColumnView={threeColumnView}
     >
       {list.map((gene, i) => (
-        <SkillCard key={gene.geneName} gene={gene} />
+        <SkillCard key={gene.geneNumber} gene={gene} />
       ))}
 
       {oneColumnView &&

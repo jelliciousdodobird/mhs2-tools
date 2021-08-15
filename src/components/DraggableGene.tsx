@@ -237,8 +237,8 @@ const DraggableGene = ({
       //   clearTimeout(timeRef.current);
       // }}
       {...animationProps}
-      key={gene.geneName}
-      layoutId={gene.geneName}
+      key={gene.geneNumber}
+      layoutId={`${gene.geneNumber}`}
       drag={held || !longPressToDrag}
       dragMomentum={false}
       dragElastic={1}
