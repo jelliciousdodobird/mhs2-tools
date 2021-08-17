@@ -20,6 +20,7 @@ export const BLANK_GENE: MonstieGene = {
   elementType: "" as ElementType,
   requiredLvl: -1,
   geneSize: -1,
+  kinshipCost: 0,
   skill: {
     skillName: "",
     skillType: "" as SkillType,
@@ -59,8 +60,8 @@ export const cleanGeneBuild = (list: MonstieGene[]) => {
   return [...Array(9).keys()].map((v) => {
     const gene = list[v];
     if (gene)
-      return isBlankGene(gene) ? { ...gene, geneName: `blank_${v}` } : gene;
-    else return { ...BLANK_GENE, geneName: `blank_${v}` };
+      return isBlankGene(gene) ? { ...gene, geneNumber: -(v + 10) } : gene;
+    else return { ...BLANK_GENE, geneNumber: -(v + 10) };
   });
 };
 

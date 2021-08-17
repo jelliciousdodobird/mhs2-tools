@@ -419,7 +419,7 @@ const BingoBoard = ({
                     bringToFront={dragGene?.geneName === gene.geneName}
                   />
                 ) : (
-                  <EmptySlot key={gene.geneName} />
+                  <EmptySlot key={gene.geneNumber} />
                 )
               )}
             </AnimateSharedLayout>

@@ -65,5 +65,6 @@ export type MonstieGene = {
   requiredLvl: number;
   geneSize: number;
   skill: Skill;
+  kinshipCost: number;
   possessedBy: { native: string[]; random: string[] };
 };

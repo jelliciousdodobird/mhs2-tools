@@ -371,6 +371,7 @@ const sanitizeGenes = (dirtyGenes: any) => {
         skillType: gene.trait_type as SkillType,
         desc: gene.description,
       } as Skill,
+      kinshipCost: gene.kinship_cost,
       possessedBy: {
         native: [],
         random: [],

@@ -296,7 +296,7 @@ const MonstieCard = ({ monstie, showEgg = false }: MonstieCardProps) => {
           />
         ) : (
           <Img
-            src={`https://ekczxuqcgyevvyrduhkc.supabase.in/storage/v1/object/public/monstie-images/${monstie.imgUrl}`}
+            src={`https://nvbiwqsofgmscfcufpfd.supabase.in/storage/v1/object/public/monster-img/${monstie.imgUrl}`}
           />
         )}
       </ImageHolder>

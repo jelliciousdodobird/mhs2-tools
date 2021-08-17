@@ -144,6 +144,15 @@ const GeneSize = styled.p`
   align-items: center;
 `;
 
+const AttackType = styled(Asset)`
+  svg {
+    path,
+    circle {
+      fill: white;
+    }
+  }
+`;
+
 type SkillCardProps = {
   gene: MonstieGene;
 };
@@ -156,7 +165,7 @@ const SkillCard = ({ gene }: SkillCardProps) => {
   return (
     <SkillContainer bg={main}>
       <GroupContainer>
-        <Asset asset={gene.attackType} size={23} />
+        <AttackType asset={gene.attackType} size={23} />
         <Name>{gene.skill.skillName}</Name>
         <Asset asset={gene.elementType} size={20} />
       </GroupContainer>
@@ -173,7 +182,7 @@ const SkillCard = ({ gene }: SkillCardProps) => {
         </Bubble>
         <Bubble bg={light} bgDark={dark} title="NO DATA YET">
           <span>KP</span>
-          {"0"}
+          {gene.kinshipCost}
         </Bubble>
         <Bubble bg={light} bgDark={dark}>
           <span>Lvl</span> {gene.requiredLvl}

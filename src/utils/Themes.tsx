@@ -174,6 +174,7 @@ export const GlobalReset = () => {
           font-size: ${theme.font.size}px;
           font-weight: ${theme.font.weight};
           color: ${theme.colors.onSurface.main};
+          -webkit-tap-highlight-color: transparent;
 
           &::selection {
             background: ${theme.colors.primary.main};

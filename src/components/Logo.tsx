@@ -3,7 +3,8 @@ import { css, jsx } from "@emotion/react";
 import styled from "@emotion/styled";
 import Asset from "./AssetComponents";
 
-import { ReactComponent as LogoClipSvg } from "../assets/logo-clip.svg";
+// import { ReactComponent as LogoClipSvg } from "../assets/logo-clip.svg";
+import { ReactComponent as LogoClipSvg } from "../assets/logo/n-logo-clippable.svg";
 
 import { rainbowGradient } from "./GeneSlot";
 import { rainbowTextGradient } from "../pages/BuildPage";
@@ -47,6 +48,7 @@ const LogoClipContainer = styled(motion.div)`
 `;
 
 const Text = styled.p`
+  margin-left: 0.5rem;
   font-weight: 700;
   font-style: italic;
   font-size: 1.5rem;
