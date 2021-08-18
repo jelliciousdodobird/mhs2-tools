@@ -15,6 +15,7 @@ import color from "color";
 import { ElementType, ELEMENT_COLOR } from "../utils/ProjectTypes";
 import Egg from "./Egg";
 import Asset from "./AssetComponents";
+import { MonsterAtLvl } from "./MonstieList";
 
 const Container = styled.div<{ bg: string }>`
   position: relative;
@@ -247,81 +248,94 @@ const AttackTypeIcon = styled(Asset)`
   }
 `;
 
+// type Monster = {
+//   mId: number;
+//   monster_name: string;
+//   elementStrength: ElementType;
+//   elementWeakness: ElementType;
+// }
+
 type MonstieCardProps = {
-  monstie: any;
+  monster: MonsterAtLvl;
   showEgg?: boolean;
 };
 
-const MonstieCard = ({ monstie, showEgg = false }: MonstieCardProps) => {
+const MonstieCard = ({ monster, showEgg = false }: MonstieCardProps) => {
   const { isMobile } = useUIState();
-  const { strength, weakness } = monstie;
+  const { elementStrength, elementWeakness } = monster;
 
-  const strength_element = ELEMENT_COLOR[strength as ElementType].main;
-  const weakness_element = ELEMENT_COLOR[weakness as ElementType].main;
-  const dark = ELEMENT_COLOR[strength as ElementType].light;
-  const has2ndAbility = monstie.ability2 !== "---";
+  const stengthElementColor =
+    ELEMENT_COLOR[elementStrength as ElementType].main;
+  const weaknessElementColor =
+    ELEMENT_COLOR[elementWeakness as ElementType].main;
+  const dark = ELEMENT_COLOR[elementStrength as ElementType].light;
+  const has2ndAbility = monster.ability2 !== "---";
   const spacing = { marginBottom: "1.2rem" };
 
   return (
     <Container
-      bg={strength_element}
-      key={monstie.name + monstie.strength}
+      bg={stengthElementColor}
+      // key={monster.name + monster.strength}
       // notice that the shuffle animation is turned off by setting layoutId = undefined
       // layoutId={isMobile ? undefined : monstie.name + monstie.strength}
+      onClick={() => {
+        console.log(monster);
+        console.log(monster.elementStrength);
+      }}
     >
       <RowContainer>
         <AttackTypeIcon
-          asset={monstie.type.toLowerCase()}
-          title={monstie.type}
+          asset={monster.attackType?.toLowerCase()}
+          title={monster.attackType}
           size={20}
         />
-        <Name>{monstie.name}</Name>
+        <Name>{monster.monsterName}</Name>
       </RowContainer>
 
-      <Number>#{monstie.number}</Number>
-      {monstie.ability1 && (
+      <Number>#{monster.mId}</Number>
+      {monster.ability1 && (
         <Bubble style={!has2ndAbility ? spacing : {}}>
-          {monstie.ability1}
+          {monster.ability1}
         </Bubble>
       )}
-      {monstie.ability2 && has2ndAbility && (
-        <Bubble style={spacing}>{monstie.ability2}</Bubble>
+      {monster.ability2 && has2ndAbility && (
+        <Bubble style={spacing}>{monster.ability2}</Bubble>
       )}
       <ImageHolder strokeColor={dark}>
         {showEgg ? (
           <Egg_
-            patternType={monstie.egg.pattern_type}
-            bgColor={monstie.egg.color.bg.hex}
-            patternColor={monstie.egg.color.pattern.hex}
+            patternType={monster.eggPatternType}
+            bgColor={monster.eggBgColor}
+            patternColor={monster.eggPatternColor}
           />
         ) : (
           <Img
-            src={`https://nvbiwqsofgmscfcufpfd.supabase.in/storage/v1/object/public/monster-img/${monstie.imgUrl}`}
+            src={`https://nvbiwqsofgmscfcufpfd.supabase.in/storage/v1/object/public/monster-img/${monster.imgUrl}`}
           />
         )}
       </ImageHolder>
-      <StatContainer bg={strength_element}>
-        <Stat bg={strength_element} title="Strongest Attack Stat">
-          {monstie[`atk_${strength}`]}
+      <StatContainer bg={stengthElementColor}>
+        <Stat bg={stengthElementColor} title="Strongest Attack Stat">
+          {monster[`atk_${elementStrength}` as "atk_fire"]}
         </Stat>
 
-        <Stat bg={weakness_element} title="Weakest Defense Stat">
-          {monstie[`def_${weakness}`]}
+        <Stat bg={weaknessElementColor} title="Weakest Defense Stat">
+          {monster[`def_${elementWeakness}` as "atk_fire"]}
         </Stat>
 
-        <BaseStat bg={strength_element}>
+        <BaseStat bg={stengthElementColor}>
           <span>hp</span>
-          {monstie.hp}
+          {monster.hp}
         </BaseStat>
 
-        <BaseStat bg={strength_element}>
+        <BaseStat bg={stengthElementColor}>
           <span>rec</span>
-          {monstie.recovery}
+          {monster.recovery}
         </BaseStat>
 
-        <BaseStat bg={strength_element}>
+        <BaseStat bg={stengthElementColor}>
           <span>sp</span>
-          {monstie.speed}
+          {monster.speed}
         </BaseStat>
       </StatContainer>
     </Container>

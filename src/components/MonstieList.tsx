@@ -4,7 +4,15 @@ import styled from "@emotion/styled";
 import { rgba } from "emotion-rgba";
 
 // library:
-import { useState, useEffect, useRef, ReactElement, useMemo } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  ReactElement,
+  useMemo,
+  SetStateAction,
+  Dispatch,
+} from "react";
 import { AnimatePresence, AnimateSharedLayout, motion } from "framer-motion";
 
 // custom hooks:
@@ -13,7 +21,7 @@ import useTable, { ColumnProps, InputData } from "../hooks/useTable";
 // custom components:
 import MonstieCard from "./MonstieCard";
 import SortMenu from "./ExpandSortMenu";
-import ExpandSearchMenu from "./ExpandSearchMenu";
+import ExpandSearchMenu, { popOutMenuBaseStyles } from "./ExpandSearchMenu";
 
 // icons:
 import { BiSearch } from "react-icons/bi";
@@ -24,17 +32,10 @@ import FloatingActionButton from "./FloatingActionButton";
 import useVirtualScroll from "../hooks/useVirtualScroll";
 import useResizeObserver from "use-resize-observer/polyfilled";
 import Debug from "./Debug";
+import { AttackType, ElementType } from "../utils/ProjectTypes";
+import { PatternType } from "./Egg";
+import LvlMenu from "./LvlMenu";
 
-const BlankRow = styled.div<{ blankHeight: number }>`
-  height: ${({ blankHeight }) => blankHeight}px;
-  min-height: ${({ blankHeight }) => blankHeight}px;
-  max-height: ${({ blankHeight }) => blankHeight}px;
-`;
-
-const GridRow = styled.div`
-  height: 100%;
-  width: 100%;
-`;
 const Container = styled.div<{ listHeight: number; gridPadding: number }>`
   position: relative;
 
@@ -54,20 +55,7 @@ const Container = styled.div<{ listHeight: number; gridPadding: number }>`
   height: ${({ listHeight }) => listHeight}px;
   min-height: ${({ listHeight }) => listHeight}px;
   max-height: ${({ listHeight }) => listHeight}px;
-
-  /* display: flex; */
-  /* flex-direction: column; */
 `;
-
-// const FloatingPoint = styled(motion.div)`
-//   z-index: 10;
-
-//   position: sticky;
-//   top: 100%;
-//   left: 0;
-
-//   height: 0;
-// `;
 
 const SearchFAB = styled(FloatingActionButton)`
   position: absolute;
@@ -86,13 +74,57 @@ const btnAnimationProps = {
   whileTap: { scale: 0.75 },
 };
 
-type MonstieListProps = {
-  data: InputData<unknown>[];
-  column: ColumnProps[];
-  defaultColumnWidth?: number;
+export type MonsterAtLvl = {
+  mId: number;
+  monsterName: string;
+  ability1: string;
+  ability2: string;
+  elementStrength: ElementType;
+  elementWeakness: ElementType;
+  attackType: AttackType;
+  genus: string;
+  rarity: number;
+  habitat: string;
+  hatchable: boolean;
+  retreatCondition: string;
+  imgUrl: string;
+
+  eggPatternType: PatternType;
+  eggBgColor: string;
+  eggPatternColor: string;
+  eggMetaColors: string[];
+
+  lvl: number;
+  speed: number;
+  crit: number;
+  hp: number;
+  recovery: number;
+
+  "atk_non-elemental": number;
+  atk_fire: number;
+  atk_water: number;
+  atk_thunder: number;
+  atk_ice: number;
+  atk_dragon: number;
+
+  "def_non-elemental": number;
+  def_fire: number;
+  def_water: number;
+  def_thunder: number;
+  def_ice: number;
+  def_dragon: number;
 };
 
-const MonstieList = ({ data, column }: MonstieListProps) => {
+type MonstieListProps = {
+  data: MonsterAtLvl[];
+  column: ColumnProps[];
+  defaultColumnWidth?: number;
+
+  lvl: number;
+  setLvl: Dispatch<SetStateAction<number>>;
+};
+
+const MonstieList = ({ data, column, lvl, setLvl }: MonstieListProps) => {
   const listContainerRef = useRef<HTMLDivElement>(null);
   const { width = 0 } = useResizeObserver({
     ref: listContainerRef,
@@ -110,7 +142,6 @@ const MonstieList = ({ data, column }: MonstieListProps) => {
   const [itemsPerRow, setItemsPerRow] = useState(1);
 
   const {
-    changeColumnOrder,
     toggleMultiSort,
     toggleSort,
     toggleShiftSort,
@@ -119,8 +150,6 @@ const MonstieList = ({ data, column }: MonstieListProps) => {
     shiftHeld,
     sorts,
     filterData,
-    toggleColumn,
-    hiddenColumns,
   } = useTable(data, column, 150);
 
   const { listHeight, renderList, blankHeight } = useVirtualScroll(
@@ -208,6 +237,7 @@ const MonstieList = ({ data, column }: MonstieListProps) => {
               toggleShiftSort={toggleShiftSort}
             />
           )}
+          {showSort && <LvlMenu lvl={lvl} setLvl={setLvl} />}
         </AnimatePresence>
       </Portal>
 
@@ -217,12 +247,8 @@ const MonstieList = ({ data, column }: MonstieListProps) => {
         gridPadding={blankHeight}
         onClick={() => setEggMode((v) => !v)}
       >
-        {renderList.map((monstie: any) => (
-          <MonstieCard
-            key={monstie.name + monstie.strength}
-            monstie={monstie}
-            showEgg={eggMode}
-          />
+        {renderList.map((mon) => (
+          <MonstieCard key={mon.mId} monster={mon} showEgg={eggMode} />
         ))}
       </Container>
     </>

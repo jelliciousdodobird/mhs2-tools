@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import ThemeToggle from "../components/ThemeToggle";
 
 export type OrderType = "ascend" | "descend" | "none";
 
@@ -22,11 +23,11 @@ export interface InputData<Type> {
   [key: string]: Type;
 }
 
-export type TableProps = {
-  data: InputData<unknown>[];
+export interface TableProps<T> {
+  data: T[];
   column: ColumnProps[];
   defaultColumnWidth?: number;
-};
+}
 
 const sortFn = (sortType: SortType) => {
   const { key, orderType } = sortType;
@@ -44,8 +45,8 @@ const sortFn = (sortType: SortType) => {
   };
 };
 
-const useTable = (
-  data: InputData<unknown>[],
+const useTable = <T,>(
+  data: T[],
   column: ColumnProps[],
   defaultColumnWidth = 150
 ) => {
@@ -218,14 +219,14 @@ const useTable = (
     setFilter(value);
   };
 
-  const applySorts = (sorts: SortType[], data: InputData<unknown>[]) => {
+  const applySorts = (sorts: SortType[], data: T[]) => {
     sorts.forEach((sortType) => {
       const sortFunction = sortFn(sortType);
       data.sort(sortFunction);
     });
   };
 
-  const applyFilter = (keyword: string, data: InputData<unknown>[]) => {
+  const applyFilter = (keyword: string, data: T[]) => {
     keyword = keyword.toLowerCase();
     return data.filter((values) => {
       if (keyword === "") return true;

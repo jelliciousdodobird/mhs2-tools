@@ -10,7 +10,7 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import MONSTIES_DATA from "../utils/monsties.json";
 
 // custom components:
-import MonstieList from "../components/MonstieList";
+import MonstieList, { MonsterAtLvl } from "../components/MonstieList";
 import FloatingPoint from "../components/FloatingPoint";
 import Gutter from "../components/Gutter";
 
@@ -22,6 +22,8 @@ import { ReactComponent as CatLogo1 } from "../assets/cat-logo-1.svg";
 import { ReactComponent as CatLogo2 } from "../assets/cat-logo-2.svg";
 import { ReactComponent as CatLogo3 } from "../assets/cat-logo-3.svg";
 import { motion, useMotionValue, useTransform } from "framer-motion";
+import { AttackType, ElementType } from "../utils/ProjectTypes";
+import { replaceNullOrUndefined as handleEmptiness } from "../utils/utils";
 
 const Container = styled.div`
   position: relative;
@@ -155,6 +157,93 @@ const boxVariants = {
   unchecked: { stroke: "#ddd", strokeWidth: 50 },
 };
 
+type Statline = {
+  lvl: number;
+  speed: number;
+  crit: number;
+  hp: number;
+  recovery: number;
+
+  attack: {
+    "non-elemental": number;
+    fire: number;
+    water: number;
+    thunder: number;
+    ice: number;
+    dragon: number;
+  };
+
+  defense: {
+    "non-elemental": number;
+    fire: number;
+    water: number;
+    thunder: number;
+    ice: number;
+    dragon: number;
+  };
+};
+
+const sanitizeMonsterData = (data: any): MonsterAtLvl[] => {
+  const uniqueMonsterIds = [...new Set(data.map((mon: any) => mon.m_id))];
+
+  // console.log(uniqueMonsterIds);
+
+  const monstersInFlatObject = uniqueMonsterIds.map((mId, i) => {
+    const monster = data.filter((mon: any) => mon.m_id === mId);
+
+    const attackStats = monster.find((mon: any) => mon.stat_type === "attack");
+    const defenseStats = monster.find(
+      (mon: any) => mon.stat_type === "defense"
+    );
+    const commonData = monster[0];
+    // console.log(monster);
+    let monsterData: MonsterAtLvl = {
+      mId: handleEmptiness(commonData.m_id, i - 1000),
+      monsterName: handleEmptiness(commonData.monster_name, ""),
+      ability1: handleEmptiness(commonData.ability_1, ""),
+      ability2: handleEmptiness(commonData.ability_2, ""),
+      elementStrength: handleEmptiness(commonData.element_strength, ""),
+      elementWeakness: handleEmptiness(commonData.element_weakness, ""),
+      attackType: handleEmptiness(commonData.attack_type, ""),
+      genus: handleEmptiness(commonData.genus, ""),
+      rarity: handleEmptiness(commonData.rarity, 1),
+      habitat: handleEmptiness(commonData.habitat, ""),
+      hatchable: handleEmptiness(commonData.hatchable, false),
+      retreatCondition: handleEmptiness(commonData.retreat_condition, ""),
+      imgUrl: handleEmptiness(commonData.img_url, ""),
+
+      eggPatternType: handleEmptiness(commonData.pattern_type, "question"),
+      eggBgColor: handleEmptiness(commonData.bg_color, "#ffffff"),
+      eggPatternColor: handleEmptiness(commonData.pattern_color, "#000000"),
+      eggMetaColors: handleEmptiness(commonData.meta_colors, []),
+
+      lvl: handleEmptiness(commonData.lvl, 1),
+      speed: handleEmptiness(commonData.speed, 0),
+      crit: handleEmptiness(commonData.crit, 0),
+      hp: handleEmptiness(commonData.hp, 0),
+      recovery: handleEmptiness(commonData.recovery, 0),
+
+      "atk_non-elemental": handleEmptiness(attackStats.non_elemental, 0),
+      atk_fire: handleEmptiness(attackStats.fire, 0),
+      atk_water: handleEmptiness(attackStats.water, 0),
+      atk_thunder: handleEmptiness(attackStats.thunder, 0),
+      atk_ice: handleEmptiness(attackStats.ice, 0),
+      atk_dragon: handleEmptiness(attackStats.dragon, 0),
+
+      "def_non-elemental": handleEmptiness(defenseStats.non_elemental, 0),
+      def_fire: handleEmptiness(defenseStats.fire, 0),
+      def_water: handleEmptiness(defenseStats.water, 0),
+      def_thunder: handleEmptiness(defenseStats.thunder, 0),
+      def_ice: handleEmptiness(defenseStats.ice, 0),
+      def_dragon: handleEmptiness(defenseStats.dragon, 0),
+    };
+
+    return monsterData;
+  });
+
+  return monstersInFlatObject;
+};
+
 const MonstiesPage = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { isMobile } = useUIState();
@@ -166,15 +255,21 @@ const MonstiesPage = () => {
   const floatPointOffset = isMobile ? 10.5 : 28;
 
   const [lvl, setLvl] = useState(1);
-  const [data, setData] = useState(MONSTIES_DATA);
+  // const [data, setData] = useState(MONSTIES_DATA);
+  const [data, setData] = useState<MonsterAtLvl[]>([]);
   const column = useMemo(
     () => [
       {
-        key: "name",
+        key: "mId",
+        label: "Number",
+        width: 150,
+      },
+      {
+        key: "monsterName",
         label: "Name",
         width: 150,
       },
-      { key: "type", label: "Type", width: 90 },
+      // { key: "type", label: "Type", width: 90 },
       { key: "ability1", label: "Ability 1", width: 100 },
       { key: "ability2", label: "Ability 2", width: 100 },
       { key: "speed", label: "Sp", width: 50 },
@@ -200,55 +295,28 @@ const MonstiesPage = () => {
   );
 
   useEffect(() => {
-    const stats = MONSTIES_DATA;
-    const newStats = stats.map((monstie, i) => {
-      // const lvlStats = [];
-
-      const statline = monstie.stats.find((statline) => statline.lvl === lvl);
-
-      return {
-        ...monstie,
-        lvl: statline?.lvl,
-        hp: statline?.hp,
-        recovery: statline?.recovery,
-
-        "atk_non-elemental": statline?.attack["non-elemental"],
-        atk_fire: statline?.attack.fire,
-        atk_water: statline?.attack.water,
-        atk_thunder: statline?.attack.thunder,
-        atk_ice: statline?.attack.ice,
-        atk_dragon: statline?.attack.dragon,
-
-        "def_non-elemental": statline?.defense["non-elemental"],
-        def_fire: statline?.defense.fire,
-        def_water: statline?.defense.water,
-        def_thunder: statline?.defense.thunder,
-        def_ice: statline?.defense.ice,
-        def_dragon: statline?.defense.dragon,
-      };
-    });
-
-    setData(newStats);
+    const fetchAllGeneSkills = async () => {
+      let { data, error } = await supabase
+        .from("monsters_data")
+        .select("*")
+        .eq("hatchable", true)
+        .eq("lvl", lvl);
+      if (!error) {
+        const cleanMonsters = sanitizeMonsterData(data);
+        console.log(cleanMonsters);
+        setData(cleanMonsters);
+        // setSearchResults(cleanGenes.slice(0, 20));
+      } else {
+        setData([]);
+      }
+    };
+    fetchAllGeneSkills();
   }, [lvl]);
-
-  const c = async () => {
-    let { data: gene_skills, error } = await supabase
-      .from("gene_skills")
-      .select("*");
-
-    return gene_skills;
-  };
-  useEffect(() => {}, []);
 
   return (
     <>
       <CompareSection>
-        <Container
-          onClick={async () => {
-            console.log("yo");
-            console.log(await c());
-          }}
-        >
+        <Container>
           <QuickLinkCompare href="#compare">C</QuickLinkCompare>
           <Heading id="compare">Compare {"->"}</Heading>
           <SurfaceContainer>
@@ -284,8 +352,7 @@ const MonstiesPage = () => {
               fugiat, laboriosam debitis earum exercitationem quibusdam magni
               consectetur.
             </p>
-          </SurfaceContainer>{" "}
-          <Test>negate 1-hit ko</Test>
+          </SurfaceContainer>
         </Container>
       </CompareSection>
 
@@ -360,8 +427,7 @@ const MonstiesPage = () => {
           />
           <QuickLinkMonstieList href="#monstie-list">M</QuickLinkMonstieList>
           <Heading id="monstie-list">Monstie List {"->"}</Heading>
-          <MonstieList data={data} column={column} />
-          {/* <Table data={data} column={column} /> */}
+          <MonstieList data={data} column={column} lvl={lvl} setLvl={setLvl} />
         </Container>
       </MonstieListSection>
     </>

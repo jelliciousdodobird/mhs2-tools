@@ -295,3 +295,6 @@ export const decodeBase64UrlToGeneBuild = (
     return { error, build: { ...CORRUPTED_BUILD, buildId: nanoid() } };
   }
 };
+
+export const replaceNullOrUndefined = <T>(value: T, defaultValue: T) =>
+  value === null || value === undefined ? defaultValue : value;
