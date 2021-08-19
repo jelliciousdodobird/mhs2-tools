@@ -16,11 +16,14 @@ import GeneSearch from "../components/GeneSearch";
 import FloatingPoint from "../components/FloatingPoint";
 
 import { useUIState } from "../contexts/UIContext";
-import { MonstieGene } from "../utils/ProjectTypes";
+import { GeneSkill, Skill } from "../utils/ProjectTypes";
 import MonstieGeneBuild, { GeneBuild } from "../components/MonstieGeneBuild";
 import {
+  BLANK_GENE,
   cleanGeneBuild,
+  CLEAN_EMPTY_BOARD,
   decodeBase64UrlToGeneBuild,
+  DEFAULT_MONSTER,
   encodeGeneBuildToBase64Url,
   shuffleArray,
 } from "../utils/utils";
@@ -34,6 +37,9 @@ import SkillsList from "../components/SkillsList";
 import Gutter from "../components/Gutter";
 import { useAuth } from "../contexts/AuthContext";
 import { GENE_BUILDS } from "../utils/LocalStorageKeys";
+import { saveUserBuild } from "../utils/db-inserts";
+import supabase from "../utils/supabase";
+import { sanitizeGeneSkill } from "../utils/db-transforms";
 
 export const rainbowTextGradient = (degree = 150) =>
   `repeating-linear-gradient(
@@ -229,13 +235,14 @@ const BuildPage = ({ match }: PageProps) => {
   const { user } = useAuth();
   // STATE:
   const containerRef = useRef<HTMLDivElement>(null);
-
-  const [geneBuild, setGeneBuild] = useState<MonstieGene[]>(BLANK_BOARD);
   const [isDirty, setIsDirty] = useState(false);
-  const [buildName, setBuildName] = useState("");
-  // const [buildId, setBuildId] = useState("");
 
-  const [invalidBuildId, setInvalidBuildId] = useState(false);
+  const [geneBuild, setGeneBuild] = useState<GeneSkill[]>(CLEAN_EMPTY_BOARD);
+  const [buildName, setBuildName] = useState("");
+  const [monstie, setMonstie] = useState(DEFAULT_MONSTER.mId);
+
+  const [invalidUrlMessage, setInvalidUrlMessage] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const [dropSuccess, setDropSuccess] = useState(false);
   const { drop, setDrop } = useDrop();
@@ -260,7 +267,7 @@ const BuildPage = ({ match }: PageProps) => {
         buildId,
         buildName,
         createdBy: null,
-        monstie: "",
+        monstie,
         geneBuild,
       };
 
@@ -285,21 +292,78 @@ const BuildPage = ({ match }: PageProps) => {
     }
   };
 
-  const saveToDatabase = () => {};
-
   const save = () => {
-    if (user) saveToDatabase();
-    else saveToLocalStorage();
+    if (user) {
+      saveUserBuild({
+        buildId,
+        buildName,
+        createdBy: user.id,
+        geneBuild,
+        monstie,
+      });
+    } else saveToLocalStorage();
   };
 
   useEffect(() => {
     const buildId = match.params.id;
 
+    setLoading(true);
+    ////////////////////////// LOGGED IN USER ///////////////////////////
     if (user) {
-      // DO DATA FETCHING HERE
-    } else {
-      console.log(match.params.id);
+      const fetchBuild = async () => {
+        const { data, error } = await supabase
+          .from("buildinfo")
+          .select(
+            "*, buildpieces:buildpiece(place, g_id, gene:genes(*, skill:skills(*)))"
+          )
+          .eq("creator_id", user?.id)
+          .eq("build_id", buildId)
+          .order("place", {
+            foreignTable: "buildpiece",
+            ascending: true,
+          });
 
+        if (error) console.error(error);
+
+        if (data?.length === 0) {
+          setInvalidUrlMessage("no such build exists for your account");
+          setLoading(false);
+        }
+
+        if (data && data.length > 0) {
+          const res = data[0];
+          const build = {
+            buildId: res.build_id,
+            buildName: res.build_name,
+            monstie: res.monstie,
+            createdBy: res.creator_id,
+            geneBuild: cleanGeneBuild(
+              res.buildpieces.map((bp: any) => {
+                return sanitizeGeneSkill({
+                  ...bp.gene,
+                  skill: bp.gene?.skill[0],
+                });
+              })
+            ),
+          };
+
+          // console.log({ res, build });
+
+          setBuildName(build.buildName);
+          setMonstie(build.monstie);
+          setGeneBuild(build.geneBuild);
+
+          setLoading(false);
+          setInvalidUrlMessage("");
+        }
+      };
+
+      const validBuildId = buildId.length === 21;
+      if (validBuildId) fetchBuild();
+      else setInvalidUrlMessage("invalid url");
+    }
+    ////////////////////////// LOCAL STORAGE ///////////////////////////
+    else {
       const localData: GeneBuild[] | null = JSON.parse(
         window.localStorage.getItem(GENE_BUILDS) || "null"
       );
@@ -311,11 +375,12 @@ const BuildPage = ({ match }: PageProps) => {
         if (build) {
           setGeneBuild(build.geneBuild);
           setBuildName(build.buildName);
-        } else setInvalidBuildId(true);
+        } else setInvalidUrlMessage("could not find build");
       } else {
         // redirect cus invalid buildId
-        setInvalidBuildId(true);
+        setInvalidUrlMessage("invalid build id");
       }
+      setLoading(false);
     }
   }, [match]);
 
@@ -323,16 +388,23 @@ const BuildPage = ({ match }: PageProps) => {
     setIsDirty(true);
   }, [geneBuild, buildName]);
 
-  if (invalidBuildId)
+  if (invalidUrlMessage)
     return (
       <Gutter>
-        <p>INVALID ID</p>
+        <p>INVALID: {invalidUrlMessage}</p>
       </Gutter>
     );
 
+  if (loading) return <div>loading</div>;
+
   return (
     <Gutter>
-      <Container ref={containerRef}>
+      <Container
+        ref={containerRef}
+        onClick={() => {
+          console.log({ geneBuild });
+        }}
+      >
         {/* <Heading>The Magene {"->"}</Heading> */}
         <BuildNameInput
           value={buildName}
@@ -361,11 +433,6 @@ const BuildPage = ({ match }: PageProps) => {
             />
             <BingoBonuses_ geneBuild={geneBuild} showBingosOnly={false} />
           </BoardSection>
-
-          {/* <BingoSection>
-            <SubHeading>Bingos</SubHeading>
-            <BingoBonuses_ geneBuild={geneBuild} />
-          </BingoSection> */}
 
           <SkillsSection>
             <SubHeading>Skills</SubHeading>

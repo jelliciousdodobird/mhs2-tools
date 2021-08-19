@@ -38,33 +38,54 @@ export const ELEMENT_COLOR = {
     dark: "#49d0b0",
     darker: "#49d0b0",
   },
-  "": { main: "black", light: "black", dark: "black", darker: "black" },
+
+  none: { main: "black", light: "black", dark: "black", darker: "black" },
 };
 
 // console.log(JSON.stringify(ELEMENT_COLOR));
 
 export type ElementType = keyof typeof ELEMENT_COLOR;
-// export type SkillType = "active" | "passive";
-export type SkillType = "active" | "passive" | "";
-export type AttackType = "power" | "technical" | "speed" | "none" | "all" | "";
-// export type AttackType = "power" | "technical" | "speed";
-export type StrictElement = Exclude<ElementType, "" | "all">;
+
+export type TraitType = "active" | "passive";
+export type AttackType = "power" | "technical" | "speed" | "none" | "all";
+export type GeneSkillSize = "S" | "M" | "L" | "XL";
+
+export type StrictElement = Exclude<ElementType, "" | "none" | "all">;
 export type StrictAttack = Exclude<AttackType, "" | "none" | "all">;
 
 export type Skill = {
   skillName: string;
-  skillType: SkillType;
-  desc: string;
+  target: string;
+  kinshipCost: number;
+  otherMods: string;
+  mv: number;
+  actionSpeed: number;
+  accuracy: number;
+  critable: boolean;
+  critRateBonus: number;
+  aiUse: boolean;
+  description: string;
+  upgrade0: string;
+  upgrade1: string;
+  upgrade2: string;
+  effect1: string;
+  effect2: string;
+  effect3: string;
 };
 
-export type MonstieGene = {
+export type GeneSkill = {
+  gId: number;
   geneName: string;
   geneNumber: number;
+
   attackType: AttackType;
   elementType: ElementType;
+  traitType: TraitType;
+
   requiredLvl: number;
-  geneSize: number;
+  size: GeneSkillSize;
+
   skill: Skill;
-  kinshipCost: number;
-  possessedBy: { native: string[]; random: string[] };
+  // kinshipCost: number;
+  // possessedBy: { native: string[]; random: string[] };
 };

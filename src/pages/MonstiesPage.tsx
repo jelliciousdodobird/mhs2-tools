@@ -6,9 +6,6 @@ import { rgba } from "emotion-rgba";
 // library:
 import { useState, useMemo, useEffect, useRef } from "react";
 
-// data:
-import MONSTIES_DATA from "../utils/monsties.json";
-
 // custom components:
 import MonstieList, { MonsterAtLvl } from "../components/MonstieList";
 import FloatingPoint from "../components/FloatingPoint";
@@ -186,8 +183,6 @@ type Statline = {
 const sanitizeMonsterData = (data: any): MonsterAtLvl[] => {
   const uniqueMonsterIds = [...new Set(data.map((mon: any) => mon.m_id))];
 
-  // console.log(uniqueMonsterIds);
-
   const monstersInFlatObject = uniqueMonsterIds.map((mId, i) => {
     const monster = data.filter((mon: any) => mon.m_id === mId);
 
@@ -196,7 +191,7 @@ const sanitizeMonsterData = (data: any): MonsterAtLvl[] => {
       (mon: any) => mon.stat_type === "defense"
     );
     const commonData = monster[0];
-    // console.log(monster);
+
     let monsterData: MonsterAtLvl = {
       mId: handleEmptiness(commonData.m_id, i - 1000),
       monsterName: handleEmptiness(commonData.monster_name, ""),
@@ -241,6 +236,7 @@ const sanitizeMonsterData = (data: any): MonsterAtLvl[] => {
     return monsterData;
   });
 
+  console.log("ml", monstersInFlatObject);
   return monstersInFlatObject;
 };
 
@@ -277,14 +273,14 @@ const MonstiesPage = () => {
       { key: "hp", label: "HP", width: 50 },
       { key: "recovery", label: "Rec", width: 60 },
 
-      { key: "atk_non-elemental", label: "Non Elemental Attack", width: 50 },
+      { key: "atk_non-elemental", label: "Non-Elemental Attack", width: 50 },
       { key: "atk_fire", label: "Fire Attack", width: 50 },
       { key: "atk_water", label: "Water Attack", width: 50 },
       { key: "atk_thunder", label: "Thunder Attack", width: 50 },
       { key: "atk_ice", label: "Ice Attack", width: 50 },
       { key: "atk_dragon", label: "Dragon Attack", width: 50 },
 
-      { key: "def_non-elemental", label: "Non Elemental Defense", width: 50 },
+      { key: "def_non-elemental", label: "Non-Elemental Defense", width: 50 },
       { key: "def_fire", label: "Fire Defense", width: 50 },
       { key: "def_water", label: "Water Defense", width: 50 },
       { key: "def_thunder", label: "Thunder Defense", width: 50 },
@@ -303,9 +299,8 @@ const MonstiesPage = () => {
         .eq("lvl", lvl);
       if (!error) {
         const cleanMonsters = sanitizeMonsterData(data);
-        console.log(cleanMonsters);
+
         setData(cleanMonsters);
-        // setSearchResults(cleanGenes.slice(0, 20));
       } else {
         setData([]);
       }

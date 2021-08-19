@@ -16,17 +16,28 @@ import BingoBoard from "../components/BingoBoard";
 import GeneSearch from "../components/GeneSearch";
 import FloatingPoint from "../components/FloatingPoint";
 import { useUIState } from "../contexts/UIContext";
-import { MonstieGene } from "../utils/ProjectTypes";
+import { GeneSkill } from "../utils/ProjectTypes";
 import MonstieGeneBuild, { GeneBuild } from "../components/MonstieGeneBuild";
 // import { FAB } from "../components/MonstieList";
+
+import { definitions } from "../types/supabase";
+import { replaceNullOrUndefined as unnullify } from "../utils/utils";
 
 // icons:
 import { MdAdd } from "react-icons/md";
 import Gutter from "../components/Gutter";
 import FloatingActionButton from "../components/FloatingActionButton";
 import { useAuth } from "../contexts/AuthContext";
-import { cleanGeneBuild } from "../utils/utils";
+import { BLANK_GENE, cleanGeneBuild } from "../utils/utils";
 import { GENE_BUILDS } from "../utils/LocalStorageKeys";
+import supabase from "../utils/supabase";
+import {
+  createGeneBuild,
+  DB_Build,
+  geneBuildToSqlTableFormat,
+  sanitizeGeneSkill,
+} from "../utils/db-transforms";
+import { saveUserBuild } from "../utils/db-inserts";
 
 const Container = styled.div`
   /* border: 2px dashed green; */
@@ -64,139 +75,145 @@ const CreateFAB = styled(FloatingActionButton)`
   }
 `;
 
-const CreateBuildButton = styled.button`
-  width: 100%;
+const BuildList = styled.div`
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  grid-template-rows: repeat(auto-fit, minmax(15rem, 14rem));
 `;
-
-const BLANK_BOARD = cleanGeneBuild([]);
-
-const createGeneBuild = (userId: string | null): GeneBuild => ({
-  buildId: nanoid(),
-  buildName: "",
-  monstie: "",
-  createdBy: userId,
-  geneBuild: BLANK_BOARD,
-});
 
 const TeamBuilderPage = () => {
   // STATE:
-  const { user } = useAuth();
-
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [dropSuccess, setDropSuccess] = useState(false);
-  const { drop, setDrop } = useDrop();
-  const { isMobile } = useUIState();
-
   const history = useHistory();
-
+  const { user } = useAuth();
+  const { isMobile } = useUIState();
   const [builds, setBuilds] = useState<GeneBuild[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // const saveLocalBuild = (buildInSqlFormat: DB_Build) => {
+  //   const oldBuilds = window.localStorage.getItem(GENE_BUILDS) || "[]";
+
+  //   window.localStorage.setItem(
+  //     GENE_BUILDS,
+  //     JSON.stringify([...JSON.parse(oldBuilds), buildInSqlFormat])
+  //   );
+  // };
+  const saveBuildToLocalStorage = (build: GeneBuild) => {
+    const oldBuilds = window.localStorage.getItem(GENE_BUILDS) || "[]";
+
+    window.localStorage.setItem(
+      GENE_BUILDS,
+      JSON.stringify([...JSON.parse(oldBuilds), build])
+    );
+  };
+
+  const createBuild = () => {
+    const newBuild = createGeneBuild(user ? user.id : null);
+
+    if (user) saveUserBuild(newBuild);
+    else {
+      // const buildSqlFormat = geneBuildToSqlTableFormat(newBuild);
+      saveBuildToLocalStorage(newBuild);
+    }
+
+    history.push(`/builds/edit/${newBuild.buildId}`);
+  };
 
   useEffect(() => {
-    console.log(user);
-
+    ////////////////////////// LOGGED IN USER ///////////////////////////
     if (user) {
-      // perform query
-    } else {
-      const data = window.localStorage.getItem("gene-builds") || "";
+      const fetchUserBuilds = async () => {
+        // fetch data:
+        const { data, error } = await supabase
+          .from("buildinfo")
+          .select(
+            "*, buildpieces:buildpiece(place, g_id, gene:genes(*, skill:skills(*)))"
+          )
+          .eq("creator_id", user?.id)
+          .order("place", {
+            foreignTable: "buildpiece",
+            ascending: true,
+          });
+
+        if (data) {
+          // process data:
+          console.log("datafetching", data);
+          const builds: GeneBuild[] = data.map((build) => {
+            return {
+              buildId: build.build_id,
+              buildName: build.build_name,
+              monstie: build.monstie,
+              createdBy: build.creator_id,
+              geneBuild: cleanGeneBuild(
+                build.buildpieces.map((bp: any) => {
+                  return sanitizeGeneSkill({
+                    ...bp.gene,
+                    skill: bp.gene?.skill[0],
+                  });
+                })
+              ),
+            };
+          });
+
+          setBuilds(builds);
+        }
+        if (error) {
+          console.error(error);
+        }
+      };
+      fetchUserBuilds();
+    }
+    ////////////////////////// LOCAL STORAGE ///////////////////////////
+    else {
+      const data = window.localStorage.getItem(GENE_BUILDS) || "";
       setBuilds(data ? JSON.parse(data) : []);
     }
   }, []);
 
   useEffect(() => {
-    if (user) {
-    } else {
-      window.localStorage.setItem("gene-builds", JSON.stringify(builds));
-    }
+    if (!user) window.localStorage.setItem(GENE_BUILDS, JSON.stringify(builds));
   }, [builds]);
 
   // DERIVED STATE:
   // const floatPointOffset = isMobile ? 10.5 : 28;
   const floatPointOffset = isMobile ? { bottom: 10.5 } : { top: 28 };
 
-  const shrinkData = (build: GeneBuild) => {
-    const { buildId, buildName, createdBy, monstie, geneBuild } = build;
-    const a = JSON.stringify({
-      i: buildId,
-      b: buildName,
-      c: createdBy,
-      m: monstie,
-      g: geneBuild.map((gene) => gene.geneNumber),
-    });
-
-    return a;
-  };
-
   return (
     <Gutter>
       <Container ref={containerRef}>
         <Heading
           onClick={() => {
-            const data = JSON.parse(
-              window.localStorage.getItem(GENE_BUILDS) || "null"
-            );
+            const fetchMonsters = async () => {
+              const { data, error } = await supabase
+                .from("monsters")
+                .select(
+                  `*,
+                  statlines:statline (*),
+                  egg (*)
+                `
+                )
+                .eq("hatchable", true)
+                .eq("statline.lvl", 1);
+              // .filter("statline.lvl", "eq", 1);
 
-            const str = shrinkData(data[0]);
-
-            const encode1 = btoa(str);
-            const decode1 = atob(encode1);
-
-            console.log(encode1);
-            console.log(decode1);
-
-            const encode2 = Buffer.from(str).toString("base64");
-            const decode2 = Buffer.from(encode2, "base64").toString();
-
-            console.log(encode2);
-            console.log(decode2);
-
-            const encode3 = base64url("ldskjfidsjfijsliejf");
-            const decode3 = base64url.decode("lskdjflkjsdf");
-
-            console.log(encode3);
-            console.log(decode3);
-
-            console.log(
-              "------------\n",
-              encode1 === encode2,
-              decode1 === decode2
-            );
+              console.log(data);
+              if (error) console.error(error);
+            };
           }}
         >
           Gene Builds
         </Heading>
         <Heading>{user?.id}</Heading>
 
-        {/* <BingoBoard
-          drop={drop}
-          setDrop={setDrop}
-          setDropSuccess={setDropSuccess}
-        /> */}
-
         {builds.length === 0 && <p>Your builds looking a bit empty..</p>}
 
-        {builds.map((build) => (
-          <MonstieGeneBuild key={build.buildId} build={build} />
-        ))}
-
+        <BuildList>
+          {builds.map((build) => (
+            <MonstieGeneBuild key={build.buildId} build={build} />
+          ))}
+        </BuildList>
         <FloatingPoint parentContainerRef={containerRef} {...floatPointOffset}>
-          <CreateFAB
-            type="button"
-            onClick={() => {
-              const newBuild = createGeneBuild(user ? user.id : null);
-
-              console.log(newBuild);
-
-              const oldBuilds =
-                window.localStorage.getItem(GENE_BUILDS) || "[]";
-
-              window.localStorage.setItem(
-                "gene-builds",
-                JSON.stringify([...JSON.parse(oldBuilds), newBuild])
-              );
-
-              history.push(`/builds/edit/${newBuild.buildId}`);
-            }}
-          >
+          <CreateFAB type="button" onClick={createBuild}>
             <MdAdd />
           </CreateFAB>
         </FloatingPoint>

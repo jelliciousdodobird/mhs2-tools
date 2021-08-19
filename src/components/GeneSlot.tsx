@@ -3,7 +3,7 @@ import { css, jsx, Theme, useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
 import { ReactElement, forwardRef } from "react";
 import { useDrop } from "react-dnd";
-import { MonstieGene } from "../utils/ProjectTypes";
+import { GeneSkill } from "../utils/ProjectTypes";
 import { ELEMENT_COLOR } from "../utils/ProjectTypes";
 
 const octagonCssString = `polygon(

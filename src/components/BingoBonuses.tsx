@@ -2,7 +2,7 @@
 import { css, jsx } from "@emotion/react";
 import styled from "@emotion/styled";
 import { useEffect, useState } from "react";
-import { MonstieGene } from "../utils/ProjectTypes";
+import { GeneSkill } from "../utils/ProjectTypes";
 import { getBingoCountAndBonus } from "../utils/utils";
 
 import Asset from "./AssetComponents";
@@ -124,7 +124,7 @@ const TD = styled.td`
 `;
 
 type BingoBonusesProps = {
-  geneBuild: MonstieGene[];
+  geneBuild: GeneSkill[];
   className?: string;
   showBingosOnly?: boolean;
 };

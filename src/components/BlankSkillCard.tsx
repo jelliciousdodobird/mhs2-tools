@@ -2,7 +2,7 @@
 import { css, jsx, useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
 import { rgba } from "emotion-rgba";
-import { ELEMENT_COLOR, MonstieGene } from "../utils/ProjectTypes";
+import { ELEMENT_COLOR, GeneSkill } from "../utils/ProjectTypes";
 import { isBlankGene } from "../utils/utils";
 import Asset from "./AssetComponents";
 import color from "color";

@@ -1,11 +1,11 @@
 import { useEffect } from "react";
 import { memo } from "react";
 import { useState } from "react";
-import { MonstieGene } from "../utils/ProjectTypes";
+import { GeneSkill } from "../utils/ProjectTypes";
 import { cleanGeneBuild } from "../utils/utils";
 
-const useGeneBuild = (initialGeneBuild: MonstieGene[]) => {
-  const [geneBuild, setGeneBuild] = useState<MonstieGene[]>(
+const useGeneBuild = (initialGeneBuild: GeneSkill[]) => {
+  const [geneBuild, setGeneBuild] = useState<GeneSkill[]>(
     cleanGeneBuild(initialGeneBuild)
   );
 

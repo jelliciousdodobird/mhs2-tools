@@ -7,7 +7,7 @@ import { AnimateSharedLayout, motion } from "framer-motion";
 import { createRef, Ref, RefObject, useEffect, useRef, useState } from "react";
 
 // types:
-import { MonstieGene } from "../utils/ProjectTypes";
+import { GeneSkill } from "../utils/ProjectTypes";
 import { DropProps } from "../hooks/useDrop";
 
 // custom components:
@@ -17,7 +17,6 @@ import Debug from "./Debug";
 
 // utils:
 import {
-  EMPTY_BOARD,
   addEmptyGeneInfo as clean,
   place,
   swap,
@@ -189,13 +188,13 @@ const EmptySlot = styled.div``;
 /////////////////////////////////////////////////////////////////////////////////
 
 type BingoBoardProps = {
-  data?: MonstieGene[];
+  data?: GeneSkill[];
   drop: DropProps;
   setDrop: React.Dispatch<React.SetStateAction<DropProps>>;
   setDropSuccess: React.Dispatch<React.SetStateAction<boolean>>;
 
-  geneBuild: MonstieGene[];
-  setGeneBuild: React.Dispatch<React.SetStateAction<MonstieGene[]>>;
+  geneBuild: GeneSkill[];
+  setGeneBuild: React.Dispatch<React.SetStateAction<GeneSkill[]>>;
 
   className?: string;
 
@@ -242,7 +241,7 @@ const BingoBoard = ({
 }: BingoBoardProps) => {
   // STATE:
   const [isDragging, setIsDragging] = useState(false);
-  const [dragGene, setDragGene] = useState<MonstieGene | null>(null);
+  const [dragGene, setDragGene] = useState<GeneSkill | null>(null);
   // const [geneBuild, setGeneBuild] = useState<MonstieGene[]>(clean(EMPTY_BOARD));
   const [slotRefs, setSlotRefs] = useState<RefObject<HTMLDivElement>[]>([]);
   const [outerGrid, setOuterGrid] = useState<GridElement[]>([]);
@@ -269,12 +268,10 @@ const BingoBoard = ({
     return targetIndex;
   };
 
-  const placeGene = (targetIndex: number, gene: MonstieGene) =>
+  const placeGene = (targetIndex: number, gene: GeneSkill) =>
     setGeneBuild((genes) => {
       // housekeeping:
-      const i = genes.findIndex(
-        ({ geneNumber }) => geneNumber === gene.geneNumber
-      );
+      const i = genes.findIndex(({ gId }) => gId === gene.gId);
       const copy = [...genes];
       let success = true;
 
@@ -287,12 +284,10 @@ const BingoBoard = ({
       return copy;
     });
 
-  const swapGenes = (targetIndex: number, gene: MonstieGene) =>
+  const swapGenes = (targetIndex: number, gene: GeneSkill) =>
     setGeneBuild((genes) => {
       // housekeeping:
-      const i = genes.findIndex(
-        ({ geneNumber }) => geneNumber === gene.geneNumber
-      );
+      const i = genes.findIndex(({ gId }) => gId === gene.gId);
       const copy = [...genes];
 
       // dragged from another board component so a swap isnt possible:
@@ -401,7 +396,7 @@ const BingoBoard = ({
               {geneBuild.map((gene, i) =>
                 !isBlankGene(gene) ? (
                   <DraggableGene
-                    key={gene.geneNumber}
+                    key={gene.gId}
                     gene={gene}
                     onDragStart={() => {
                       setIsDragging(true);
@@ -419,7 +414,7 @@ const BingoBoard = ({
                     bringToFront={dragGene?.geneName === gene.geneName}
                   />
                 ) : (
-                  <EmptySlot key={gene.geneNumber} />
+                  <EmptySlot key={gene.gId} />
                 )
               )}
             </AnimateSharedLayout>

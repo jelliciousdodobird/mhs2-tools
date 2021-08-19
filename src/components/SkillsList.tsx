@@ -9,8 +9,8 @@ import useResizeObserver from "use-resize-observer/polyfilled";
 import {
   ElementType,
   ELEMENT_COLOR,
-  MonstieGene,
-  SkillType,
+  GeneSkill,
+  TraitType,
 } from "../utils/ProjectTypes";
 import { isBlankGene } from "../utils/utils";
 import Asset from "./AssetComponents";
@@ -39,7 +39,7 @@ const Container = styled.div<{ threeColumnView: boolean }>`
   height: 100%;
 `;
 
-type SkilsListProps = { className?: string; geneBuild: MonstieGene[] };
+type SkilsListProps = { className?: string; geneBuild: GeneSkill[] };
 
 const SkillsList = ({ className, geneBuild }: SkilsListProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -72,7 +72,7 @@ const SkillsList = ({ className, geneBuild }: SkilsListProps) => {
       threeColumnView={threeColumnView}
     >
       {list.map((gene, i) => (
-        <SkillCard key={gene.geneNumber} gene={gene} />
+        <SkillCard key={gene.gId} gene={gene} />
       ))}
 
       {oneColumnView &&

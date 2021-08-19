@@ -8,10 +8,10 @@ import color from "color";
 // assets:
 
 import Asset from "./AssetComponents";
-import { ELEMENT_COLOR, ElementType, MonstieGene } from "../utils/ProjectTypes";
+import { ELEMENT_COLOR, ElementType, GeneSkill } from "../utils/ProjectTypes";
 import { rgba } from "emotion-rgba";
 import { motion } from "framer-motion";
-import { formatGeneName, GENE_SIZE_LETTER } from "../utils/utils";
+import { formatGeneName } from "../utils/utils";
 import Portal from "./DynamicPortal";
 import SkillCard from "./SkillCard";
 
@@ -181,7 +181,7 @@ const SkillContainer = styled.div`
 `;
 
 type GeneProps = {
-  gene: MonstieGene;
+  gene: GeneSkill;
   size?: number;
   disableSkillPreview?: boolean;
   bringToFront?: boolean;
@@ -197,8 +197,8 @@ const Gene = ({
   const [showSkill, setShowSkill] = useState(false);
 
   // colors:
-  const geneColor = ELEMENT_COLOR[gene.elementType as ElementType].main;
-  const darkenGeneColor = ELEMENT_COLOR[gene.elementType as ElementType].dark;
+  const geneColor = ELEMENT_COLOR[gene.elementType].main;
+  const darkenGeneColor = ELEMENT_COLOR[gene.elementType].dark;
   const borderColor = color(geneColor).darken(0.35).hex();
 
   // formatted strings:
@@ -216,7 +216,7 @@ const Gene = ({
 
       {!isRainbowGene && (
         <>
-          <GeneSize>{gene.geneSize}</GeneSize>
+          <GeneSize>{gene.size}</GeneSize>
           <GeneName
             c={darkenGeneColor}
             borderColor={borderColor}
