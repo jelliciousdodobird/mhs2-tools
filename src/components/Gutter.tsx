@@ -44,7 +44,7 @@ const Container = styled.div`
 `;
 
 type Props = {
-  children: ReactElement | ReactElement[];
+  children: ReactElement | ReactElement[] | string;
   className?: string;
 };
 

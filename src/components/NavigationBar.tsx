@@ -29,7 +29,7 @@ import { useAuth } from "../contexts/AuthContext";
 // background: ${({ theme }) =>
 //   `linear-gradient(45deg, ${theme.colors.primary.main}, ${theme.colors.primary.light})`};
 const NavbarContainer = styled(motion.nav)`
-  z-index: 2;
+  z-index: 3;
 
   position: sticky;
   top: 0;

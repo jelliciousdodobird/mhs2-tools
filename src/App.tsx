@@ -35,6 +35,16 @@ const AppContainer = styled.div`
   }
 `;
 
+const NotificationContainer = styled.div`
+  z-index: 2;
+
+  position: sticky;
+  top: ${({ theme }) => theme.dimensions.mainNav.maxHeight}px;
+
+  width: 100%;
+  /* background-color: ${({ theme }) => theme.colors.primary.main}; */
+`;
+
 const PageContainer = styled.main`
   /* border: 2px dashed pink; */
 
@@ -70,6 +80,7 @@ const App = () => {
         <meta name="theme-color" content={theme.colors.background.main} />
       </Helmet>
       <NavigationBar />
+      <NotificationContainer id="main-notification" />
       <PageContainer className="page-container" id="page-container">
         <Switch>
           <Route path="/monsties" component={MonstiesPage} />

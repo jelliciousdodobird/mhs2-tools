@@ -4,7 +4,7 @@ import styled from "@emotion/styled";
 import { rgba } from "emotion-rgba";
 
 import { match } from "react-router-dom";
-import React, { useEffect, useMemo, useState, useRef } from "react";
+import React, { useEffect, useMemo, useState, useRef, memo } from "react";
 import { useHistory } from "react-router-dom";
 
 //hooks:
@@ -41,6 +41,10 @@ import { saveUserBuild } from "../utils/db-inserts";
 import supabase from "../utils/supabase";
 import { sanitizeGeneSkill } from "../utils/db-transforms";
 import { RiFundsFill } from "react-icons/ri";
+import DynamicPortal from "../components/DynamicPortal";
+import { MdClose, MdEdit } from "react-icons/md";
+import { motion } from "framer-motion";
+import BuildPageNotification from "../components/BuildPageNotification";
 
 export const rainbowTextGradient = (degree = 150) =>
   `repeating-linear-gradient(
@@ -224,11 +228,12 @@ type PageProps = {
   match: match<{ id: string }>;
 };
 
-// components with grid areas applied:
+export type BuildMetaInfo = {
+  buildType: "user" | "local" | "anon" | "invalid";
+  isCreator: boolean;
+};
 
-const BLANK_BOARD = cleanGeneBuild([]);
-
-const BuildPage = ({ match }: PageProps) => {
+const BuildPage = memo(({ match }: PageProps) => {
   const { user } = useAuth();
   // STATE:
   const containerRef = useRef<HTMLDivElement>(null);
@@ -240,14 +245,11 @@ const BuildPage = ({ match }: PageProps) => {
   const [monstie, setMonstie] = useState(DEFAULT_MONSTER.mId);
 
   // COMPONENT STATE:
-  const [buildMetaData, setBuildMetaData] = useState<{
-    buildType: "user" | "local" | "anon" | "invalid";
-    isCreator: boolean;
-  }>({ buildType: "invalid", isCreator: false });
+  const [buildMetaData, setBuildMetaData] = useState<BuildMetaInfo>({
+    buildType: "invalid",
+    isCreator: false,
+  });
 
-  const [isCreator, setIsCreator] = useState(false);
-  const [editable, setEditable] = useState(false);
-  // const [invalidUrlMessage, setInvalidUrlMessage] = useState("");
   const [loading, setLoading] = useState(true);
 
   const [dropSuccess, setDropSuccess] = useState(false);
@@ -261,7 +263,7 @@ const BuildPage = ({ match }: PageProps) => {
   const buildId = match.params.id;
 
   const shuffle = () => setGeneBuild((list) => shuffleArray([...list]));
-  const clearBuild = () => setGeneBuild(BLANK_BOARD);
+  const clearBuild = () => setGeneBuild(CLEAN_EMPTY_BOARD);
 
   const findLocalBuild = (targetBuildId: string) => {
     const allLocalBuilds: GeneBuild[] | null = JSON.parse(
@@ -282,7 +284,6 @@ const BuildPage = ({ match }: PageProps) => {
       const buildIndex = allLocalBuilds.findIndex(
         (builds) => builds.buildId === buildId
       );
-      // console.log("b", build);
 
       const arr =
         buildIndex !== -1
@@ -318,6 +319,7 @@ const BuildPage = ({ match }: PageProps) => {
         geneBuild,
       });
   };
+  console.log("-----------------------");
 
   useEffect(() => {
     const buildId = match.params.id;
@@ -360,7 +362,7 @@ const BuildPage = ({ match }: PageProps) => {
     };
 
     fetch();
-  }, [match, user]);
+  }, [match.params.id, user]);
 
   useEffect(() => {
     const buildId = match.params.id;
@@ -387,7 +389,6 @@ const BuildPage = ({ match }: PageProps) => {
         }
 
         if (data && data.length > 0) {
-          console.log(data);
           const res = data[0];
           const build = {
             buildId: res.build_id,
@@ -444,7 +445,7 @@ const BuildPage = ({ match }: PageProps) => {
     else {
       setLoading(false);
     }
-  }, [match, buildMetaData, user]);
+  }, [match.params.id, buildMetaData, user]);
 
   useEffect(() => {
     console.log({ geneBuild });
@@ -465,74 +466,77 @@ const BuildPage = ({ match }: PageProps) => {
     );
 
   return (
-    <Gutter>
-      <div>
-        {buildMetaData.buildType}
-        {`  ${buildMetaData.isCreator}`}
-      </div>
-      <Container
-        ref={containerRef}
-        onClick={() => {
-          console.log({ geneBuild });
+    <>
+      <BuildPageNotification
+        metaInfo={buildMetaData}
+        editButtonAction={() => {
+          console.log("yes");
         }}
-      >
-        {/* <Heading>The Magene {"->"}</Heading> */}
-        <BuildNameInput
-          value={buildName}
-          onChange={(e) => setBuildName(e.target.value)}
-          maxLength={40}
-          placeholder="Build name"
-          disabled={!buildMetaData.isCreator}
-        />
+      />
+      <Gutter>
+        <div>
+          {buildMetaData.buildType}
+          {`  ${buildMetaData.isCreator}`}
+        </div>
+        <Container ref={containerRef}>
+          {/* <Heading>The Magene {"->"}</Heading> */}
+          <BuildNameInput
+            value={buildName}
+            onChange={(e) => setBuildName(e.target.value)}
+            maxLength={40}
+            placeholder="Build name"
+            disabled={!buildMetaData.isCreator}
+          />
 
-        <SubContainer>
-          <BoardSection size={boardSize}>
-            <ButtonContainer>
-              <Button onClick={clearBuild}>Clear</Button>
-              <Button onClick={shuffle}>Random</Button>
-              <SaveButton isDirty={isDirty} onClick={save}>
-                Save
-              </SaveButton>
-            </ButtonContainer>
+          <SubContainer>
+            <BoardSection size={boardSize}>
+              <ButtonContainer>
+                <Button onClick={clearBuild}>Clear</Button>
+                <Button onClick={shuffle}>Random</Button>
+                <SaveButton isDirty={isDirty} onClick={save}>
+                  Save
+                </SaveButton>
+              </ButtonContainer>
 
-            <BingoBoard
-              size={boardSize}
-              geneBuild={geneBuild}
-              setGeneBuild={setGeneBuild}
-              drop={drop}
-              setDrop={setDrop}
-              setDropSuccess={setDropSuccess}
-              disabled={!buildMetaData.isCreator}
-            />
-            <BingoBonuses geneBuild={geneBuild} showBingosOnly={false} />
-          </BoardSection>
+              <BingoBoard
+                size={boardSize}
+                geneBuild={geneBuild}
+                setGeneBuild={setGeneBuild}
+                drop={drop}
+                setDrop={setDrop}
+                setDropSuccess={setDropSuccess}
+                disabled={!buildMetaData.isCreator}
+              />
+              <BingoBonuses geneBuild={geneBuild} showBingosOnly={false} />
+            </BoardSection>
 
-          <SkillsSection>
-            <SubHeading>Skills</SubHeading>
-            <SkillsList geneBuild={geneBuild} />
-          </SkillsSection>
-        </SubContainer>
+            <SkillsSection>
+              <SubHeading>Skills</SubHeading>
+              <SkillsList geneBuild={geneBuild} />
+            </SkillsSection>
+          </SubContainer>
 
-        <ObtainablesSection>
-          <SubHeading>Hunt List</SubHeading>
-          <ObtainableGeneList />
-        </ObtainablesSection>
+          <ObtainablesSection>
+            <SubHeading>Hunt List</SubHeading>
+            <ObtainableGeneList />
+          </ObtainablesSection>
 
-        {buildMetaData.isCreator && (
-          <FloatingPoint
-            parentContainerRef={containerRef}
-            bottom={floatPointOffset}
-          >
-            <GeneSearch
-              setDrop={setDrop}
-              setDropSuccess={setDropSuccess}
-              dropSuccess={dropSuccess}
-            />
-          </FloatingPoint>
-        )}
-      </Container>
-    </Gutter>
+          {buildMetaData.isCreator && (
+            <FloatingPoint
+              parentContainerRef={containerRef}
+              bottom={floatPointOffset}
+            >
+              <GeneSearch
+                setDrop={setDrop}
+                setDropSuccess={setDropSuccess}
+                dropSuccess={dropSuccess}
+              />
+            </FloatingPoint>
+          )}
+        </Container>
+      </Gutter>
+    </>
   );
-};
+});
 
 export default BuildPage;
