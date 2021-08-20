@@ -7,6 +7,8 @@ import { match } from "react-router-dom";
 import React, { useEffect, useMemo, useState, useRef, memo } from "react";
 import { useHistory } from "react-router-dom";
 
+import debounce from "lodash/debounce";
+
 //hooks:
 import useDrop from "../hooks/useDrop";
 
@@ -45,6 +47,7 @@ import DynamicPortal from "../components/DynamicPortal";
 import { MdClose, MdEdit } from "react-icons/md";
 import { motion } from "framer-motion";
 import BuildPageNotification from "../components/BuildPageNotification";
+import { useCallback } from "react";
 
 export const rainbowTextGradient = (degree = 150) =>
   `repeating-linear-gradient(
@@ -301,25 +304,13 @@ const BuildPage = memo(({ match }: PageProps) => {
     }
   };
 
-  const save = () => {
-    if (user) {
-      saveUserBuild({
-        buildId,
-        buildName,
-        createdBy: user.id,
-        geneBuild,
-        monstie,
-      });
-    } else
-      saveToLocalStorage({
-        buildId,
-        buildName,
-        createdBy: null,
-        monstie,
-        geneBuild,
-      });
+  const save = (build: GeneBuild) => {
+    if (build.createdBy) {
+      saveUserBuild(build);
+    } else saveToLocalStorage(build);
   };
-  console.log("-----------------------");
+
+  const debouncedSave = useCallback(debounce(save, 1000), []);
 
   useEffect(() => {
     const buildId = match.params.id;
@@ -448,8 +439,14 @@ const BuildPage = memo(({ match }: PageProps) => {
   }, [match.params.id, buildMetaData, user]);
 
   useEffect(() => {
-    console.log({ geneBuild });
-  }, [geneBuild]);
+    debouncedSave({
+      buildId,
+      buildName,
+      monstie,
+      geneBuild,
+      createdBy: user ? user.id : null,
+    });
+  }, [buildName, monstie, geneBuild, buildId, user]);
 
   if (loading)
     return (
@@ -493,9 +490,7 @@ const BuildPage = memo(({ match }: PageProps) => {
               <ButtonContainer>
                 <Button onClick={clearBuild}>Clear</Button>
                 <Button onClick={shuffle}>Random</Button>
-                <SaveButton isDirty={isDirty} onClick={save}>
-                  Save
-                </SaveButton>
+                <SaveButton isDirty={isDirty}>Save</SaveButton>
               </ButtonContainer>
 
               <BingoBoard
