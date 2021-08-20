@@ -104,7 +104,7 @@ const MonstieGeneBuild = ({ build }: MonstieGeneBuildProps) => {
         >
           <MdShare />
         </ShareButton>
-        <EditLinkButton to={`/builds/edit/${buildId}`}>Edit</EditLinkButton>
+        <EditLinkButton to={`/builds/edit/${url}`}>Edit</EditLinkButton>
       </ButtonContainer>
     </Container>
   );

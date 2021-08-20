@@ -616,13 +616,6 @@ const GeneSearch = ({
           />
         )}
 
-        {/* {showSearch && (
-          <ResultInfo key="idk">
-
-
-            <div>{`Page: ${page.number + 1} of ${totalPages}`} </div>
-          </ResultInfo>
-        )} */}
         {showSearch && (
           <Container
             onClick={() => {

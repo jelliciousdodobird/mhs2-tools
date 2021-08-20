@@ -12,6 +12,8 @@ import {
   StrictAttack,
   StrictElement,
 } from "../utils/ProjectTypes";
+import { sanitizeGeneSkill } from "./db-transforms";
+import supabase from "./supabase";
 
 export const BLANK_GENE: GeneSkill = {
   gId: -1,
@@ -267,6 +269,12 @@ export type ShortGeneBuild = {
   g: number[];
 };
 
+/**
+ * Shrink the GeneBuild object to encode the minimum amount of data need to
+ * recreate a GeneBuild. Use this minified object to encode into a smaller base64 string.
+ * @param build
+ * @returns
+ */
 export const shrinkGeneBuild = (build: GeneBuild): ShortGeneBuild => {
   const { buildId, buildName, createdBy, monstie, geneBuild } = build;
   return {
@@ -278,19 +286,35 @@ export const shrinkGeneBuild = (build: GeneBuild): ShortGeneBuild => {
   };
 };
 
-export const expandGeneBuild = (build: ShortGeneBuild): GeneBuild => {
+export const expandGeneBuild = async (
+  build: ShortGeneBuild
+): Promise<GeneBuild> => {
   // const { i, b, c, m, g } = build;
-  const { b, m, g } = build;
+  const { b, m, g: listOfGeneIds } = build;
 
-  // TODO: ap call to get each gene data from the gene number
-  // becuase 'g' will be an array of numbers NOT an array of MonstieGene
+  const { data, error } = await supabase
+    .from("genes")
+    .select("*, skills(*)")
+    .in("g_id", listOfGeneIds);
+
+  let geneBuild = CLEAN_EMPTY_BOARD;
+
+  if (data && !error) {
+    geneBuild = cleanGeneBuild(
+      listOfGeneIds.map((g_id) =>
+        sanitizeGeneSkill(data.find((geneSkill) => geneSkill.g_id === g_id))
+      )
+    );
+  } else if (error) {
+    console.error(error);
+  }
 
   return {
     buildId: nanoid(),
     buildName: b,
     createdBy: null,
     monstie: m,
-    geneBuild: CLEAN_EMPTY_BOARD,
+    geneBuild,
   };
   // return {
   //   buildId: i,
@@ -309,14 +333,14 @@ export const encodeGeneBuildToBase64Url = (build: GeneBuild) => {
   return encoded;
 };
 
-export const decodeBase64UrlToGeneBuild = (
+export const decodeBase64UrlToGeneBuild = async (
   url: string
-): { error: any; build: GeneBuild } => {
+): Promise<{ error: any; build: GeneBuild }> => {
   try {
     const decoded = base64url.decode(url);
     const shortenedGeneBuild: ShortGeneBuild = JSON.parse(decoded);
 
-    const build = expandGeneBuild(shortenedGeneBuild);
+    const build = await expandGeneBuild(shortenedGeneBuild);
 
     return { error: null, build };
   } catch (error) {

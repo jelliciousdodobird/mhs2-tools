@@ -40,6 +40,7 @@ import { GENE_BUILDS } from "../utils/LocalStorageKeys";
 import { saveUserBuild } from "../utils/db-inserts";
 import supabase from "../utils/supabase";
 import { sanitizeGeneSkill } from "../utils/db-transforms";
+import { RiFundsFill } from "react-icons/ri";
 
 export const rainbowTextGradient = (degree = 150) =>
   `repeating-linear-gradient(
@@ -224,10 +225,6 @@ type PageProps = {
 };
 
 // components with grid areas applied:
-const BingoBoard_ = styled(BingoBoard)``;
-const BingoBonuses_ = styled(BingoBonuses)``;
-const ObtainableGeneList_ = styled(ObtainableGeneList)``;
-const SkillsList_ = styled(SkillsList)``;
 
 const BLANK_BOARD = cleanGeneBuild([]);
 
@@ -237,11 +234,20 @@ const BuildPage = ({ match }: PageProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isDirty, setIsDirty] = useState(false);
 
+  // DATA STATE:
   const [geneBuild, setGeneBuild] = useState<GeneSkill[]>(CLEAN_EMPTY_BOARD);
   const [buildName, setBuildName] = useState("");
   const [monstie, setMonstie] = useState(DEFAULT_MONSTER.mId);
 
-  const [invalidUrlMessage, setInvalidUrlMessage] = useState("");
+  // COMPONENT STATE:
+  const [buildMetaData, setBuildMetaData] = useState<{
+    buildType: "user" | "local" | "anon" | "invalid";
+    isCreator: boolean;
+  }>({ buildType: "invalid", isCreator: false });
+
+  const [isCreator, setIsCreator] = useState(false);
+  const [editable, setEditable] = useState(false);
+  // const [invalidUrlMessage, setInvalidUrlMessage] = useState("");
   const [loading, setLoading] = useState(true);
 
   const [dropSuccess, setDropSuccess] = useState(false);
@@ -257,21 +263,23 @@ const BuildPage = ({ match }: PageProps) => {
   const shuffle = () => setGeneBuild((list) => shuffleArray([...list]));
   const clearBuild = () => setGeneBuild(BLANK_BOARD);
 
-  const saveToLocalStorage = () => {
-    const localData: GeneBuild[] | null = JSON.parse(
+  const findLocalBuild = (targetBuildId: string) => {
+    const allLocalBuilds: GeneBuild[] | null = JSON.parse(
       window.localStorage.getItem(GENE_BUILDS) || "null"
     );
 
-    if (localData) {
-      const newData: GeneBuild = {
-        buildId,
-        buildName,
-        createdBy: null,
-        monstie,
-        geneBuild,
-      };
+    if (allLocalBuilds)
+      return allLocalBuilds.find((build) => build.buildId === targetBuildId);
+    else return null;
+  };
 
-      const buildIndex = localData.findIndex(
+  const saveToLocalStorage = (newData: GeneBuild) => {
+    const allLocalBuilds: GeneBuild[] | null = JSON.parse(
+      window.localStorage.getItem(GENE_BUILDS) || "null"
+    );
+
+    if (allLocalBuilds) {
+      const buildIndex = allLocalBuilds.findIndex(
         (builds) => builds.buildId === buildId
       );
       // console.log("b", build);
@@ -279,10 +287,10 @@ const BuildPage = ({ match }: PageProps) => {
       const arr =
         buildIndex !== -1
           ? [
-              ...localData.slice(0, buildIndex),
-              ...localData.slice(buildIndex + 1, localData.length),
+              ...allLocalBuilds.slice(0, buildIndex),
+              ...allLocalBuilds.slice(buildIndex + 1, allLocalBuilds.length),
             ]
-          : localData;
+          : allLocalBuilds;
 
       const t = [...arr, newData];
 
@@ -301,22 +309,71 @@ const BuildPage = ({ match }: PageProps) => {
         geneBuild,
         monstie,
       });
-    } else saveToLocalStorage();
+    } else
+      saveToLocalStorage({
+        buildId,
+        buildName,
+        createdBy: null,
+        monstie,
+        geneBuild,
+      });
   };
 
   useEffect(() => {
     const buildId = match.params.id;
 
-    setLoading(true);
-    ////////////////////////// LOGGED IN USER ///////////////////////////
-    if (user) {
+    const fetch = async () => {
+      setLoading(true);
+      let validUserBuild = false;
+      let validLocalBuild = false;
+      let validAnonBuild = false;
+
+      // 1. see if a user build exists for the current buildId:
+      const { data, error } = await supabase
+        .from("buildinfo")
+        .select("*")
+        .eq("build_id", buildId);
+      if (data && !error) validUserBuild = data.length > 0;
+      else if (error) console.error(error);
+
+      // 2. see if a local build exists for the current buildId:
+      validLocalBuild = !!findLocalBuild(buildId);
+
+      // 3. see if a anon build exists for the current buildId:
+      validAnonBuild = !(await decodeBase64UrlToGeneBuild(buildId)).error;
+
+      // SET BUILD META DATA:
+      // NOTE: that isCreator is tightly coupled with the type of build
+      // this is because of how we omit creator_id when saving to local storage
+      if (validUserBuild)
+        setBuildMetaData({
+          buildType: "user",
+          isCreator: data?.[0].creator_id === user?.id,
+        });
+      else if (validLocalBuild)
+        setBuildMetaData({ buildType: "local", isCreator: true });
+      else if (validAnonBuild)
+        setBuildMetaData({ buildType: "anon", isCreator: false });
+      else setBuildMetaData({ buildType: "invalid", isCreator: false });
+
+      setLoading(false);
+    };
+
+    fetch();
+  }, [match, user]);
+
+  useEffect(() => {
+    const buildId = match.params.id;
+
+    ///////////////////////////////// USER BUILD /////////////////////////////////
+    if (buildMetaData.buildType === "user") {
       const fetchBuild = async () => {
         const { data, error } = await supabase
           .from("buildinfo")
           .select(
             "*, buildpieces:buildpiece(place, g_id, gene:genes(*, skill:skills(*)))"
           )
-          .eq("creator_id", user?.id)
+          // .eq("creator_id", user?.id)
           .eq("build_id", buildId)
           .order("place", {
             foreignTable: "buildpiece",
@@ -326,11 +383,11 @@ const BuildPage = ({ match }: PageProps) => {
         if (error) console.error(error);
 
         if (data?.length === 0) {
-          setInvalidUrlMessage("no such build exists for your account");
-          setLoading(false);
+          // setLoading(false);
         }
 
         if (data && data.length > 0) {
+          console.log(data);
           const res = data[0];
           const build = {
             buildId: res.build_id,
@@ -347,58 +404,72 @@ const BuildPage = ({ match }: PageProps) => {
             ),
           };
 
-          // console.log({ res, build });
-
           setBuildName(build.buildName);
           setMonstie(build.monstie);
           setGeneBuild(build.geneBuild);
-
-          setLoading(false);
-          setInvalidUrlMessage("");
         }
+
+        setLoading(false);
       };
 
-      const validBuildId = buildId.length === 21;
-      if (validBuildId) fetchBuild();
-      else setInvalidUrlMessage("invalid url");
+      fetchBuild();
     }
-    ////////////////////////// LOCAL STORAGE ///////////////////////////
-    else {
-      const localData: GeneBuild[] | null = JSON.parse(
-        window.localStorage.getItem(GENE_BUILDS) || "null"
-      );
+    ///////////////////////////////// LOCAL BUILD /////////////////////////////////
+    else if (buildMetaData.buildType === "local") {
+      const localBuild = findLocalBuild(buildId);
 
-      if (localData) {
-        const build = localData.find((builds) => builds.buildId === buildId);
-        console.log("b", build);
+      setBuildName(localBuild?.buildName || "");
+      setMonstie(localBuild?.monstie || 33);
+      setGeneBuild(localBuild?.geneBuild || []);
 
-        if (build) {
-          setGeneBuild(build.geneBuild);
-          setBuildName(build.buildName);
-        } else setInvalidUrlMessage("could not find build");
-      } else {
-        // redirect cus invalid buildId
-        setInvalidUrlMessage("invalid build id");
-      }
       setLoading(false);
     }
-  }, [match]);
+    ///////////////////////////////// ANON BUILD /////////////////////////////////
+    else if (buildMetaData.buildType === "anon") {
+      const fetchAnonBuild = async () => {
+        const { error, build: anonBuild } = await decodeBase64UrlToGeneBuild(
+          buildId
+        );
+
+        setBuildName(anonBuild.buildName);
+        setMonstie(anonBuild.monstie);
+        setGeneBuild(anonBuild.geneBuild);
+
+        setLoading(false);
+      };
+
+      fetchAnonBuild();
+    }
+    ///////////////////////////////// INVALID BUILD /////////////////////////////////
+    else {
+      setLoading(false);
+    }
+  }, [match, buildMetaData, user]);
 
   useEffect(() => {
-    setIsDirty(true);
-  }, [geneBuild, buildName]);
+    console.log({ geneBuild });
+  }, [geneBuild]);
 
-  if (invalidUrlMessage)
+  if (loading)
     return (
       <Gutter>
-        <p>INVALID: {invalidUrlMessage}</p>
+        <div>LOADING</div>
       </Gutter>
     );
 
-  if (loading) return <div>loading</div>;
+  if (buildMetaData.buildType === "invalid")
+    return (
+      <Gutter>
+        <div>invalid url</div>
+      </Gutter>
+    );
 
   return (
     <Gutter>
+      <div>
+        {buildMetaData.buildType}
+        {`  ${buildMetaData.isCreator}`}
+      </div>
       <Container
         ref={containerRef}
         onClick={() => {
@@ -411,6 +482,7 @@ const BuildPage = ({ match }: PageProps) => {
           onChange={(e) => setBuildName(e.target.value)}
           maxLength={40}
           placeholder="Build name"
+          disabled={!buildMetaData.isCreator}
         />
 
         <SubContainer>
@@ -423,107 +495,44 @@ const BuildPage = ({ match }: PageProps) => {
               </SaveButton>
             </ButtonContainer>
 
-            <BingoBoard_
+            <BingoBoard
               size={boardSize}
               geneBuild={geneBuild}
               setGeneBuild={setGeneBuild}
               drop={drop}
               setDrop={setDrop}
               setDropSuccess={setDropSuccess}
+              disabled={!buildMetaData.isCreator}
             />
-            <BingoBonuses_ geneBuild={geneBuild} showBingosOnly={false} />
+            <BingoBonuses geneBuild={geneBuild} showBingosOnly={false} />
           </BoardSection>
 
           <SkillsSection>
             <SubHeading>Skills</SubHeading>
-            <SkillsList_ geneBuild={geneBuild} />
+            <SkillsList geneBuild={geneBuild} />
           </SkillsSection>
         </SubContainer>
 
         <ObtainablesSection>
           <SubHeading>Hunt List</SubHeading>
-          <ObtainableGeneList_ />
+          <ObtainableGeneList />
         </ObtainablesSection>
 
-        <FloatingPoint
-          parentContainerRef={containerRef}
-          bottom={floatPointOffset}
-        >
-          <GeneSearch
-            // genes={genes}
-            setDrop={setDrop}
-            setDropSuccess={setDropSuccess}
-            dropSuccess={dropSuccess}
-          />
-        </FloatingPoint>
+        {buildMetaData.isCreator && (
+          <FloatingPoint
+            parentContainerRef={containerRef}
+            bottom={floatPointOffset}
+          >
+            <GeneSearch
+              setDrop={setDrop}
+              setDropSuccess={setDropSuccess}
+              dropSuccess={dropSuccess}
+            />
+          </FloatingPoint>
+        )}
       </Container>
     </Gutter>
   );
 };
 
 export default BuildPage;
-
-//  const saveToLocalStorage = () => {
-//    const localData: string[] | null = JSON.parse(
-//      window.localStorage.getItem(GENE_BUILDS) || "null"
-//    );
-
-//    if (localData) {
-//      const newData: GeneBuild = {
-//        buildId,
-//        buildName,
-//        createdBy: "",
-//        monstie: "",
-//        geneBuild,
-//      };
-
-//      const newBuildUrl = encodeGeneBuildToBase64Url(newData);
-
-//      const buildIndex = localData.findIndex((url) => url === newBuildUrl);
-//      // console.log("b", build);
-
-//      const arr =
-//        buildIndex !== -1
-//          ? [
-//              ...localData.slice(0, buildIndex),
-//              ...localData.slice(buildIndex + 1, localData.length),
-//            ]
-//          : localData;
-
-//      const t = [...arr, newData];
-
-//      window.localStorage.setItem(GENE_BUILDS, JSON.stringify(t));
-
-//      setIsDirty(false);
-//    }
-//  };
-
-// useEffect(() => {
-//   const buildUrl = match.params.id;
-
-//   if (user) {
-//     // DO DATA FETCHING HERE
-//   } else {
-//     console.log(match.params.id);
-
-//     const localData: string[] | null = JSON.parse(
-//       window.localStorage.getItem(GENE_BUILDS) || "null"
-//     );
-
-//     if (localData) {
-//       const encodedUrl = localData.find((url) => url === buildUrl);
-
-//       console.log("b", encodedUrl);
-
-//       if (encodedUrl) {
-//         const { build } = decodeBase64UrlToGeneBuild(encodedUrl);
-//         setGeneBuild(build.geneBuild);
-//         setBuildName(build.buildName);
-//         setBuildId(build.buildId);
-//       } else setInvalidBuildId(true);
-//     } else {
-//       // redirect cus invalid buildId
-//       setInvalidBuildId(true);
-//     }
-//   }
-// }, [match]);

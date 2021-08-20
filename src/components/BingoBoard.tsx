@@ -29,6 +29,7 @@ import {
 import { DROP_TYPES } from "../utils/DropTypes";
 import Asset from "./AssetComponents";
 import useResizeObserver from "use-resize-observer/polyfilled";
+import Gene from "./Gene";
 
 const SLOT_SIZE = 110;
 
@@ -199,6 +200,8 @@ type BingoBoardProps = {
   className?: string;
 
   size?: number;
+
+  disabled?: boolean;
 };
 
 const gridAreas = [
@@ -238,6 +241,7 @@ const BingoBoard = ({
   setDropSuccess,
   className,
   size,
+  disabled = false,
 }: BingoBoardProps) => {
   // STATE:
   const [isDragging, setIsDragging] = useState(false);
@@ -365,6 +369,31 @@ const BingoBoard = ({
     setOuterGrid(arr);
   }, [geneBuild]);
 
+  const GeneItem = (gene: GeneSkill) => {
+    return disabled ? (
+      <Gene gene={gene} key={gene.gId} />
+    ) : (
+      <DraggableGene
+        key={gene.gId}
+        gene={gene}
+        onDragStart={() => {
+          setIsDragging(true);
+          setDragGene(gene);
+        }}
+        onDragEnd={(_, drag) => {
+          setIsDragging(false);
+          setDragGene(gene);
+          setDrop({
+            type: DROP_TYPES.GENE_SWAP,
+            position: drag.point,
+            data: gene,
+          });
+        }}
+        bringToFront={dragGene?.geneName === gene.geneName}
+      />
+    );
+  };
+
   return (
     <>
       <Grid
@@ -395,24 +424,7 @@ const BingoBoard = ({
             <AnimateSharedLayout>
               {geneBuild.map((gene, i) =>
                 !isBlankGene(gene) ? (
-                  <DraggableGene
-                    key={gene.gId}
-                    gene={gene}
-                    onDragStart={() => {
-                      setIsDragging(true);
-                      setDragGene(gene);
-                    }}
-                    onDragEnd={(_, drag) => {
-                      setIsDragging(false);
-                      setDragGene(gene);
-                      setDrop({
-                        type: DROP_TYPES.GENE_SWAP,
-                        position: drag.point,
-                        data: gene,
-                      });
-                    }}
-                    bringToFront={dragGene?.geneName === gene.geneName}
-                  />
+                  GeneItem(gene)
                 ) : (
                   <EmptySlot key={gene.gId} />
                 )
