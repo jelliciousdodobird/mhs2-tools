@@ -90,14 +90,6 @@ const TeamBuilderPage = () => {
   const [builds, setBuilds] = useState<GeneBuild[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // const saveLocalBuild = (buildInSqlFormat: DB_Build) => {
-  //   const oldBuilds = window.localStorage.getItem(GENE_BUILDS) || "[]";
-
-  //   window.localStorage.setItem(
-  //     GENE_BUILDS,
-  //     JSON.stringify([...JSON.parse(oldBuilds), buildInSqlFormat])
-  //   );
-  // };
   const saveBuildToLocalStorage = (build: GeneBuild) => {
     const oldBuilds = window.localStorage.getItem(GENE_BUILDS) || "[]";
 
@@ -111,12 +103,9 @@ const TeamBuilderPage = () => {
     const newBuild = createGeneBuild(user ? user.id : null);
 
     if (user) saveUserBuild(newBuild);
-    else {
-      // const buildSqlFormat = geneBuildToSqlTableFormat(newBuild);
-      saveBuildToLocalStorage(newBuild);
-    }
+    else saveBuildToLocalStorage(newBuild);
 
-    history.push(`/builds/edit/${newBuild.buildId}`);
+    history.push(`/builds/${newBuild.buildId}`);
   };
 
   useEffect(() => {
@@ -137,7 +126,6 @@ const TeamBuilderPage = () => {
 
         if (data) {
           // process data:
-          console.log("datafetching", data);
           const builds: GeneBuild[] = data.map((build) => {
             return {
               buildId: build.build_id,

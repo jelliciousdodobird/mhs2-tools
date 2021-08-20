@@ -439,14 +439,18 @@ const BuildPage = memo(({ match }: PageProps) => {
   }, [match.params.id, buildMetaData, user]);
 
   useEffect(() => {
-    debouncedSave({
-      buildId,
-      buildName,
-      monstie,
-      geneBuild,
-      createdBy: user ? user.id : null,
-    });
-  }, [buildName, monstie, geneBuild, buildId, user]);
+    const { isCreator } = buildMetaData;
+
+    if (isCreator) {
+      debouncedSave({
+        buildId,
+        buildName,
+        monstie,
+        geneBuild,
+        createdBy: user ? user.id : null,
+      });
+    }
+  }, [buildName, monstie, geneBuild, buildId, user, buildMetaData]);
 
   if (loading)
     return (
@@ -471,10 +475,6 @@ const BuildPage = memo(({ match }: PageProps) => {
         }}
       />
       <Gutter>
-        <div>
-          {buildMetaData.buildType}
-          {`  ${buildMetaData.isCreator}`}
-        </div>
         <Container ref={containerRef}>
           {/* <Heading>The Magene {"->"}</Heading> */}
           <BuildNameInput

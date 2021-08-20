@@ -92,7 +92,7 @@ const MonstieGeneBuild = ({ build }: MonstieGeneBuildProps) => {
 
   return (
     <Container>
-      <CardLink to={`/builds/edit/${buildId}`}>
+      <CardLink to={`/builds/${buildId}`}>
         <P>{buildName ? buildName : "Untitled"}</P>
       </CardLink>
 
@@ -104,7 +104,7 @@ const MonstieGeneBuild = ({ build }: MonstieGeneBuildProps) => {
         >
           <MdShare />
         </ShareButton>
-        <EditLinkButton to={`/builds/edit/${url}`}>Edit</EditLinkButton>
+        <EditLinkButton to={`/builds/${url}`}>Edit</EditLinkButton>
       </ButtonContainer>
     </Container>
   );

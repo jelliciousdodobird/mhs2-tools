@@ -87,7 +87,7 @@ const App = () => {
           <Route path="/genes" component={GenesPage} />
           <Route exact path="/builds" component={TeamBuilderPage} />
           {/* <Route exact path="/builds/:id" component={} /> */}
-          <Route path="/builds/edit/:id" component={BuildPage} />
+          <Route path="/builds/:id" component={BuildPage} />
           <Route path="/account" component={Register} />
         </Switch>
       </PageContainer>
