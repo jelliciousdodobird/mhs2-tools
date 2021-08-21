@@ -23,7 +23,7 @@ import { ElementType } from "../utils/ProjectTypes";
 import ExpandSearchMenu from "./ExpandSearchMenu";
 
 // data:
-import GENES_DATA from "../utils/genes.json";
+// import GENES_DATA from "../utils/genes.json";
 
 import { DROP_TYPES } from "../utils/DropTypes";
 import { AnimatePresence, motion } from "framer-motion";
