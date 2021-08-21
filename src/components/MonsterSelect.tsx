@@ -244,7 +244,7 @@ const MonsterSelect = ({ value, setValue }: Props) => {
         .order("monster_name");
 
       if (data && !error) {
-        const t: SelectOption[] = data.map((mon) => {
+        const options: SelectOption[] = data.map((mon) => {
           const egg = mon.egg[0];
 
           return {
@@ -259,9 +259,7 @@ const MonsterSelect = ({ value, setValue }: Props) => {
             },
           };
         });
-        console.log({ t });
-        console.log(data);
-        setMonsterList(t);
+        setMonsterList(options);
       }
 
       if (error) console.error(error);
@@ -285,7 +283,6 @@ const MonsterSelect = ({ value, setValue }: Props) => {
         >
           <PopoutMenuContainer
             onClick={(e) => {
-              console.log("yoooo");
               setDropdown(false);
               setFilter("");
             }}
