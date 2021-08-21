@@ -15,13 +15,11 @@ import { ReactComponent as RainbowSvg } from "../assets/rainbow.svg";
 import { memo } from "react";
 
 const ICONS = {
-  "": null,
-
   // attack type icons:
   power: PowerSvg,
   technical: TechnicalSvg,
   speed: SpeedSvg,
-  rainbow: RainbowSvg,
+  // rainbow: RainbowSvg,
 
   // elemental icons:
   "non-elemental": NonElementSvg,
@@ -30,6 +28,9 @@ const ICONS = {
   thunder: ThunderSvg,
   ice: IceSvg,
   dragon: DragonSvg,
+
+  none: null,
+  all: RainbowSvg,
 };
 
 type AssetType = keyof typeof ICONS;
@@ -41,7 +42,7 @@ const iconKeys = [...Object.keys(ICONS)] as AssetType[];
 export const coerceStringIntoAssetType = (str: string): AssetType => {
   str = str.toLowerCase().replaceAll("_", "-").replaceAll(" ", "-");
 
-  let type: AssetType = "";
+  let type: AssetType = "none";
   iconKeys.forEach((key) => {
     if (str.includes(key)) type = key;
   });
@@ -54,17 +55,28 @@ export const coerceStringIntoAssetType = (str: string): AssetType => {
 };
 
 type AssetProps = {
+  className?: string | undefined;
   asset: string;
   size?: number;
   title?: string;
 };
 
-const Asset = memo(({ asset, size, title }: AssetProps) => {
+const Asset = memo(({ asset, size, title, className }: AssetProps) => {
   const svg = ICONS[asset as AssetType]
     ? ICONS[asset as AssetType]
     : ICONS[coerceStringIntoAssetType(asset)];
 
-  if (svg) return <SvgWrapper svgComponent={svg} size={size} title={title} />;
+  if (asset === "none") return null;
+
+  if (svg)
+    return (
+      <SvgWrapper
+        svgComponent={svg}
+        size={size}
+        title={title}
+        className={className}
+      />
+    );
   else return <>{asset}</>;
 });
 

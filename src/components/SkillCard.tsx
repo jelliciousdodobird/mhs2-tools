@@ -1,12 +1,8 @@
 // styling:
 import { css, jsx, useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
-import { ELEMENT_COLOR, MonstieGene } from "../utils/ProjectTypes";
-import {
-  GENE_SIZE_LETTER,
-  isBlankGene,
-  removeSizeFromName,
-} from "../utils/utils";
+import { ELEMENT_COLOR, GeneSkill } from "../utils/ProjectTypes";
+import { isBlankGene, removeSizeFromName } from "../utils/utils";
 import Asset from "./AssetComponents";
 import BlankSkillCard from "./BlankSkillCard";
 
@@ -148,8 +144,17 @@ const GeneSize = styled.p`
   align-items: center;
 `;
 
+const AttackType = styled(Asset)`
+  svg {
+    path,
+    circle {
+      fill: white;
+    }
+  }
+`;
+
 type SkillCardProps = {
-  gene: MonstieGene;
+  gene: GeneSkill;
 };
 
 const SkillCard = ({ gene }: SkillCardProps) => {
@@ -160,7 +165,7 @@ const SkillCard = ({ gene }: SkillCardProps) => {
   return (
     <SkillContainer bg={main}>
       <GroupContainer>
-        <Asset asset={gene.attackType} size={23} />
+        <AttackType asset={gene.attackType} size={23} />
         <Name>{gene.skill.skillName}</Name>
         <Asset asset={gene.elementType} size={20} />
       </GroupContainer>
@@ -168,16 +173,16 @@ const SkillCard = ({ gene }: SkillCardProps) => {
       <FromBubble bg={light} bgDark={dark}>
         <span>From</span>
         {removeSizeFromName(gene.geneName)}
-        <GeneSize>{GENE_SIZE_LETTER[gene.geneSize]}</GeneSize>
+        <GeneSize>{gene.size}</GeneSize>
       </FromBubble>
 
       <GroupContainer>
         <Bubble bg={light} bgDark={dark}>
-          {gene.skill.skillType}
+          {gene.traitType}
         </Bubble>
         <Bubble bg={light} bgDark={dark} title="NO DATA YET">
           <span>KP</span>
-          {"0"}
+          {gene.skill.kinshipCost}
         </Bubble>
         <Bubble bg={light} bgDark={dark}>
           <span>Lvl</span> {gene.requiredLvl}
@@ -185,7 +190,7 @@ const SkillCard = ({ gene }: SkillCardProps) => {
       </GroupContainer>
 
       <Desc bg={dark}>
-        <DescText>{gene.skill.desc}</DescText>
+        <DescText>{gene.skill.description}</DescText>
       </Desc>
     </SkillContainer>
   );

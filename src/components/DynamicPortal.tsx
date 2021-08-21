@@ -5,7 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 const FullContainer = styled.div`
-  z-index: 1;
+  z-index: 2;
   position: absolute;
   min-width: 100%;
   min-height: 100%;

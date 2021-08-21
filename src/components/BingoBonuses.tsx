@@ -2,14 +2,8 @@
 import { css, jsx } from "@emotion/react";
 import styled from "@emotion/styled";
 import { useEffect, useState } from "react";
-import {
-  AttackType,
-  ElementType,
-  MonstieGene,
-  StrictAttack,
-  StrictElement,
-} from "../utils/ProjectTypes";
-import { findBingosInFlatArray, getBingoCountAndBonus } from "../utils/utils";
+import { GeneSkill } from "../utils/ProjectTypes";
+import { getBingoCountAndBonus } from "../utils/utils";
 
 import Asset from "./AssetComponents";
 
@@ -130,7 +124,7 @@ const TD = styled.td`
 `;
 
 type BingoBonusesProps = {
-  geneBuild: MonstieGene[];
+  geneBuild: GeneSkill[];
   className?: string;
   showBingosOnly?: boolean;
 };
@@ -150,7 +144,6 @@ const BingoBonuses = ({
 
   useEffect(() => {
     const freqs = getBingoCountAndBonus(geneBuild);
-    console.log(freqs);
 
     if (showBingosOnly) setBonuses(freqs.filter(({ count }) => count > 0));
     else setBonuses(freqs);

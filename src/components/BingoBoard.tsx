@@ -7,7 +7,7 @@ import { AnimateSharedLayout, motion } from "framer-motion";
 import { createRef, Ref, RefObject, useEffect, useRef, useState } from "react";
 
 // types:
-import { MonstieGene } from "../utils/ProjectTypes";
+import { GeneSkill } from "../utils/ProjectTypes";
 import { DropProps } from "../hooks/useDrop";
 
 // custom components:
@@ -17,7 +17,6 @@ import Debug from "./Debug";
 
 // utils:
 import {
-  EMPTY_BOARD,
   addEmptyGeneInfo as clean,
   place,
   swap,
@@ -30,6 +29,7 @@ import {
 import { DROP_TYPES } from "../utils/DropTypes";
 import Asset from "./AssetComponents";
 import useResizeObserver from "use-resize-observer/polyfilled";
+import Gene from "./Gene";
 
 const SLOT_SIZE = 110;
 
@@ -189,17 +189,19 @@ const EmptySlot = styled.div``;
 /////////////////////////////////////////////////////////////////////////////////
 
 type BingoBoardProps = {
-  data?: MonstieGene[];
+  data?: GeneSkill[];
   drop: DropProps;
   setDrop: React.Dispatch<React.SetStateAction<DropProps>>;
   setDropSuccess: React.Dispatch<React.SetStateAction<boolean>>;
 
-  geneBuild: MonstieGene[];
-  setGeneBuild: React.Dispatch<React.SetStateAction<MonstieGene[]>>;
+  geneBuild: GeneSkill[];
+  setGeneBuild: React.Dispatch<React.SetStateAction<GeneSkill[]>>;
 
   className?: string;
 
   size?: number;
+
+  disabled?: boolean;
 };
 
 const gridAreas = [
@@ -239,10 +241,11 @@ const BingoBoard = ({
   setDropSuccess,
   className,
   size,
+  disabled = false,
 }: BingoBoardProps) => {
   // STATE:
   const [isDragging, setIsDragging] = useState(false);
-  const [dragGene, setDragGene] = useState<MonstieGene | null>(null);
+  const [dragGene, setDragGene] = useState<GeneSkill | null>(null);
   // const [geneBuild, setGeneBuild] = useState<MonstieGene[]>(clean(EMPTY_BOARD));
   const [slotRefs, setSlotRefs] = useState<RefObject<HTMLDivElement>[]>([]);
   const [outerGrid, setOuterGrid] = useState<GridElement[]>([]);
@@ -269,10 +272,10 @@ const BingoBoard = ({
     return targetIndex;
   };
 
-  const placeGene = (targetIndex: number, gene: MonstieGene) =>
+  const placeGene = (targetIndex: number, gene: GeneSkill) =>
     setGeneBuild((genes) => {
       // housekeeping:
-      const i = genes.findIndex(({ geneName }) => geneName === gene.geneName);
+      const i = genes.findIndex(({ gId }) => gId === gene.gId);
       const copy = [...genes];
       let success = true;
 
@@ -285,10 +288,10 @@ const BingoBoard = ({
       return copy;
     });
 
-  const swapGenes = (targetIndex: number, gene: MonstieGene) =>
+  const swapGenes = (targetIndex: number, gene: GeneSkill) =>
     setGeneBuild((genes) => {
       // housekeeping:
-      const i = genes.findIndex(({ geneName }) => geneName === gene.geneName);
+      const i = genes.findIndex(({ gId }) => gId === gene.gId);
       const copy = [...genes];
 
       // dragged from another board component so a swap isnt possible:
@@ -366,6 +369,31 @@ const BingoBoard = ({
     setOuterGrid(arr);
   }, [geneBuild]);
 
+  const GeneItem = (gene: GeneSkill) => {
+    return disabled ? (
+      <Gene gene={gene} key={gene.gId} />
+    ) : (
+      <DraggableGene
+        key={gene.gId}
+        gene={gene}
+        onDragStart={() => {
+          setIsDragging(true);
+          setDragGene(gene);
+        }}
+        onDragEnd={(_, drag) => {
+          setIsDragging(false);
+          setDragGene(gene);
+          setDrop({
+            type: DROP_TYPES.GENE_SWAP,
+            position: drag.point,
+            data: gene,
+          });
+        }}
+        bringToFront={dragGene?.geneName === gene.geneName}
+      />
+    );
+  };
+
   return (
     <>
       <Grid
@@ -396,26 +424,9 @@ const BingoBoard = ({
             <AnimateSharedLayout>
               {geneBuild.map((gene, i) =>
                 !isBlankGene(gene) ? (
-                  <DraggableGene
-                    key={gene.geneName}
-                    gene={gene}
-                    onDragStart={() => {
-                      setIsDragging(true);
-                      setDragGene(gene);
-                    }}
-                    onDragEnd={(_, drag) => {
-                      setIsDragging(false);
-                      setDragGene(gene);
-                      setDrop({
-                        type: DROP_TYPES.GENE_SWAP,
-                        position: drag.point,
-                        data: gene,
-                      });
-                    }}
-                    bringToFront={dragGene?.geneName === gene.geneName}
-                  />
+                  GeneItem(gene)
                 ) : (
-                  <EmptySlot key={gene.geneName} />
+                  <EmptySlot key={gene.gId} />
                 )
               )}
             </AnimateSharedLayout>

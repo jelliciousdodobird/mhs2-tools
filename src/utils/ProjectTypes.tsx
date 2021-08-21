@@ -7,13 +7,6 @@ export const ELEMENT_COLOR = {
     dark: "#6D6D6D",
     darker: "black",
   },
-  // non_elemental: {
-  //   main: "#858585",
-  //   light: "#949494",
-  //   dark: "#6D6D6D",
-  //   darker: "black",
-  // },
-  // fire: { main: "#FB494A", light: "#fc6c6d", dark: "#FA191B", darker: "black" },
   fire: {
     main: "#FB494A",
     light: "#fc6c6d",
@@ -39,38 +32,60 @@ export const ELEMENT_COLOR = {
     dark: "#A500E2",
     darker: "black",
   },
-  rainbow: {
+  all: {
     main: "#49d0b0",
     light: "#49d0b0",
     dark: "#49d0b0",
     darker: "#49d0b0",
   },
-  "": { main: "black", light: "black", dark: "black", darker: "black" },
+
+  none: { main: "black", light: "black", dark: "black", darker: "black" },
 };
 
 // console.log(JSON.stringify(ELEMENT_COLOR));
 
 export type ElementType = keyof typeof ELEMENT_COLOR;
-// export type SkillType = "active" | "passive";
-export type SkillType = "active" | "passive" | "";
-export type AttackType = "power" | "technical" | "speed" | "";
-// export type AttackType = "power" | "technical" | "speed";
-export type StrictElement = Exclude<ElementType, "" | "rainbow">;
-export type StrictAttack = Exclude<AttackType, "">;
+
+export type TraitType = "active" | "passive";
+export type AttackType = "power" | "technical" | "speed" | "none" | "all";
+export type GeneSkillSize = "S" | "M" | "L" | "XL";
+
+export type StrictElement = Exclude<ElementType, "" | "none" | "all">;
+export type StrictAttack = Exclude<AttackType, "" | "none" | "all">;
 
 export type Skill = {
   skillName: string;
-  skillType: SkillType;
-  desc: string;
+  target: string;
+  kinshipCost: number;
+  otherMods: string;
+  mv: number;
+  actionSpeed: number;
+  accuracy: number;
+  critable: boolean;
+  critRateBonus: number;
+  aiUse: boolean;
+  description: string;
+  upgrade0: string;
+  upgrade1: string;
+  upgrade2: string;
+  effect1: string;
+  effect2: string;
+  effect3: string;
 };
 
-export type MonstieGene = {
+export type GeneSkill = {
+  gId: number;
   geneName: string;
   geneNumber: number;
+
   attackType: AttackType;
   elementType: ElementType;
+  traitType: TraitType;
+
   requiredLvl: number;
-  geneSize: number;
+  size: GeneSkillSize;
+
   skill: Skill;
-  possessedBy: { native: string[]; random: string[] };
+  // kinshipCost: number;
+  // possessedBy: { native: string[]; random: string[] };
 };

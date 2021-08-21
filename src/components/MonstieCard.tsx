@@ -13,44 +13,23 @@ import { motion } from "framer-motion";
 import { useUIState } from "../contexts/UIContext";
 import color from "color";
 import { ElementType, ELEMENT_COLOR } from "../utils/ProjectTypes";
+import Egg from "./Egg";
+import Asset from "./AssetComponents";
+import { MonsterAtLvl } from "./MonstieList";
 
-// export const ELEMENT_COLOR = {
-//   "non-elemental": "#949494",
-//   non_elemental: "#949494",
-//   fire: "#fc6c6d",
-//   water: "#76befe",
-//   thunder: "#ffd76f",
-//   ice: "#a8e9ff",
-//   dragon: "#d04fff",
-//   rainbow: "pink",
-//   "": "black",
-// };
-
-// export const ELEMENT_COLOR = {
-//   "non-elemental": color("#949494").darken(0.1).hex(),
-//   non_elemental: color("#949494").darken(0.1).hex(),
-//   fire: color("#fc6c6d").darken(0.1).hex(),
-//   water: color("#76befe").darken(0.1).hex(),
-//   thunder: color("#ffd76f").darken(0.1).hex(),
-//   ice: color("#a8e9ff").darken(0.1).hex(),
-//   dragon: color("#d04fff").darken(0.1).hex(),
-//   rainbow: color("pink").darken(0.1).hex(),
-//   "": "black",
-// };
-
-// export type ElementType = keyof typeof ELEMENT_COLOR;
-
-const Container = styled(motion.div)<{ bg: string }>`
+const Container = styled.div<{ bg: string }>`
   position: relative;
 
   background-color: ${({ bg, theme }) => (bg ? bg : theme.colors.surface.main)};
 
   background: ${({ theme, bg }) =>
-    `linear-gradient(130deg, ${bg} 59.7%, ${theme.colors.surface.main} 60%)`};
+    `linear-gradient(120deg, ${bg} 59.7%, ${theme.colors.surface.main} 60%)`};
 
   border-radius: 1rem;
 
   width: 100%;
+  min-height: 14rem;
+  max-height: 14rem;
   /* height: 10rem; */
 
   /* margin-right: 1rem; */
@@ -60,6 +39,14 @@ const Container = styled(motion.div)<{ bg: string }>`
 
   display: flex;
   flex-direction: column;
+  gap: 0.5rem;
+`;
+
+const RowContainer = styled.div`
+  display: flex;
+  /* justify-content: center; */
+  align-items: center;
+  gap: 0.4rem;
 `;
 
 const Name = styled.h3`
@@ -68,7 +55,7 @@ const Name = styled.h3`
   font-size: 1.2rem;
   white-space: nowrap;
 
-  margin-bottom: 1rem;
+  /* margin-bottom: 1rem; */
 `;
 
 const Number = styled.h4`
@@ -80,7 +67,7 @@ const Number = styled.h4`
 
   /* opacity: 0.15; */
 
-  color: ${({ theme }) => rgba(theme.colors.onBackground.main, 0.1)};
+  color: ${({ theme }) => rgba(theme.colors.onBackground.main, 0.2)};
   font-weight: 700;
 `;
 
@@ -103,7 +90,7 @@ const Bubble = styled.h5`
   justify-content: center;
   align-items: center;
 
-  margin-bottom: 0.5rem;
+  /* margin-bottom: 0.5rem; */
 
   &::after {
     /* z-index: 0; */
@@ -121,10 +108,11 @@ const Bubble = styled.h5`
   }
 `;
 
-const IMAGE_SIZE = 6.5;
+const IMAGE_SIZE = 10;
 
-const ImageHolder = styled.div`
+const ImageHolder = styled.div<{ strokeColor: string }>`
   z-index: 1;
+  /* border: 1px solid ${({ theme }) => theme.colors.onPrimary.main}; */
 
   position: absolute;
   bottom: 0rem;
@@ -132,7 +120,8 @@ const ImageHolder = styled.div`
 
   margin: 1rem;
 
-  border-radius: 10px 50px 50px 50px;
+  border-radius: 10px 50% 50% 50%;
+  /* border-radius: 50%; */
 
   width: ${IMAGE_SIZE}rem;
   height: ${IMAGE_SIZE}rem;
@@ -141,14 +130,41 @@ const ImageHolder = styled.div`
     theme.name === "light"
       ? `rgba(0, 0, 0, 0.05)`
       : `rgba(255, 255, 255, 0.1)`};
+
+  /* background-color: ${({ theme }) => theme.colors.surface.main}; */
+  border: 5px solid ${({ strokeColor }) => strokeColor};
+  background-color: rgba(255, 255, 255, 0.1);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const Egg_ = styled(Egg)`
+  /* position: absolute;
+  top: 50%;
+  left: 50%;
+
+  transform: translate(-50%, -70%);
+
+  width: 10rem;
+  height: 10rem; */
+`;
+
+const Img = styled.img`
+  /* width: 80%; */
+  /* height: 80%; */
 `;
 
 const StatContainer = styled.div<{ bg: string }>`
+  z-index: 0;
   position: relative;
 
+  padding: 0 0.5rem;
   margin-top: auto;
   /* padding: 0 1rem; */
 
+  width: min-content;
   width: 100%;
   height: 3rem;
 
@@ -160,6 +176,7 @@ const StatContainer = styled.div<{ bg: string }>`
   display: flex;
   /* justify-content: center; */
   align-items: center;
+  gap: 0.4rem;
 
   &::before {
     content: "";
@@ -168,15 +185,18 @@ const StatContainer = styled.div<{ bg: string }>`
     top: -16px;
     height: 16px;
     width: 12.5rem;
-    border-radius: 2px;
+    /* border-radius: 2px; */
 
     background-color: ${({ bg }) => bg};
+    clip-path: polygon(0 0, 100% 0, 94.5% 100%, 0% 100%);
+
+    /* background-color: red; */
   }
 `;
 
 const Stat = styled.h4<{ bg?: string }>`
   position: relative;
-  margin-left: 0.5rem;
+  /* margin-left: 0.5rem; */
 
   width: 2rem;
   height: 2rem;
@@ -194,9 +214,6 @@ const Stat = styled.h4<{ bg?: string }>`
 `;
 
 const BaseStat = styled(Stat)<{ bg?: string }>`
-  /* background-color: none; */
-
-  background-color: red;
   /* color: ${({ theme }) => theme.colors.onBackground.main}; */
   background-color: ${({ theme }) => rgba(theme.colors.onBackground.main, 0.2)};
 
@@ -220,83 +237,105 @@ const BaseStat = styled(Stat)<{ bg?: string }>`
 
     transform: translate3d(-50%, 0, 0);
   }
-
-  /* span {
-    color: ${({ theme }) => theme.colors.onBackground.main};
-    font-size: 0.85rem;
-    position: relative;
-    z-index: 1;
-  } */
-
-  /* svg {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-
-    transform: translate3d(-50%, -50%, 0);
-
-    width: 2.3rem;
-    height: 2.3rem;
-
-    path {
-      fill: ${({ theme }) => theme.colors.background.darker};
-    }
-  } */
 `;
 
+const AttackTypeIcon = styled(Asset)`
+  svg {
+    path,
+    circle {
+      fill: white;
+    }
+  }
+`;
+
+// type Monster = {
+//   mId: number;
+//   monster_name: string;
+//   elementStrength: ElementType;
+//   elementWeakness: ElementType;
+// }
+
 type MonstieCardProps = {
-  monstie: any;
+  monster: MonsterAtLvl;
+  showEgg?: boolean;
 };
 
-const MonstieCard = ({ monstie }: MonstieCardProps) => {
+const MonstieCard = ({ monster, showEgg = false }: MonstieCardProps) => {
   const { isMobile } = useUIState();
-  const { strength, weakness } = monstie;
+  const { elementStrength, elementWeakness } = monster;
 
-  const strength_element = ELEMENT_COLOR[strength as ElementType].main;
-  const weakness_element = ELEMENT_COLOR[weakness as ElementType].main;
-  const has2ndAbility = monstie.ability2 !== "---";
+  const stengthElementColor =
+    ELEMENT_COLOR[elementStrength as ElementType].main;
+  const weaknessElementColor =
+    ELEMENT_COLOR[elementWeakness as ElementType].main;
+  const dark = ELEMENT_COLOR[elementStrength as ElementType].light;
+  const has2ndAbility = monster.ability2 !== "---";
   const spacing = { marginBottom: "1.2rem" };
 
   return (
     <Container
-      bg={strength_element}
-      key={monstie.name + monstie.strength}
+      bg={stengthElementColor}
+      // key={monster.name + monster.strength}
       // notice that the shuffle animation is turned off by setting layoutId = undefined
-      layoutId={isMobile ? undefined : monstie.name + monstie.strength}
+      // layoutId={isMobile ? undefined : monstie.name + monstie.strength}
+      onClick={() => {
+        console.log(monster);
+        console.log(monster.elementStrength);
+      }}
     >
-      <Name>{monstie.name}</Name>
-      <Number>#{randomNumber(0, 88)}</Number>
-      {monstie.ability1 && (
+      <RowContainer>
+        <AttackTypeIcon
+          asset={monster.attackType?.toLowerCase()}
+          title={monster.attackType}
+          size={20}
+        />
+        <Name>{monster.monsterName}</Name>
+      </RowContainer>
+
+      <Number>#{monster.mId}</Number>
+      {monster.ability1 && (
         <Bubble style={!has2ndAbility ? spacing : {}}>
-          {monstie.ability1}
+          {monster.ability1}
         </Bubble>
       )}
-      {monstie.ability2 && has2ndAbility && (
-        <Bubble style={spacing}>{monstie.ability2}</Bubble>
+      {monster.ability2 && has2ndAbility && (
+        <Bubble style={spacing}>{monster.ability2}</Bubble>
       )}
-      <ImageHolder></ImageHolder>
-      <StatContainer bg={strength_element}>
-        <Stat bg={strength_element} title="Strongest Attack Stat">
-          {monstie[`atk_${strength}`]}
+      <ImageHolder strokeColor={dark}>
+        {showEgg ? (
+          <Egg_
+            patternType={monster.eggPatternType}
+            bgColor={monster.eggBgColor}
+            patternColor={monster.eggPatternColor}
+          />
+        ) : (
+          <Img
+            src={`https://nvbiwqsofgmscfcufpfd.supabase.in/storage/v1/object/public/monster-img/${monster.imgUrl}`}
+          />
+        )}
+      </ImageHolder>
+      <StatContainer bg={stengthElementColor}>
+        <Stat bg={stengthElementColor} title="Strongest Attack Stat">
+          {monster[`atk_${elementStrength}` as "atk_fire"]}
         </Stat>
 
-        <Stat bg={weakness_element} title="Weakest Defense Stat">
-          {monstie[`def_${weakness}`]}
+        <Stat bg={weaknessElementColor} title="Weakest Defense Stat">
+          {monster[`def_${elementWeakness}` as "atk_fire"]}
         </Stat>
 
-        <BaseStat bg={strength_element}>
+        <BaseStat bg={stengthElementColor}>
           <span>hp</span>
-          {monstie.hp}
+          {monster.hp}
         </BaseStat>
 
-        <BaseStat bg={strength_element}>
+        <BaseStat bg={stengthElementColor}>
           <span>rec</span>
-          {monstie.recovery}
+          {monster.recovery}
         </BaseStat>
 
-        <BaseStat bg={strength_element}>
+        <BaseStat bg={stengthElementColor}>
           <span>sp</span>
-          {monstie.speed}
+          {monster.speed}
         </BaseStat>
       </StatContainer>
     </Container>

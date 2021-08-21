@@ -18,7 +18,7 @@ import {
 
 import { useLongPress } from "use-long-press";
 
-import { MonstieGene } from "../utils/ProjectTypes";
+import { GeneSkill } from "../utils/ProjectTypes";
 import Gene from "./Gene";
 
 const DraggableContainer = styled(motion.div)<{
@@ -72,7 +72,7 @@ const transformString = (
 };
 
 type DraggableGeneProps = {
-  gene: MonstieGene;
+  gene: GeneSkill;
   onDragStart: (
     event: MouseEvent | TouchEvent | PointerEvent,
     info: PanInfo
@@ -237,8 +237,8 @@ const DraggableGene = ({
       //   clearTimeout(timeRef.current);
       // }}
       {...animationProps}
-      key={gene.geneName}
-      layoutId={gene.geneName}
+      key={gene.gId}
+      layoutId={`${gene.gId}`}
       drag={held || !longPressToDrag}
       dragMomentum={false}
       dragElastic={1}

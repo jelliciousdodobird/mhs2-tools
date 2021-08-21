@@ -23,11 +23,17 @@ type SvgWrapperProps = {
   >;
   size?: number;
   title?: string;
+  className?: string | undefined;
 };
 
-const SvgWrapper = ({ svgComponent, size, title }: SvgWrapperProps) => {
+const SvgWrapper = ({
+  svgComponent,
+  size,
+  title,
+  className,
+}: SvgWrapperProps) => {
   return (
-    <SvgWrapperContainer size={size} title={title}>
+    <SvgWrapperContainer size={size} title={title} className={className}>
       {createElement(svgComponent)}
     </SvgWrapperContainer>
   );

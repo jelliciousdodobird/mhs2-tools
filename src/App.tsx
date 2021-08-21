@@ -17,19 +17,32 @@ import MonstiesPage from "./pages/MonstiesPage";
 import GenesPage from "./pages/GenesPage";
 import TeamBuilderPage from "./pages/TeamBuilderPage";
 import BuildPage from "./pages/BuildPage";
+import Footer from "./components/Footer";
+import Register from "./components/Register";
 
 const AppContainer = styled.div`
   /* border: 2px dashed lightblue; */
 
   position: relative;
   width: 100%;
+  min-height: 100vh;
 
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.m}px) {
+  @media (max-width: ${({ theme }) => theme.breakpoints.s}px) {
     flex-direction: column;
   }
+`;
+
+const NotificationContainer = styled.div`
+  z-index: 2;
+
+  position: sticky;
+  top: ${({ theme }) => theme.dimensions.mainNav.maxHeight}px;
+
+  width: 100%;
+  /* background-color: ${({ theme }) => theme.colors.primary.main}; */
 `;
 
 const PageContainer = styled.main`
@@ -39,15 +52,13 @@ const PageContainer = styled.main`
   position: relative;
   /* scroll-behavior: smooth; */
 
+  padding-bottom: 2rem;
+  padding-top: 2rem;
+
   flex: 1;
 
   display: flex;
   flex-direction: column;
-
-  padding: 2rem;
-  @media (max-width: ${({ theme }) => theme.breakpoints.m}px) {
-    padding: 0.75rem;
-  }
 `;
 
 const App = () => {
@@ -69,15 +80,18 @@ const App = () => {
         <meta name="theme-color" content={theme.colors.background.main} />
       </Helmet>
       <NavigationBar />
+      <NotificationContainer id="main-notification" />
       <PageContainer className="page-container" id="page-container">
         <Switch>
           <Route path="/monsties" component={MonstiesPage} />
           <Route path="/genes" component={GenesPage} />
           <Route exact path="/builds" component={TeamBuilderPage} />
           {/* <Route exact path="/builds/:id" component={} /> */}
-          <Route path="/builds/edit/:id" component={BuildPage} />
+          <Route path="/builds/:id" component={BuildPage} />
+          <Route path="/account" component={Register} />
         </Switch>
       </PageContainer>
+      <Footer />
     </AppContainer>
   );
 };

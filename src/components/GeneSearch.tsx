@@ -7,12 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import useResizeObserver from "use-resize-observer/polyfilled";
 
 // types:
-import {
-  AttackType,
-  MonstieGene,
-  Skill,
-  SkillType,
-} from "../utils/ProjectTypes";
+import { AttackType, GeneSkill, Skill, TraitType } from "../utils/ProjectTypes";
 // import { ElementType } from "./MonstieCard";
 
 // hooks:
@@ -28,18 +23,23 @@ import { ElementType } from "../utils/ProjectTypes";
 import ExpandSearchMenu from "./ExpandSearchMenu";
 
 // data:
-import DATA from "../utils/output.json";
+// import GENES_DATA from "../utils/genes.json";
+
 import { DROP_TYPES } from "../utils/DropTypes";
-// import { clamp, BLANK_GENE } from "../utils/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import Debug from "./Debug";
 import usePagination from "../hooks/usePagination";
 
 // icons:
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
-import { GiRoundStar } from "react-icons/gi";
-import { ImHeart } from "react-icons/im";
+// import { GiRoundStar } from "react-icons/gi";
+// import { ImHeart } from "react-icons/im";
 import { MdClose, MdAdd } from "react-icons/md";
+import FloatingActionButton from "./FloatingActionButton";
+import supabase from "../utils/supabase";
+import Fuse from "fuse.js";
+// import { isNullishCoalesce } from "typescript";
+import { cleanGeneBuild } from "../utils/utils";
 
 const DummyWidthMeasurementDiv = styled.div`
   width: 100%;
@@ -236,7 +236,7 @@ const LB = styled(motion.button)<{ size?: number }>`
   }
 `;
 
-const FAB = styled(motion.button)`
+const FAB2 = styled(motion.button)`
   z-index: 50;
 
   position: absolute;
@@ -266,6 +266,12 @@ const FAB = styled(motion.button)`
       fill: ${({ theme }) => theme.colors.onPrimary.main};
     }
   }
+`;
+
+const FAB = styled(FloatingActionButton)`
+  position: absolute;
+  bottom: 0;
+  right: 0;
 `;
 
 const EmptyResult = styled.div<{ size: number }>`
@@ -346,26 +352,47 @@ const navButtonAnimation = {
   ...tapAnimation,
 };
 
-const sanitizeGenes = (dirtyGenes: any) => {
-  const cleanGenes: MonstieGene[] = [];
+// cons;
 
+export const sanitizeGenes = (dirtyGenes: any) => {
+  const cleanGenes: GeneSkill[] = [];
+  // console.log("dg", dirtyGenes);
   dirtyGenes.forEach((gene: any) => {
-    const cleanedGene: MonstieGene = {
+    const skill = gene.skill[0];
+
+    const cleanedGene: GeneSkill = {
+      gId: gene.g_id,
       geneName: gene.gene_name,
       geneNumber: gene.gene_number,
-      attackType: gene.attack_type ? (gene.attack_type as AttackType) : "",
+
+      attackType: gene.attack_type as AttackType,
       elementType: gene.element_type as ElementType,
+      traitType: gene.trait_type,
       requiredLvl: gene.required_lvl,
-      geneSize: gene.gene_size,
+      size: gene.size_abbr,
       skill: {
-        skillName: gene.skill.name,
-        skillType: gene.skill.type as SkillType,
-        desc: gene.skill.desc,
+        skillName: skill.skill_name,
+        target: skill.target,
+        kinshipCost: skill.kinship_cost,
+        otherMods: skill.other_mods,
+        mv: skill.mv,
+        actionSpeed: skill.action_speed,
+        accuracy: skill.accuracy,
+        critable: skill.critable,
+        critRateBonus: skill.crit_rate_bonus,
+        aiUse: skill.ai_use,
+        description: skill.description,
+        upgrade0: skill.upgrade_0,
+        upgrade1: skill.upgrade_1,
+        upgrade2: skill.upgrade_2,
+        effect1: skill.effect1,
+        effect2: skill.effect2,
+        effect3: skill.effect3,
       } as Skill,
-      possessedBy: {
-        native: gene.possessed_by.native,
-        random: gene.possessed_by.random,
-      },
+      // possessedBy: {
+      //   native: [],
+      //   random: [],
+      // },
     };
 
     cleanGenes.push(cleanedGene);
@@ -396,15 +423,22 @@ const GeneSearch = ({
   itemPadding = 7,
 }: GeneSearchProps) => {
   const theme = useTheme();
-  const [genes, setGenes] = useState<MonstieGene[]>([]);
-  const [searchResults, setSearchResults] = useState<MonstieGene[]>([]);
+  const [genes, setGenes] = useState<GeneSkill[]>([]);
+  const [searchResults, setSearchResults] = useState<GeneSkill[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const { isMobile } = useUIState();
 
-  const [draggingGene, setDraggingGene] = useState<MonstieGene | null>(null);
+  const [draggingGene, setDraggingGene] = useState<GeneSkill | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dropMessage, setDropMessage] = useState("");
+
+  const fuse = new Fuse(genes, {
+    keys: ["geneName", "attackType", "elementType"],
+    includeScore: true,
+    shouldSort: true,
+    threshold: 0.3,
+  });
 
   // browseMode refers to whether the user is browsing the results by swiping or clicking through the pages
   // browseMode should be set to false when they start dragging a gene else where
@@ -461,17 +495,36 @@ const GeneSearch = ({
     setShowSearch((v) => !v);
   };
 
-  const isDraggingGene = (gene: MonstieGene) =>
+  const isDraggingGene = (gene: GeneSkill) =>
     gene.geneName === draggingGene?.geneName;
 
   const setSearch = (e: React.ChangeEvent<HTMLInputElement>) =>
     setSearchTerm(e.target.value);
 
   useEffect(() => {
-    const dataFromApiCall = DATA.genes;
-    const cleanGenes = sanitizeGenes(dataFromApiCall);
-    setGenes(cleanGenes);
-    setSearchResults(cleanGenes.slice(0, 20));
+    const fetchAllGeneSkills = async () => {
+      let { data, error } = await supabase
+        .from("genes")
+        .select("*, skill:skills(*)")
+        .neq("element_type", null);
+
+      if (!error) {
+        const cleanGenes = sanitizeGenes(data);
+        // console.log({ cleanGenes });
+        setGenes(cleanGenes);
+        // setSearchResults(cleanGenes.slice(0, 20));
+      } else {
+        console.error(error);
+        setGenes([]);
+      }
+    };
+
+    fetchAllGeneSkills();
+
+    // const dataFromApiCall = GENES_DATA;
+    // const cleanGenes = sanitizeGenes(dataFromApiCall);
+    // setGenes(cleanGenes);
+    // setSearchResults(cleanGenes.slice(0, 20));
   }, []);
 
   // recalculate pagination parameters:
@@ -487,11 +540,9 @@ const GeneSearch = ({
   useEffect(() => {
     if (searchTerm === "") setSearchResults(genes);
     else {
-      const search = searchTerm.toLowerCase().trim();
+      const sr = fuse.search(searchTerm);
+      const newResults = sr.map(({ item }) => item);
 
-      const newResults = genes.filter((val) =>
-        val.geneName.toLowerCase().includes(search)
-      );
       setSearchResults(newResults);
     }
   }, [searchTerm, genes]);
@@ -504,8 +555,8 @@ const GeneSearch = ({
   //   }
   // }, [isDragging, dropSuccess]);
 
-  const GeneItem = (gene: MonstieGene) => (
-    <GeneContainer key={gene.geneName} padding={itemPadding}>
+  const GeneItem = (gene: GeneSkill) => (
+    <GeneContainer key={gene.gId} padding={itemPadding}>
       <DraggableGene
         size={itemSize}
         gene={gene}
@@ -561,19 +612,15 @@ const GeneSearch = ({
             key="gene-search"
             value={searchTerm}
             onChange={setSearch}
-            placeholderText="Search for a gene.."
+            placeholderText="Search by a gene's name, element, or type"
           />
         )}
 
-        {/* {showSearch && (
-          <ResultInfo key="idk">
-
-
-            <div>{`Page: ${page.number + 1} of ${totalPages}`} </div>
-          </ResultInfo>
-        )} */}
         {showSearch && (
           <Container
+            onClick={() => {
+              // console.log(genes);
+            }}
             {...hideResultsAnimation}
             padding={itemPadding}
             key="results-container"
@@ -627,13 +674,3 @@ const GeneSearch = ({
 };
 
 export default GeneSearch;
-
-{
-  /* <p>
-          {page.number + 1}/{totalPages}
-        </p>
-        <p>
-          {" " + pageResult.length}/{resultsPerPage + " "}
-        </p>
-        <p>Results: {searchResults.length}</p> */
-}

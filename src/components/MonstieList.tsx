@@ -4,7 +4,15 @@ import styled from "@emotion/styled";
 import { rgba } from "emotion-rgba";
 
 // library:
-import { useState, useEffect, useRef, ReactElement } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  ReactElement,
+  useMemo,
+  SetStateAction,
+  Dispatch,
+} from "react";
 import { AnimatePresence, AnimateSharedLayout, motion } from "framer-motion";
 
 // custom hooks:
@@ -13,77 +21,52 @@ import useTable, { ColumnProps, InputData } from "../hooks/useTable";
 // custom components:
 import MonstieCard from "./MonstieCard";
 import SortMenu from "./ExpandSortMenu";
-import ExpandSearchMenu from "./ExpandSearchMenu";
+import ExpandSearchMenu, { popOutMenuBaseStyles } from "./ExpandSearchMenu";
 
 // icons:
 import { BiSearch } from "react-icons/bi";
 import { MdSort } from "react-icons/md";
 import FloatingPoint from "./FloatingPoint";
 import Portal from "./DynamicPortal";
+import FloatingActionButton from "./FloatingActionButton";
+import useVirtualScroll from "../hooks/useVirtualScroll";
+import useResizeObserver from "use-resize-observer/polyfilled";
+import Debug from "./Debug";
+import { AttackType, ElementType } from "../utils/ProjectTypes";
+import { PatternType } from "./Egg";
+import LvlMenu from "./LvlMenu";
 
-const Container = styled.div<{ searchPadding: boolean }>`
+const Container = styled.div<{ listHeight: number; gridPadding: number }>`
   position: relative;
 
+  /* border: 1px dashed red; */
   /* display: flex;
   flex-wrap: wrap; */
+  padding-top: ${({ gridPadding }) => gridPadding}px;
 
   display: grid;
   gap: 1rem;
 
   /* 18rem -> supports 280px devices */
   /* 21.5rem -> supports 280px devices */
-  grid-template-columns: repeat(auto-fit, minmax(21.5rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr));
+  grid-template-rows: repeat(auto-fit, minmax(14rem, 14rem));
 
-  padding-bottom: ${({ searchPadding }) => (searchPadding ? "5rem" : 0)};
+  height: ${({ listHeight }) => listHeight}px;
+  min-height: ${({ listHeight }) => listHeight}px;
+  max-height: ${({ listHeight }) => listHeight}px;
 `;
 
-// const FloatingPoint = styled(motion.div)`
-//   z-index: 10;
-
-//   position: sticky;
-//   top: 100%;
-//   left: 0;
-
-//   height: 0;
-// `;
-
-export const FAB = styled(motion.button)`
-  z-index: 15;
-
+const SearchFAB = styled(FloatingActionButton)`
   position: absolute;
   bottom: 0;
   right: 0;
-
-  border-radius: 50%;
-  width: 4rem;
-  height: 4rem;
-
-  background-color: ${({ theme }) => theme.colors.primary.main};
-
-  box-shadow: 0px 0px 20px 0px ${({ theme }) => theme.colors.primary.main};
-  box-shadow: 0px 0px 20px -10px black;
-  /* background: ${({ theme }) =>
-    `linear-gradient(45deg, ${theme.colors.primary.main}, ${theme.colors.primary.light})`}; */
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  svg {
-    width: 1.5rem;
-    height: 1.5rem;
-
-    path {
-      fill: ${({ theme }) => theme.colors.onPrimary.main};
-    }
-  }
 `;
 
-const SortButton = styled(FAB)`
-  width: 3rem;
-  height: 3rem;
-
+const SortFAB = styled(FloatingActionButton)`
+  position: absolute;
   bottom: 5rem;
+  right: 0;
 `;
 
 const btnAnimationProps = {
@@ -91,28 +74,74 @@ const btnAnimationProps = {
   whileTap: { scale: 0.75 },
 };
 
+export type MonsterAtLvl = {
+  mId: number;
+  monsterName: string;
+  ability1: string;
+  ability2: string;
+  elementStrength: ElementType;
+  elementWeakness: ElementType;
+  attackType: AttackType;
+  genus: string;
+  rarity: number;
+  habitat: string;
+  hatchable: boolean;
+  retreatCondition: string;
+  imgUrl: string;
+
+  eggPatternType: PatternType;
+  eggBgColor: string;
+  eggPatternColor: string;
+  eggMetaColors: string[];
+
+  lvl: number;
+  speed: number;
+  crit: number;
+  hp: number;
+  recovery: number;
+
+  "atk_non-elemental": number;
+  atk_fire: number;
+  atk_water: number;
+  atk_thunder: number;
+  atk_ice: number;
+  atk_dragon: number;
+
+  "def_non-elemental": number;
+  def_fire: number;
+  def_water: number;
+  def_thunder: number;
+  def_ice: number;
+  def_dragon: number;
+};
+
 type MonstieListProps = {
-  data: InputData<unknown>[];
+  data: MonsterAtLvl[];
   column: ColumnProps[];
   defaultColumnWidth?: number;
+
+  lvl: number;
+  setLvl: Dispatch<SetStateAction<number>>;
 };
 
-const ShuffleAnimationWrapper = ({
-  animationOn,
-  children,
-}: {
-  animationOn: boolean;
-  children: ReactElement;
-}) => {
-  if (animationOn) return <AnimateSharedLayout>{children}</AnimateSharedLayout>;
-  else return <>{children}</>;
-};
+const MonstieList = ({ data, column, lvl, setLvl }: MonstieListProps) => {
+  const listContainerRef = useRef<HTMLDivElement>(null);
+  const { width = 0 } = useResizeObserver({
+    ref: listContainerRef,
+    onResize: (_) => {
+      if (listContainerRef.current) {
+        const t = window
+          .getComputedStyle(listContainerRef.current)
+          .getPropertyValue("grid-template-columns")
+          .split(" ").length;
 
-const Div = styled.div``;
+        setItemsPerRow(t);
+      }
+    },
+  });
+  const [itemsPerRow, setItemsPerRow] = useState(1);
 
-const MonstieList = ({ data, column }: MonstieListProps) => {
   const {
-    changeColumnOrder,
     toggleMultiSort,
     toggleSort,
     toggleShiftSort,
@@ -121,12 +150,25 @@ const MonstieList = ({ data, column }: MonstieListProps) => {
     shiftHeld,
     sorts,
     filterData,
-    toggleColumn,
-    hiddenColumns,
   } = useTable(data, column, 150);
+
+  const { listHeight, renderList, blankHeight } = useVirtualScroll(
+    useMemo(
+      () => ({
+        list: tableData,
+        listContainerRef,
+        itemHeight: 14 * 14, // 14rem
+        itemPadding: 14, // 1rem
+        itemsPerRow,
+      }),
+      [tableData, listContainerRef, itemsPerRow]
+    )
+  );
+
   const [showSort, setShowSort] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchText, setSearchText] = useState("");
+  const [eggMode, setEggMode] = useState(false);
 
   const toggleShowSort = () => {
     setShowSearch(false);
@@ -167,16 +209,18 @@ const MonstieList = ({ data, column }: MonstieListProps) => {
   return (
     <>
       <Portal portalId="floating-point-monstie-list">
-        <SortButton
+        <SortFAB
+          size="m"
           {...btnAnimationProps}
           {...staticProps2}
           onClick={toggleShowSort}
         >
           <MdSort />
-        </SortButton>
-        <FAB {...staticProps} onClick={toggleShowSearch}>
+        </SortFAB>
+
+        <SearchFAB size="l" {...staticProps} onClick={toggleShowSearch}>
           <BiSearch />
-        </FAB>
+        </SearchFAB>
         <AnimatePresence>
           {showSearch && (
             <ExpandSearchMenu
@@ -193,18 +237,19 @@ const MonstieList = ({ data, column }: MonstieListProps) => {
               toggleShiftSort={toggleShiftSort}
             />
           )}
+          {showSort && <LvlMenu lvl={lvl} setLvl={setLvl} />}
         </AnimatePresence>
       </Portal>
 
-      <Container searchPadding={showSearch}>
-        <AnimateSharedLayout>
-          {tableData.map((monstie: any) => (
-            <MonstieCard
-              key={monstie.name + monstie.strength}
-              monstie={monstie}
-            />
-          ))}
-        </AnimateSharedLayout>
+      <Container
+        ref={listContainerRef}
+        listHeight={listHeight}
+        gridPadding={blankHeight}
+        onClick={() => setEggMode((v) => !v)}
+      >
+        {renderList.map((mon) => (
+          <MonstieCard key={mon.mId} monster={mon} showEgg={eggMode} />
+        ))}
       </Container>
     </>
   );

@@ -2,7 +2,13 @@
 import { css, jsx } from "@emotion/react";
 import styled from "@emotion/styled";
 
+import supabase from "../utils/supabase";
+
+import { useState, useEffect } from "react";
+
 import MonstieToken from "./MonstieToken";
+import Gene from "./Gene";
+import { GeneSkill } from "../utils/ProjectTypes";
 
 import CrimsonQurupecoIcon from "../assets/monstie.png";
 import CrimsonQurupecoEgg from "../assets/CrimsonQurupecoEgg.svg";
@@ -18,6 +24,8 @@ const Container = styled.div`
   height: 100%;
 `;
 
+const GeneList = styled.div``;
+
 const MonstieList = styled.ul`
   // border: 2px dashed salmon;
   width: 100%;
@@ -29,14 +37,6 @@ const MonstieList = styled.ul`
   justify-content: flex-start;
   gap: 15px;
 `;
-
-// clean up / style
-// input for region filter
-// show egg mode only
-// clean up spacing
-// do logic
-
-type TemplateProps = { className?: string };
 
 const example = [
   {
@@ -120,29 +120,73 @@ const example = [
     den: "superRare-highRank",
   },
 ];
+import sanitizeGenes from "./GeneSearch";
 
-const Template = ({ className }: TemplateProps) => {
+type ObtainableGeneListProps = { className?: string };
+
+const ObtainableGeneList = (
+  { className }: ObtainableGeneListProps,
+  monstieId: string,
+  geneList: GeneSkill[]
+) => {
+  const [genes, setGenes] = useState<GeneSkill[]>([]);
+
+  useEffect(() => {
+    const fetchAllGeneSkills = async () => {
+      let { data, error } = await supabase
+        .from("genes")
+        .select("*, skill:skills(*)")
+        .neq("element_type", null);
+
+      if (!error) {
+        console.log(data);
+        //   const cleanGenes = sanitizeGenes(data);
+        // console.log({ cleanGenes });
+        // setGenes(cleanGenes);
+        // setSearchResults(cleanGenes.slice(0, 20));
+      } else {
+        console.error(error);
+        // setGenes([]);
+      }
+    };
+
+    fetchAllGeneSkills();
+
+    // const dataFromApiCall = GENES_DATA;
+    // const cleanGenes = sanitizeGenes(dataFromApiCall);
+    // setGenes(cleanGenes);
+    // setSearchResults(cleanGenes.slice(0, 20));
+  }, []);
+
+  const findMonstieDonors = async (geneId: string) => {
+    let { data, error } = await supabase
+      .from("gene_acquisition")
+      .select("*, monsters(monster_name, habitat), egg(*), genes(*)")
+      .eq("g_id", geneId);
+
+    if (!error) {
+    } else {
+      console.error(error);
+    }
+  };
+
   return (
     <Container className={className}>
       {/* Obtainable Genes */}
-      <MonstieList>
-        {example.map((monstie: any) => (
-          <li>
-            <MonstieToken monstie={monstie}></MonstieToken>
-          </li>
-        ))}
-        {/* <MonstieToken monstie={monstieEx1}></MonstieToken>
-        <MonstieToken monstie={monstieEx1}></MonstieToken>
-        <MonstieToken monstie={monstieEx1}></MonstieToken>
-        <MonstieToken monstie={monstieEx1}></MonstieToken>
-        <MonstieToken monstie={monstieEx1}></MonstieToken>
-        <MonstieToken monstie={monstieEx1}></MonstieToken>
-        <MonstieToken monstie={monstieEx1}></MonstieToken>
-        <MonstieToken monstie={monstieEx1}></MonstieToken>
-        <MonstieToken monstie={monstieEx1}></MonstieToken> */}
-      </MonstieList>
+      {geneList.map((gene: GeneSkill) => (
+        <GeneList>
+          <Gene gene={gene} />
+          <MonstieList>
+            {example.map((monstie: any) => (
+              <li>
+                <MonstieToken monstie={monstie}></MonstieToken>
+              </li>
+            ))}
+          </MonstieList>{" "}
+        </GeneList>
+      ))}
     </Container>
   );
 };
 
-export default Template;
+export default ObtainableGeneList;

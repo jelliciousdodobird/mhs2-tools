@@ -1,26 +1,51 @@
+import base64url from "base64url";
+import { create } from "domain";
+import { nanoid } from "nanoid";
+import { GeneBuild } from "../components/MonstieGeneBuild";
+
 import {
   ElementType,
   AttackType,
-  MonstieGene,
+  GeneSkill,
   Skill,
-  SkillType,
+  TraitType,
   StrictAttack,
   StrictElement,
 } from "../utils/ProjectTypes";
+import { sanitizeGeneSkill } from "./db-transforms";
+import supabase from "./supabase";
 
-export const BLANK_GENE: MonstieGene = {
+export const BLANK_GENE: GeneSkill = {
+  gId: -1,
   geneName: "",
   geneNumber: -1,
-  attackType: "" as AttackType,
-  elementType: "" as ElementType,
+
+  attackType: "none",
+  elementType: "none",
+  traitType: "passive",
+
   requiredLvl: -1,
-  geneSize: -1,
+  size: "S",
+
   skill: {
-    skillName: "",
-    skillType: "" as SkillType,
-    desc: "",
+    skillName: "blank",
+    target: "",
+    kinshipCost: 0,
+    otherMods: "",
+    mv: 0,
+    actionSpeed: 0,
+    accuracy: 0,
+    critable: false,
+    critRateBonus: 0,
+    aiUse: false,
+    description: "",
+    upgrade0: "",
+    upgrade1: "",
+    upgrade2: "",
+    effect1: "",
+    effect2: "",
+    effect3: "",
   } as Skill,
-  possessedBy: { native: [], random: [] },
 };
 
 export const GENE_SIZE_LETTER: { [key: string]: string } = {
@@ -31,19 +56,23 @@ export const GENE_SIZE_LETTER: { [key: string]: string } = {
   "": "",
 };
 
-export const EMPTY_BOARD = [...Array(9).keys()].map(() => BLANK_GENE);
+export const DEFAULT_MONSTER = { mId: 33, monsterName: "Popo" };
 
-export const isBlankGene = (gene: MonstieGene) =>
-  gene.geneName === "" || gene.geneName.includes("blank_");
+// export const EMPTY_BOARD = [...Array(9).keys()].map(() => BLANK_GENE);
 
-export const addEmptyGeneInfo = (list: MonstieGene[]) =>
+export const isBlankGene = (gene: GeneSkill) =>
+  gene.gId === null || gene.gId === undefined || gene.gId < 0;
+
+// gene.geneName === "" || gene.geneName.includes("blank_");
+
+export const addEmptyGeneInfo = (list: GeneSkill[]) =>
   list.map((gene, i) => {
     if (isBlankGene(gene)) {
       return { ...gene, geneName: `blank_${i}` };
     } else return gene;
   });
 
-export const cleanGeneBuild = (list: MonstieGene[]) => {
+export const cleanGeneBuild = (list: GeneSkill[]) => {
   // ensures that the gene build array has exactly 9 genes only, no more, no less
   // ensures that blank genes have a unique "blank_" geneName (which is used to uniquely identify genes)
   // there may be MULTIPLE blank genes and its important to distinguish between them
@@ -53,16 +82,25 @@ export const cleanGeneBuild = (list: MonstieGene[]) => {
 
   return [...Array(9).keys()].map((v) => {
     const gene = list[v];
-    if (gene)
-      return isBlankGene(gene) ? { ...gene, geneName: `blank_${v}` } : gene;
-    else return { ...BLANK_GENE, geneName: `blank_${v}` };
+    if (gene) return isBlankGene(gene) ? { ...gene, gId: -(v + 10) } : gene;
+    else return { ...BLANK_GENE, gId: -(v + 10) };
   });
+};
+
+export const CLEAN_EMPTY_BOARD = cleanGeneBuild([]);
+
+export const CORRUPTED_BUILD: GeneBuild = {
+  buildId: "",
+  buildName: "Corrupted",
+  monstie: 33,
+  createdBy: "",
+  geneBuild: CLEAN_EMPTY_BOARD,
 };
 
 export const randomNumber = (min: number, max: number) =>
   Math.floor(Math.random() * (max - min) + min);
 
-export const swap = (i: number, j: number, list: MonstieGene[]) => {
+export const swap = (i: number, j: number, list: GeneSkill[]) => {
   const temp = list[i];
   list[i] = list[j];
   list[j] = temp;
@@ -70,8 +108,8 @@ export const swap = (i: number, j: number, list: MonstieGene[]) => {
 
 export const place = (
   targetIndex: number,
-  gene: MonstieGene,
-  list: MonstieGene[]
+  gene: GeneSkill,
+  list: GeneSkill[]
 ) => {
   list[targetIndex] = gene;
 };
@@ -129,7 +167,7 @@ export const lineIndice: { [key: string]: number[] } = {
 export const getLineInfo = <T>(arr: T[], lineIndice: number[]) => {
   const line = lineIndice
     .map((index) => arr[index])
-    .filter((v) => (v as unknown) !== "rainbow");
+    .filter((v) => (v as unknown) !== "all");
 
   const isBingo = line.every((index) => index === line[0]);
 
@@ -162,7 +200,7 @@ type BingoInfo = {
   type: StrictElement | StrictAttack;
 };
 
-export const getBingosFromGeneBuild = (geneBuild: MonstieGene[]) => {
+export const getBingosFromGeneBuild = (geneBuild: GeneSkill[]) => {
   const elementTypes = geneBuild.map(({ elementType }) => elementType);
   const attackTypes = geneBuild.map(({ attackType }) => attackType);
 
@@ -170,7 +208,7 @@ export const getBingosFromGeneBuild = (geneBuild: MonstieGene[]) => {
   const attackTypeBingos = findBingosInFlatArray(attackTypes);
 
   const combined = [...elementTypeBingos, ...attackTypeBingos].filter(
-    ({ type }) => type !== null && type !== ""
+    ({ type }) => type !== null && type !== "none"
   ) as BingoInfo[];
 
   return combined;
@@ -189,7 +227,7 @@ export const calcBonusMultiplier = (count: number) => {
   return total / 100;
 };
 
-export const getBingoCountAndBonus = (geneBuild: MonstieGene[]) => {
+export const getBingoCountAndBonus = (geneBuild: GeneSkill[]) => {
   const freqs = {
     "non-elemental": 0,
     fire: 0,
@@ -206,11 +244,13 @@ export const getBingoCountAndBonus = (geneBuild: MonstieGene[]) => {
     freqs[type] = freqs[type] + 1;
   });
 
-  return Object.keys(freqs).map((key) => ({
-    type: key,
-    count: freqs[key as StrictAttack | StrictElement],
-    bonus: calcBonusMultiplier(freqs[key as StrictAttack | StrictElement]),
-  }));
+  return Object.keys(freqs)
+    .map((key) => ({
+      type: key,
+      count: freqs[key as StrictAttack | StrictElement],
+      bonus: calcBonusMultiplier(freqs[key as StrictAttack | StrictElement]),
+    }))
+    .filter(({ type }) => type !== "none");
 };
 
 export const removeSizeFromName = (name: string) => name.split("(")[0];
@@ -220,3 +260,93 @@ export const removeGeneFromName = (name: string) =>
 
 export const formatGeneName = (name: string) =>
   removeGeneFromName(removeSizeFromName(name));
+
+export type ShortGeneBuild = {
+  // i: string;
+  b: string;
+  // c: string;
+  m: number;
+  g: number[];
+};
+
+/**
+ * Shrink the GeneBuild object to encode the minimum amount of data need to
+ * recreate a GeneBuild. Use this minified object to encode into a smaller base64 string.
+ * @param build
+ * @returns
+ */
+export const shrinkGeneBuild = (build: GeneBuild): ShortGeneBuild => {
+  const { buildId, buildName, createdBy, monstie, geneBuild } = build;
+  return {
+    // i: buildId,
+    b: buildName,
+    // c: createdBy ? createdBy : "",
+    m: monstie,
+    g: geneBuild.map((gene) => gene.gId),
+  };
+};
+
+export const expandGeneBuild = async (
+  build: ShortGeneBuild
+): Promise<GeneBuild> => {
+  // const { i, b, c, m, g } = build;
+  const { b, m, g: listOfGeneIds } = build;
+
+  const { data, error } = await supabase
+    .from("genes")
+    .select("*, skills(*)")
+    .in("g_id", listOfGeneIds);
+
+  let geneBuild = CLEAN_EMPTY_BOARD;
+
+  if (data && !error) {
+    geneBuild = cleanGeneBuild(
+      listOfGeneIds.map((g_id) =>
+        sanitizeGeneSkill(data.find((geneSkill) => geneSkill.g_id === g_id))
+      )
+    );
+  } else if (error) {
+    console.error(error);
+  }
+
+  return {
+    buildId: nanoid(),
+    buildName: b,
+    createdBy: null,
+    monstie: m,
+    geneBuild,
+  };
+  // return {
+  //   buildId: i,
+  //   buildName: b,
+  //   createdBy: c,
+  //   monstie: m,
+  //   geneBuild: CLEAN_EMPTY_BOARD,
+  // };
+};
+
+export const encodeGeneBuildToBase64Url = (build: GeneBuild) => {
+  const str = JSON.stringify(shrinkGeneBuild(build));
+
+  const encoded = base64url(str);
+
+  return encoded;
+};
+
+export const decodeBase64UrlToGeneBuild = async (
+  url: string
+): Promise<{ error: any; build: GeneBuild }> => {
+  try {
+    const decoded = base64url.decode(url);
+    const shortenedGeneBuild: ShortGeneBuild = JSON.parse(decoded);
+
+    const build = await expandGeneBuild(shortenedGeneBuild);
+
+    return { error: null, build };
+  } catch (error) {
+    return { error, build: { ...CORRUPTED_BUILD, buildId: nanoid() } };
+  }
+};
+
+export const replaceNullOrUndefined = <T>(value: any, defaultValue: T) =>
+  value === null || value === undefined ? defaultValue : value;

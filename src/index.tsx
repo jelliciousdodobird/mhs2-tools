@@ -7,16 +7,19 @@ import { ThemeStateProvider } from "./contexts/ThemeContext";
 import { UIStateProvider } from "./contexts/UIContext";
 
 import { BrowserRouter } from "react-router-dom";
+import { AuthProvider } from "./contexts/AuthContext";
 
 ReactDOM.render(
   <React.StrictMode>
     <ThemeStateProvider>
       <UIStateProvider>
-        <HelmetProvider>
-          <BrowserRouter>
-            <App />
-          </BrowserRouter>
-        </HelmetProvider>
+        <AuthProvider>
+          <HelmetProvider>
+            <BrowserRouter>
+              <App />
+            </BrowserRouter>
+          </HelmetProvider>
+        </AuthProvider>
       </UIStateProvider>
     </ThemeStateProvider>
   </React.StrictMode>,

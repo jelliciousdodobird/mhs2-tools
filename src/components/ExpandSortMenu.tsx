@@ -15,7 +15,7 @@ import { MdSort } from "react-icons/md";
 
 // styles:
 import { popOutMenuBaseStyles } from "./ExpandSearchMenu";
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { ELEMENT_COLOR } from "../utils/ProjectTypes";
 
 const SortBox = styled(motion.div)`
@@ -29,6 +29,7 @@ const SortBox = styled(motion.div)`
 
   bottom: 4.5rem;
   border-radius: 1rem 1rem 2rem 1rem;
+  border-radius: 2rem 2rem 2rem 2rem;
   box-shadow: 0px 0px 10px -2px rgba(0, 0, 0, 0.2);
 
   justify-content: flex-start;
@@ -57,7 +58,7 @@ const SortBoxHeader = styled.h5`
   font-size: 1.1rem;
 
   display: flex;
-  /* justify-content: center; */
+  justify-content: center;
   align-items: center;
 
   svg {
@@ -151,66 +152,16 @@ const LevelBox = styled(SortBox)`
   align-items: center;
 `;
 
-const LB = styled(motion.button)`
-  /* background-color: red; */
-
-  border-radius: 50%;
-
-  width: 2rem;
-  height: 2rem;
-
-  color: ${({ theme }) => theme.colors.onPrimary.main};
-  font-size: 0.9rem;
-  font-weight: 600;
-
-  background-image: ${({ theme }) =>
-    `linear-gradient(
-
-      ${ELEMENT_COLOR["thunder"].main} 75%, 
-
-      ${ELEMENT_COLOR["fire"].main} 85%)
-  `};
-  background-attachment: fixed;
-
-  /* background-size: 25rem 100%; */
-`;
-
 const fullOpacity = 0.94;
 
 const sortAnimProps = {
   variants: {
-    appear: { width: "15rem", height: "20rem", opacity: fullOpacity },
+    appear: { width: "15rem", height: "22rem", opacity: fullOpacity },
     exit: {
       width: "0rem",
       height: "0rem",
       opacity: 0,
       transition: { delay: 0.2 },
-    },
-  },
-  initial: "exit",
-  animate: "appear",
-  exit: "exit",
-
-  transition: {
-    type: "spring",
-    stiffness: 500,
-    damping: 30,
-  },
-};
-
-const lvlAnimProps = {
-  variants: {
-    appear: {
-      // width: "5rem",
-      height: "20rem",
-      opacity: fullOpacity,
-      transition: { delay: 0.2 },
-    },
-    exit: {
-      // width: "0rem",
-
-      height: "0rem",
-      opacity: 0,
     },
   },
   initial: "exit",
@@ -272,55 +223,37 @@ type SortMenuProps = {
   toggleShiftSort: (key: string) => void;
 };
 
-const levels = [1, 10, 20, 30, 40, 50, 75, 99];
+// const levels = [1, 10, 20, 30, 40, 50, 75, 99];
 
 const SortMenu = ({ columnAttrs, toggleShiftSort }: SortMenuProps) => {
   const [hover, setHover] = useState("");
 
   return (
     <>
-      <LevelBox {...lvlAnimProps}>
-        {levels.map((lvl) => (
-          <LB key={lvl}>{lvl}</LB>
-        ))}
-      </LevelBox>
       <SortBox {...sortAnimProps}>
         <SortBoxHeader>
           Sort <MdSort />
         </SortBoxHeader>
-        <AnimateSharedLayout>
-          {columnAttrs.map((col, i) => (
-            <SortBtn
-              key={col.key}
-              type="button"
-              onClick={() => toggleShiftSort(col.key)}
-              onMouseEnter={() => setHover(col.key)}
-              custom={i}
-              {...itemAnimProps}
+        {columnAttrs.map((col, i) => (
+          <SortBtn
+            key={col.key}
+            type="button"
+            onClick={() => toggleShiftSort(col.key)}
+            onMouseEnter={() => setHover(col.key)}
+            custom={i}
+            {...itemAnimProps}
+          >
+            <SortIndicator
+              orderType={col.sorted}
+              variants={sortIndicatorVariant}
+              initial={false}
+              animate={col.sorted}
             >
-              <SortIndicator
-                orderType={col.sorted}
-                variants={sortIndicatorVariant}
-                initial={false}
-                animate={col.sorted}
-              >
-                <BiCaretRightCircle />
-              </SortIndicator>
-              {col.label}
-
-              {hover === col.key && (
-                <HoverIndicator
-                  layoutId="sort-hover"
-                  transition={{
-                    type: "spring",
-                    stiffness: 500,
-                    damping: 30,
-                  }}
-                />
-              )}
-            </SortBtn>
-          ))}
-        </AnimateSharedLayout>
+              <BiCaretRightCircle />
+            </SortIndicator>
+            {col.label}
+          </SortBtn>
+        ))}
       </SortBox>
     </>
   );

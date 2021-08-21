@@ -51,11 +51,12 @@ export const baseFont: Font = {
 };
 
 export const bp: Breakpoints = {
-  xs: 300,
-  s: 400,
-  m: 550,
-  l: 1080,
-  xl: 1440,
+  xs: 350,
+  s: 550,
+  m: 1366,
+  l: 1920,
+  xl: 2560,
+  xxl: 4096,
 };
 
 export const darkTheme: Theme = {
@@ -64,12 +65,23 @@ export const darkTheme: Theme = {
   font: baseFont,
   breakpoints: bp,
   colors: {
-    primary: ccs({ main: "#49d0b0", light: "#ff0000" }),
-    // primary: ccs({ main: "#43dbab", light: "#ff0000" }),
+    // primary: ccs({ main: "#49d0b0" }),
+    // primary: ccs({ main: "#2de9b7" }),
+    primary: ccs({ main: "#49d0b0" }),
     secondary: ccs({ main: "#2dc3e9" }),
 
-    background: ccs({ main: "#2c333b" }),
-    surface: ccs({ main: "#363f49" }),
+    background: ccs({ main: "#2e3035" }),
+    surface: ccs({ main: "#36383e" }),
+
+    // background: ccs({ main: "#1f1f1f" }),
+    // surface: ccs({ main: "#181818" }),
+
+    // background: ccs({ main: "#36383e" }),
+    // surface: ccs({ main: "#2e3035" }),
+
+    // background: ccs({ main: "#2c333b" }),
+    // surface: ccs({ main: "#363f49" }),
+
     // background: ccs({ main: "#363f49" }),
     // surface: ccs({ main: "#2c333b" }),
 
@@ -94,10 +106,13 @@ export const lightTheme: Theme = {
   font: baseFont,
   breakpoints: bp,
   colors: {
+    // primary: ccs({ main: "#49d0b0", light: "#bbf3fb" }),
+    // primary: ccs({ main: "#2de9b7", light: "#bbf3fb" }),
     primary: ccs({ main: "#49d0b0", light: "#bbf3fb" }),
     secondary: ccs({ main: "#6c63ff" }),
 
-    background: ccs({ main: "#f6f8fc", dark: "#e9eef8", darker: "#f6f6f6" }),
+    // background: ccs({ main: "#f6f8fc", dark: "#e9eef8", darker: "#f6f6f6" }),
+    background: ccs({ main: "#f2f2f2", dark: "#e9eef8", darker: "#f6f6f6" }),
     // background: ccs({ main: "#f6f6f6", light: "#f6f8fc", dark: "#e9eef8" }),
     surface: ccs({ main: "#ffffff", lighter: "#e6e6e7" }),
 
@@ -158,11 +173,12 @@ export const GlobalReset = () => {
           font-family: ${theme.font.family};
           font-size: ${theme.font.size}px;
           font-weight: ${theme.font.weight};
-          color: ${theme.colors.onBackground.main};
+          color: ${theme.colors.onSurface.main};
+          -webkit-tap-highlight-color: transparent;
 
           &::selection {
             background: ${theme.colors.primary.main};
-            color: ${theme.colors.onPrimary.main};
+            color: black;
           }
         }
 
@@ -172,7 +188,20 @@ export const GlobalReset = () => {
           /* width: 100%; */
           /* height: 100%; */
           /* overflow: hidden; */
-          overflow: auto;
+          /* overflow-y: scroll; */
+          /* overflow-x: hidden; */
+
+          /*
+            !important is here because we need the scroll bar to always show 
+            otherwise there is a jarring jump when users click between pages that may
+            or may not have content that overflows.
+          
+            However, there is some function or library in this project
+            that adds overflow: auto to the html element (our viewport scrollbar) which negates
+            this rule here.
+          */
+
+          overflow: hidden scroll !important;
           scroll-behavior: smooth;
 
           background-color: ${theme.colors.background.main};

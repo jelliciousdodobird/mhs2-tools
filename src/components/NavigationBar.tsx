@@ -4,28 +4,16 @@ import styled from "@emotion/styled";
 import { rgba } from "emotion-rgba";
 
 // library:
-import { motion, AnimatePresence } from "framer-motion";
-import { createElement, useEffect, useState } from "react";
+import { motion, AnimatePresence, AnimateSharedLayout } from "framer-motion";
+import { createElement, ReactElement, useEffect, useState } from "react";
 import { IconType } from "react-icons";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { rainbowTextGradient } from "../pages/BuildPage";
 
 // icons:
-import {
-  MdBrightnessHigh,
-  MdBrightness4,
-  MdDetails,
-  MdLastPage,
-  MdMap,
-  MdPeople,
-  MdBuild,
-  MdStar,
-} from "react-icons/md";
-
-import { GiBrute } from "react-icons/gi";
-
-import { FaCrown } from "react-icons/fa";
 import { CgMenu } from "react-icons/cg";
-import { BiCrosshair, BiDna } from "react-icons/bi";
+import { HiOutlineMenuAlt4 } from "react-icons/hi";
+import { MdClose } from "react-icons/md";
 
 // custom components:
 import Debug from "./Debug";
@@ -33,204 +21,276 @@ import Debug from "./Debug";
 // custom hooks:
 import { useThemeState } from "../contexts/ThemeContext";
 import { useUIState } from "../contexts/UIContext";
+import Logo from "./Logo";
+import ThemeToggle from "./ThemeToggle";
+import { GUTTER } from "./Gutter";
+import { useAuth } from "../contexts/AuthContext";
+
 // background: ${({ theme }) =>
 //   `linear-gradient(45deg, ${theme.colors.primary.main}, ${theme.colors.primary.light})`};
 const NavbarContainer = styled(motion.nav)`
+  z-index: 3;
+
   position: sticky;
   top: 0;
   left: 0;
 
-  /* position: relative; */
-  z-index: 2;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+
+  ${({ theme }) => css`
+    height: ${theme.dimensions.mainNav.maxHeight}px;
+    max-height: ${theme.dimensions.mainNav.maxHeight}px;
+    min-height: ${theme.dimensions.mainNav.maxHeight}px;
+  `}
+
+  width: 100%;
+  box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.16);
+`;
+
+const MainNav = styled(motion.ul)`
+  ${GUTTER}
+
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+
+  /*
+    &::after here represents the background for this container.
+    This is done so that we can have an opacity on the background without affecting the opacity
+    of children elements (like text, icons, buttons, etc).
+   */
+  &::after {
+    z-index: 5;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    content: "";
+
+    width: 100%;
+    height: 100%;
+
+    background-color: ${({ theme }) => rgba(theme.colors.surface.main, 0.97)};
+    backdrop-filter: blur(2px);
+  }
+`;
+
+const LogoLI = styled.li`
+  z-index: 10;
+  position: relative;
+
+  flex: 0;
 
   display: flex;
   justify-content: center;
   align-items: center;
 
-  background-color: ${({ theme }) => theme.colors.surface.main};
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.m}px) {
-    flex-direction: column-reverse;
-
-    border-bottom: 2px solid ${({ theme }) => theme.colors.background.main};
-
-    ${({ theme }) => css`
-      height: ${theme.dimensions.mainNav.maxHeight}px;
-      max-height: ${theme.dimensions.mainNav.maxHeight}px;
-      min-height: ${theme.dimensions.mainNav.maxHeight}px;
-    `}
-
-    width: 100%;
-    padding: 0;
-  }
-
-  @media (min-width: ${({ theme }) => theme.breakpoints.m + 1}px) {
-    flex-direction: column;
-
-    border-right: 1px solid ${({ theme }) => theme.colors.background.main};
-    ${({ theme }) => css`
-      width: ${theme.dimensions.mainNav.maxWidth}px;
-      max-width: ${theme.dimensions.mainNav.maxWidth}px;
-      min-width: ${theme.dimensions.mainNav.maxWidth}px;
-    `}
-
-    height: 100vh;
-    padding: 0.5rem 0;
+  @media (max-width: ${({ theme }) => theme.breakpoints.s}px) {
+    order: 2; // puts logo in the middle (there are only 3 items)
   }
 `;
 
-const MainNav = styled(motion.ul)`
+const MenuButtonLI = styled.li`
+  z-index: 10;
   position: relative;
-  z-index: -100;
-  display: flex;
-  flex-direction: column;
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.m}px) {
-    background-color: ${({ theme }) => theme.colors.surface.main};
+  order: 1;
+  flex: 1;
+
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+`;
+
+const ThemeButtonLI = styled.li`
+  z-index: 10;
+  position: relative;
+
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  order: 3;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.s}px) {
+    order: 3;
+
+    flex: 1;
+  }
+`;
+
+const LinkNavLI = styled(motion.li)`
+  z-index: 10;
+
+  position: relative;
+  /* border: 2px dashed red; */
+
+  background-color: transparent;
+
+  flex: 1;
+
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.s}px) {
+    z-index: 0; // move LinkNavLI BELOW background (::after element on MainNav)
+
+    flex-direction: column;
+    gap: 0;
+
+    width: 100%;
+    box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.16);
+
     position: absolute;
     top: ${({ theme }) => theme.dimensions.mainNav.maxHeight}px;
     left: 0;
 
-    width: 100%;
+    padding-bottom: 1rem;
+
+    /*
+    &::after here represents the background for this container.
+    This is done so that we can have an opacity on the background without affecting the opacity
+    of children elements (like text, icons, buttons, etc).
+   */
+    &::after {
+      z-index: -1;
+
+      position: absolute;
+      top: 0;
+      left: 0;
+
+      content: "";
+
+      width: 100%;
+      height: 100%;
+
+      background-color: ${({ theme }) => rgba(theme.colors.surface.main, 0.97)};
+      backdrop-filter: blur(2px);
+    }
   }
 `;
 
-const SubNav = styled.ul`
-  flex: 1;
+const ListContainer = styled.ul`
+  height: 100%;
 
   display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
-  padding: 0 1rem;
+  gap: 0.75rem;
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.m}px) {
-    flex-direction: row;
+  @media (max-width: ${({ theme }) => theme.breakpoints.s}px) {
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+
+    gap: 0;
+
     width: 100%;
+
+    height: min-content;
     background-color: inherit;
   }
 `;
 
-const navItemBaseStyles = ({ theme }: { theme: Theme }) => css`
+const NavItemContainer = styled(motion.li)`
+  position: relative;
   cursor: pointer;
-  overflow: hidden;
 
-  a,
-  button {
-    background-color: transparent;
+  height: 3rem;
 
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &:hover {
+    a {
+      p {
+        /* text-decoration: underline; */
+      }
+    }
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.s}px) {
     width: 100%;
-    height: 100%;
+    padding: 0 2rem;
 
+    &:hover {
+      background-color: ${({ theme }) => theme.colors.surface.dark};
+    }
+  }
+`;
+
+const MotionLink = styled(motion(Link))`
+  position: relative;
+
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  span {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
 
-    span {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
+    svg {
+      height: 100%;
+      width: 100%;
 
-      svg {
-        height: 100%;
-        width: 100%;
-
-        path,
-        line {
-          fill: ${theme.colors.onSurface.main};
-        }
+      path,
+      line {
+        fill: ${({ theme }) => theme.colors.onSurface.main};
       }
     }
   }
 
-  &:hover {
-    background-color: ${theme.colors.background.light};
+  @media (max-width: ${({ theme }) => theme.breakpoints.s}px) {
+    align-items: flex-start;
   }
 `;
 
-const NavItemContainer = styled(motion.li)`
-  ${navItemBaseStyles}
+const P = styled(motion.p)`
+  white-space: nowrap;
+  font-size: 0.85rem;
+  font-weight: 600;
 
+  /* font-style: italic; */
+`;
+
+const Marker = styled(motion.div)`
+  position: absolute;
+  bottom: 8px;
+
+  width: 100%;
+  height: 3px;
   border-radius: 3px;
 
-  width: ${({ theme }) => theme.dimensions.mainNav.maxWidth - 20}px;
-  height: ${({ theme }) => theme.dimensions.mainNav.maxWidth - 20}px;
+  background-color: ${({ theme }) => theme.colors.primary.main};
 
-  a,
-  button {
-    span {
-      width: ${({ iconSize }: { iconSize: number }) => iconSize * 1.6}px;
-      height: ${({ iconSize }: { iconSize: number }) => iconSize * 1.6}px;
-    }
+  @media (max-width: ${({ theme }) => theme.breakpoints.s}px) {
+    top: 41%;
+    left: -1rem;
 
-    p {
-      width: 100%;
-      font-size: 12px;
-      color: ${({ theme }) => theme.colors.onSurface.main};
-      font-weight: 600;
-
-      margin-top: 8px;
-
-      display: flex;
-      justify-content: center;
-    }
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
   }
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.m}px) {
-    width: 100%;
-    height: 50px;
-
-    a,
-    button {
-      flex-direction: row;
-      justify-content: flex-start;
-      overflow: visible;
-      padding: 0 1.75rem;
-
-      span {
-        margin-right: 1rem;
-        ${({ iconSize }) =>
-          css`
-            width: ${iconSize + 5}px;
-            height: ${iconSize + 5}px;
-          `}
-      }
-      p {
-        justify-content: flex-start;
-        font-size: 1rem;
-        margin-top: 0;
-      }
-    }
-  }
-`;
-
-const NavItemContainerSmall = styled(motion.li)`
-  ${navItemBaseStyles}
-
-  border-radius: 6px;
-
-  width: 3rem;
-  height: 3rem;
-
-  a,
-  button {
-    span {
-      width: ${({ iconSize }: { iconSize: number }) => iconSize}px;
-      height: ${({ iconSize }: { iconSize: number }) => iconSize}px;
-    }
-  }
-`;
-
-const NavLink = styled(motion(Link))``;
-const NavButton = styled(motion.button)``;
-const P = styled(motion.p)`
-  /* margin-top: 8px; */
 `;
 
 type NewNavItemProps = {
-  to?: string;
+  to: string;
   text?: string;
   icon?: IconType;
   iconSize?: number;
@@ -238,9 +298,11 @@ type NewNavItemProps = {
   className?: string;
   onClick?: () => void;
   iconAnimationProps?: object;
+  showMarker?: boolean;
+  children?: ReactElement;
 };
 
-const NavItem = ({
+const NavLink = ({
   to = "#",
   text,
   icon,
@@ -248,92 +310,75 @@ const NavItem = ({
   iconSize = 20,
   className,
   iconAnimationProps,
+  showMarker = true,
   onClick = () => {},
+  children,
 }: NewNavItemProps) => {
-  const Container = small ? NavItemContainerSmall : NavItemContainer;
-  const Inner = to === "#" ? NavButton : NavLink;
+  // const Container = small ? NavItemContainerSmall : NavItemContainer;
+  // const Inner = to === "#" ? NavButton : NavLink;
+  const location = useLocation();
+  const selected = location.pathname.includes(to);
 
   return (
-    <Container iconSize={iconSize} className={className}>
-      <Inner to={to} onClick={onClick}>
+    <NavItemContainer className={className}>
+      <MotionLink to={to} onClick={onClick}>
+        {selected && <Marker layoutId="link-marker" />}
         {icon && (
           <motion.span {...iconAnimationProps}>
             {createElement(icon)}
           </motion.span>
         )}
         {text && <P>{text}</P>}
-      </Inner>
-    </Container>
+      </MotionLink>
+    </NavItemContainer>
   );
 };
 
-const Logo = styled(NavItem)`
-  button,
-  a {
-    span {
-      position: relative;
-      transform-origin: center 39%;
-      width: 5rem;
-      height: 5rem;
-      svg {
-        path {
-          fill: ${({ theme }) => theme.colors.primary.main};
-        }
+const MenuButton = styled.button`
+  width: 3rem;
+  height: 3rem;
+
+  border-radius: 50%;
+
+  background-color: ${({ theme }) => theme.colors.background.main};
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    path {
+    }
+  }
+
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.primary.main};
+
+    svg {
+      path {
+        fill: ${({ theme }) => theme.colors.onPrimary.main};
+        stroke: ${({ theme }) => theme.colors.onPrimary.main};
       }
     }
-
-    /* span::after {
-    content: "";
-    position: absolute;
-    top: 37.5%;
-    left: 50%;
-    background-color: red;
-    width: 1px;
-    height: 1px;
-  } */
   }
 `;
 
-const MenuButton = styled(NavItem)`
-  margin-right: auto;
-`;
-
 const NavigationBar = () => {
-  const theme = useTheme();
-  const { isMobile, toggleSidebar, setSidebarState, sidebarState } =
-    useUIState();
+  const { user } = useAuth();
+
+  const { isMobile } = useUIState();
   const [mainNav, setMainNav] = useState(false);
   const { selectedTheme, toggleTheme } = useThemeState();
   const themeToggle = selectedTheme === "dark" ? true : false;
   const showMainNav = mainNav ? true : !isMobile;
 
-  const navBarColorAnimationProps = {
-    variants: {
-      open: {
-        backgroundColor: theme.colors.background.main,
-      },
-      closed: {
-        backgroundColor: theme.colors.surface.main,
-      },
-    },
-    initial: sidebarState ? "open" : "closed",
-    animate: sidebarState ? "open" : "closed",
-  };
-
-  const sidebarButtonAnimationProps = {
-    variants: {
-      open: { rotate: 180 + (isMobile ? 90 : 0) },
-      closed: { rotate: 0 + (isMobile ? 90 : 0) },
-    },
-    initial: sidebarState ? "open" : "closed",
-    animate: sidebarState ? "open" : "closed",
-  };
-
   const mainNavAnimationProps = {
     variants: {
       open: { y: 0 },
       closed: {
-        y: -300,
+        y: -450,
       },
     },
     initial: "closed",
@@ -343,123 +388,96 @@ const NavigationBar = () => {
     // transition: { velocity: 500 },
   };
 
-  const crossHairAnimationProps = {
-    whileHover: {
-      x: [0, 20, -20, 40, -50, 0, 0, 0, 0, 0, 0, 0],
-      y: [0, 0, 50, 20, -20, 0, 0, 0, 0, 0, 0, 0],
-      scale: [1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.8, 0.5, 0.8, 0.5, 0.8, 0.5, 1],
-
-      // rotate: [0, 0, 270, 270, 0],
-      // borderRadius: ["20%", "20%", "50%", "50%", "20%"],
-      transition: {
-        duration: 2,
-        ease: "easeInOut",
-        // times: [0.3, 0.3, 0.3, 0.3, 0.3, 0.1, 0.1, 0.1, 0.1, 0.1],
-        loop: Infinity,
-        repeatDelay: 1,
-      },
-    },
-  };
-
-  const logoAnimationProps = {
-    whileHover: {
-      // originX: 0.5,
-      rotate: 360,
-      transition: {
-        duration: 1,
-        ease: "linear",
-
-        loop: Infinity,
-      },
-    },
-  };
-
   const toggleMainNav = () => setMainNav((val) => !val);
+
   const closeSidebarToggleMainNav = () => {
-    setSidebarState(false);
+    // setSidebarState(false);
     toggleMainNav();
   };
 
   const closeMainNavToggleSidebar = () => {
     setMainNav(false);
-    toggleSidebar();
+    // toggleSidebar();
   };
 
   const closeMainNav = () => setMainNav(false);
 
   return (
-    <NavbarContainer
-    // {...navBarColorAnimationProps}
-    >
-      <AnimatePresence>
-        {showMainNav && (
-          <MainNav {...mainNavAnimationProps}>
-            {!isMobile && (
-              <Logo
-                to="/"
-                icon={MdDetails}
-                // iconAnimation={logoAnimationProps}
-              />
-            )}
-            <NavItem
-              text="Monsties"
-              icon={GiBrute}
-              to="/monsties"
-              iconSize={18}
-              onClick={closeMainNav}
-              // iconAnimation={crossHairAnimationProps}
-            />
-            <NavItem
-              text="Genes"
-              icon={BiDna}
-              to="/genes"
-              iconSize={18}
-              onClick={closeMainNav}
-            />
-            <NavItem
-              text="Team Builder"
-              icon={MdBuild}
-              to="/builds"
-              iconSize={18}
-              onClick={closeMainNav}
-            />
-            {/* <NavItem
-              text="Pros"
-              icon={FaCrown}
-              to="/pros"
-              onClick={closeMainNav}
-            />
-            <NavItem
-              text="Community"
-              icon={MdPeople}
-              to="/community"
-              onClick={closeMainNav}
-            /> */}
-          </MainNav>
-        )}
-      </AnimatePresence>
-      <SubNav>
-        {isMobile && (
-          <MenuButton
-            small
-            icon={CgMenu}
-            iconSize={23}
-            onClick={closeSidebarToggleMainNav}
-          />
-        )}
+    <NavbarContainer>
+      <MainNav>
+        {/* ITEM 1 (LOGO) */}
+        <LogoLI>
+          <Logo />
+        </LogoLI>
 
-        <NavItem
-          small
-          onClick={toggleTheme}
-          icon={themeToggle ? MdBrightnessHigh : MdBrightness4}
-        />
-        <NavItem
-          small
-          onClick={closeMainNavToggleSidebar}
-          icon={MdLastPage}
-          iconAnimationProps={sidebarButtonAnimationProps}
-        />
-      </SubNav>
+        {/* ITEM 2 (ACTUAL NAV ITEMS) */}
+        <AnimateSharedLayout>
+          <AnimatePresence>
+            {showMainNav && (
+              <LinkNavLI {...mainNavAnimationProps}>
+                <ListContainer>
+                  <NavLink
+                    text="Monsties"
+                    // icon={GiBrute}
+                    to="/monsties"
+                    iconSize={18}
+                    onClick={closeMainNav}
+                    // iconAnimation={crossHairAnimationProps}
+                  />
+                  <NavLink
+                    text="Genes"
+                    // icon={BiDna}
+                    to="/genes"
+                    iconSize={18}
+                    onClick={closeMainNav}
+                  />
+                  <NavLink
+                    text="Team Builder"
+                    // icon={MdBuild}
+                    to="/builds"
+                    iconSize={18}
+                    onClick={closeMainNav}
+                  />
+                </ListContainer>{" "}
+                <ListContainer>
+                  <NavLink
+                    text="Account"
+                    // icon={MdBuild}
+                    to="/account"
+                    // iconSize={18}
+                    onClick={closeMainNav}
+                  />
+                  <NavLink
+                    text="Contribute"
+                    // icon={MdBuild}
+                    to="/contribute"
+                    // iconSize={18}
+                    onClick={closeMainNav}
+                  />
+
+                  {/* <NavItem> */}
+
+                  {/* </NavItem> */}
+                </ListContainer>
+              </LinkNavLI>
+            )}
+          </AnimatePresence>
+        </AnimateSharedLayout>
+
+        {/* ITEM 3 (Theme Button) */}
+        <ThemeButtonLI>
+          <ThemeToggle />
+        </ThemeButtonLI>
+
+        {/* ITEM 4 (Menu button for mobile mode) */}
+        {isMobile && (
+          <MenuButtonLI>
+            <MenuButton type="button" onClick={closeSidebarToggleMainNav}>
+              {mainNav ? <MdClose /> : <HiOutlineMenuAlt4 />}
+            </MenuButton>
+          </MenuButtonLI>
+        )}
+      </MainNav>
     </NavbarContainer>
   );
 };
