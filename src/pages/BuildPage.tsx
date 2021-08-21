@@ -3,7 +3,7 @@ import { css, jsx, Theme, useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
 import { rgba } from "emotion-rgba";
 
-import { match } from "react-router-dom";
+import { Link, match } from "react-router-dom";
 import React, { useEffect, useMemo, useState, useRef, memo } from "react";
 import { useHistory } from "react-router-dom";
 
@@ -48,6 +48,7 @@ import { MdClose, MdEdit } from "react-icons/md";
 import { motion } from "framer-motion";
 import BuildPageNotification from "../components/BuildPageNotification";
 import { useCallback } from "react";
+import MonsterSelect from "../components/MonsterSelect";
 
 export const rainbowTextGradient = (degree = 150) =>
   `repeating-linear-gradient(
@@ -85,6 +86,17 @@ const Container = styled.div`
     width: 100%;
     /* height: 100%; */
     min-height: 20rem;
+  }
+`;
+
+const HeaderContainer = styled.div`
+  width: 100%;
+
+  display: flex;
+  flex-direction: row;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.s}px) {
+    flex-direction: column;
   }
 `;
 
@@ -167,8 +179,8 @@ const subHeadingStyles = (props: any) => css`
   color: ${props.theme.colors.onSurface.main};
 
   min-height: ${headingHeight}rem;
-  font-weight: 600;
-  font-size: 1.5rem;
+  font-weight: 700;
+  font-size: 2rem;
 
   margin-left: 0.25rem;
 `;
@@ -198,6 +210,25 @@ const SubHeading = styled.h2`
 const ButtonContainer = styled.div`
   display: flex;
   gap: 1rem;
+`;
+
+const BackLink = styled(Link)`
+  margin-left: 0.2rem;
+
+  width: 100%;
+  &:link,
+  &:visited,
+  &:hover,
+  &:active {
+    color: white;
+    font-weight: 700;
+    font-style: italic;
+    text-decoration: underline;
+  }
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.primary.main};
+  }
 `;
 
 const Button = styled.button`
@@ -412,7 +443,7 @@ const BuildPage = memo(({ match }: PageProps) => {
 
       setBuildName(localBuild?.buildName || "");
       setMonstie(localBuild?.monstie || 33);
-      setGeneBuild(localBuild?.geneBuild || []);
+      setGeneBuild(cleanGeneBuild(localBuild?.geneBuild || []));
 
       setLoading(false);
     }
@@ -476,22 +507,27 @@ const BuildPage = memo(({ match }: PageProps) => {
       />
       <Gutter>
         <Container ref={containerRef}>
+          <BackLink to="/builds">&lt;- Back to your build list</BackLink>
+          <HeaderContainer>
+            <BuildNameInput
+              value={buildName}
+              onChange={(e) => setBuildName(e.target.value)}
+              maxLength={40}
+              placeholder="Build name"
+              disabled={!buildMetaData.isCreator}
+            />
+            <MonsterSelect value={monstie} setValue={setMonstie} />
+          </HeaderContainer>
           {/* <Heading>The Magene {"->"}</Heading> */}
-          <BuildNameInput
-            value={buildName}
-            onChange={(e) => setBuildName(e.target.value)}
-            maxLength={40}
-            placeholder="Build name"
-            disabled={!buildMetaData.isCreator}
-          />
 
           <SubContainer>
             <BoardSection size={boardSize}>
-              <ButtonContainer>
+              {/* <ButtonContainer>
                 <Button onClick={clearBuild}>Clear</Button>
                 <Button onClick={shuffle}>Random</Button>
                 <SaveButton isDirty={isDirty}>Save</SaveButton>
-              </ButtonContainer>
+              </ButtonContainer> */}
+              <SubHeading>Bingoboard</SubHeading>
 
               <BingoBoard
                 size={boardSize}
@@ -502,6 +538,8 @@ const BuildPage = memo(({ match }: PageProps) => {
                 setDropSuccess={setDropSuccess}
                 disabled={!buildMetaData.isCreator}
               />
+
+              <SubHeading>Bonuses</SubHeading>
               <BingoBonuses geneBuild={geneBuild} showBingosOnly={false} />
             </BoardSection>
 
