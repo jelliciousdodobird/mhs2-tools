@@ -3,6 +3,8 @@ import styled from "@emotion/styled";
 import { rgba } from "emotion-rgba";
 
 import Den from "./Den";
+import Egg from "./Egg";
+import { ELEMENT_COLOR, ElementType } from "../utils/ProjectTypes";
 
 import { ReactComponent as StarSVG } from "../assets/star.svg";
 
@@ -11,13 +13,11 @@ import { useState } from "react";
 // import { ReactComponent as DenSVG } from "../assets/den.svg";
 // import DenSVG from "../assets/den.svg";
 
-const Container = styled.div<{ bg?: string }>`
+const Container = styled.div<{ bg?: string; size: number }>`
   position: relative;
 
-  // border: 1px solid white;
-
-  width: 9rem;
-  min-width: 9rem;
+  width: ${({ size }) => `${size}px`};
+  min-width: ${({ size }) => `${size}px`};
 
   display: flex;
   flex-direction: column;
@@ -26,14 +26,14 @@ const Container = styled.div<{ bg?: string }>`
   align-items: center;
 `;
 
-const ImgContainer = styled.div<{ color: string; bg?: string }>`
-  // background: ${({ theme }) => `${theme.colors.surface.lighter}`};
-  // background: ${({ theme, bg }) =>
-    `linear-gradient(120deg, ${bg} 50.7%, ${theme.colors.surface.lighter} 51%)`};
-  background-color: rgba(255, 255, 255, 0.1);
+const ImgContainer = styled.div<{ color: string; bg?: string; size: number }>`
+  background-color: ${({ theme }) =>
+    theme.name === "light"
+      ? `rgba(0, 0, 0, 0.05)`
+      : `rgba(255, 255, 255, 0.1)`};
 
-  height: 9rem;
-  width: 9rem;
+  height: ${({ size }) => `${size}px`};
+  width: ${({ size }) => `${size}px`};
 
   border-radius: 100%;
 
@@ -43,12 +43,17 @@ const ImgContainer = styled.div<{ color: string; bg?: string }>`
   justify-content: center;
   align-items: center;
 
-  margin-bottom: 0.8rem;
+  margin-bottom: 0.3rem;
 `;
 
-const Icon = styled.img`
-  width: 6rem;
-  height: 6rem;
+const Img = styled.img`
+  width: 75%;
+  height: 75%;
+`;
+
+const Egg_ = styled(Egg)`
+  width: 90%;
+  height: 90%;
 `;
 
 const MainInfo = styled.div`
@@ -60,14 +65,15 @@ const MainInfo = styled.div`
   justify-content: center;
   align-items: center;
 
-  gap: 0.5rem;
+  gap: 0.3rem;
 `;
 
 const ExtraInfo = styled.div`
   position: absolute;
-  top: 5px;
-  right: 5px;
+  top: 2%;
+  right: 2%;
 `;
+
 const Bubble = styled.div<{ color: string }>`
   width: 100%;
 
@@ -79,19 +85,17 @@ const Bubble = styled.div<{ color: string }>`
 
   gap: 0.3rem;
 
-  padding: 0.5rem;
+  padding: 0.2rem;
   border-radius: 1rem;
 
   background-color: ${({ theme }) =>
     theme.name === "dark" ? "#4b5561" : "#dadadc"};
-  // background-color: ${({ color }) => color};
-  // border: 5px solid ${({ color }) => color};
 `;
 
 const Name = styled.h3`
   color: ${({ theme }) => theme.colors.onPrimary.main};
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 80%;
   text-align: center;
 `;
 
@@ -99,37 +103,54 @@ const Name = styled.h3`
 const Location = styled.h4`
   color: ${({ theme }) => theme.colors.onPrimary.main};
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 80%;
+  text-align: center;
 `;
 
-type TokenProps = { className?: string; monstie: any };
+type TokenProps = { className?: string; monstie: any; egg: any; size?: number };
 
-// on click card highlight
-const MonstieToken = ({ className, monstie }: TokenProps) => {
-  const [egg, showEgg] = useState(false);
+const MonstieToken = ({ className, monstie, egg, size = 150 }: TokenProps) => {
+  const [showEgg, setShowEgg] = useState(false);
   // const Den = getDenSVG();
+  const strengthElementColor =
+    ELEMENT_COLOR[monstie.elementStrength as ElementType].main;
 
   return (
     <Container
       className={className}
-      bg={monstie.color}
-      onClick={() => showEgg(!egg)}
+      bg={strengthElementColor}
+      onClick={() => setShowEgg(!showEgg)}
+      size={size}
     >
-      <ImgContainer color={monstie.color} bg={monstie.color}>
-        <Icon src={egg ? monstie.egg : monstie.icon}></Icon>
+      <ImgContainer
+        size={size}
+        color={strengthElementColor}
+        bg={strengthElementColor}
+      >
+        {showEgg ? (
+          <Egg_
+            patternType={egg.patternType}
+            bgColor={egg.bgColor}
+            patternColor={egg.patternColor}
+          />
+        ) : (
+          <Img
+            src={`https://nvbiwqsofgmscfcufpfd.supabase.in/storage/v1/object/public/monster-img/${monstie.imgUrl}`}
+          />
+        )}
       </ImgContainer>
       <MainInfo>
-        <Bubble color={monstie.color}>
-          <Name>{monstie.name}</Name>
+        <Bubble color={strengthElementColor}>
+          <Name>{monstie.monsterName}</Name>
         </Bubble>
 
-        <Bubble color={monstie.color}>
-          <Location>{monstie.location}</Location>
+        <Bubble color={strengthElementColor}>
+          <Location>
+            {monstie.habitat === "" ? "Unknown" : monstie.habitat}
+          </Location>
         </Bubble>
       </MainInfo>
-      <ExtraInfo>
-        <Den denType={monstie.den}></Den>
-      </ExtraInfo>
+      <ExtraInfo>{/* <Den denType={monstie.den}></Den> */}</ExtraInfo>
     </Container>
   );
 };

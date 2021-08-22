@@ -551,7 +551,7 @@ const BuildPage = memo(({ match }: PageProps) => {
 
           <ObtainablesSection>
             <SubHeading>Hunt List</SubHeading>
-            <ObtainableGeneList />
+            <ObtainableGeneList genes={geneBuild} />
           </ObtainablesSection>
 
           {buildMetaData.isCreator && (

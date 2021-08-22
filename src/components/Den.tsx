@@ -27,17 +27,15 @@ const DenContainer = styled.h4<{ bg: string }>`
   background-color: ${({ bg }) => `${bg}`};
   border-radius: 100%;
 
-  min-width: 1.5rem;
-  min-height: 1.5rem;
-  height: min-content;
-  width: min-content;
+  height: 1.5rem;
+  width: 1.5rem;
 
   display: flex;
   justify-content: center;
   align-items: center;
 
   font-weight: 600;
-  font-size: 0.8rem;
+  font-size: 80%;
 
   color: ${({ theme }) => theme.colors.onPrimary.main};
 `;
